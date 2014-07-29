@@ -1,29 +1,45 @@
 
+import json
 from flask import Flask
 from flask import request
 from formats import parse_degrees, parse_hours
 
 app = Flask(__name__)
+TRACKING_COORDINATES_FILE = 'coords.txt'
 
-@app.route('/position', methods=['GET', 'PUT'])
-def Coordinate():
+
+def target_repr():
+    try:
+        with open(TRACKING_COORDINATES_FILE) as f:
+            rascension, declination = f.readline().split(" ")
+            rascension = parse_hours(rascension)
+            declination = parse_degrees(declination)
+            coords = {
+                "ra" : rascension,
+                "de" : declination,
+            }
+            return json.dumps(coords)
+    except(IOError, ValueError):
+        return ""
+
+
+@app.route('/target', methods=['GET', 'PUT'])
+def target():
     print request.method
     if request.method == 'GET':
-        TRACKING_COORDINATES_FILE = 'coords.txt'
-        try:
-            with open(TRACKING_COORDINATES_FILE) as f:
-                rascension, declination = f.readline().split(" ")
-                rascension = parse_hours(rascension)
-                declination = parse_degrees(declination)
-            return "(rascension, declination)"
-        except(IOError, ValueError):
-            return ""
+        return target_repr()
 
     elif request.method == 'PUT':
-        #f = open('coords.txt','w')
-        #f.write(rascension, declination) # python will convert \n to os.linesep
-        #f.close() # you can omit in most cases as the destructor will call if
-        return ""
+        coords = json.loads(request.data)
+        line = str(coords["de"]) + " " + str(coords["ra"])
+        print line
+        try:
+            f = open(TRACKING_COORDINATES_FILE, 'w')
+            f.write(line)
+            f.close()
+        except Exception as e:
+            print e
+        return target_repr()
 
 
 if __name__ == '__main__':
