@@ -401,6 +401,7 @@ def move_by(delta_local, speeds=None):
         speeds = {'ha': SPEED_LIMIT, 'de': SPEED_LIMIT}
     if delta_local.get('ha', False):
         require_stopped(_ha)
+        _ha.enable()
         case = 'ha'
         delta_position = float(delta_local['ha'])
         _ha.OperationMode = OP_MODE_POSITION
@@ -408,6 +409,7 @@ def move_by(delta_local, speeds=None):
         _ha.move_delta(delta_position, case=case)
     if delta_local.get('de', False):
         require_stopped(_de)
+        _de.enable()
         case = 'de'
         delta_position = float(delta_local['de'])
         _de.OperationMode = OP_MODE_POSITION
@@ -442,6 +444,20 @@ def stop(ha=None, de=None):
             else:
                 raise ValueError('Unsupported operation mode!')
 
+
+def set_manual(ha=None, de=None):
+    if ha is None and de is None:
+        ha = True
+        de = True
+    init()
+    if ha:
+        require_stopped(_ha)
+        _ha.disable()
+        _ha.OperationMode = OP_MODE_MANUAL
+    if de:
+        require_stopped(_de)
+        _de.disable()
+        _de.OperationMode = OP_MODE_MANUAL
 
 
 
@@ -522,14 +538,7 @@ def _main(args):
         if not args['ha'] and not args['de']:
             args['ha'] = True
             args['de'] = True
-        if args['ha']:
-            if _ha.OperationMode != OP_MODE_MANUAL:
-                require_stopped(_ha)
-                _ha.OperationMode = OP_MODE_MANUAL
-        if args['de']:
-            if _de.OperationMode != OP_MODE_MANUAL:
-                require_stopped(_ha)
-                _de.OperationMode = OP_MODE_MANUAL
+        set_manual(ha=args['ha'], de=args['de'])
 
     if args['speed']:
         if not args['set']:

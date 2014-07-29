@@ -16,6 +16,7 @@ Usage:
   tca track to cat <NAME> [(from <CATALOG>)] [ce | cw]
   tca track start
   tca stop
+  tca manual
   tca set celest <RA> <DE> [blind]
   tca set star <NAME> [blind]
   tca set cat <NAME> [(from <CATALOG>)] [blind]
@@ -215,6 +216,9 @@ def _main(args):
     if args['stop']:
         dagor_motors.init()
         dagor_motors.stop()
+
+    if args['manual']:
+        dagor_motors.set_manual()
 
     if args['set']:
         if args['celest']:
