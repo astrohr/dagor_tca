@@ -83,6 +83,18 @@ def read_corrections_file():
     return manual_corrections
 
 
+def adjust_speed(ha_err, de_err, max_ha, max_de, case):
+    t_ha = abs(ha_err) / max_ha
+    t_de = abs(de_err) / max_de
+    t = max(t_ha, t_de)
+    max_ha = min(t_ha / t * max_ha, max_ha)
+    max_de = min(t_de / t * max_de, max_de)
+    if case==1:
+        return max_ha
+    else:
+        return max_de
+
+
 def sync_console():
     with NonBlockingConsole() as nbc:
         print "\x1b[2J"
@@ -234,12 +246,12 @@ def speed_tracking(manual_internal=None):
 
             de_err = (de_now - de_target)
 
-            ha_speed = (9 * dagor_motors.MAX_SPEED_HA * abs(ha_err) ** 2 / 500) ** (1 / 3)
+            ha_speed = (9 * adjust_speed(ha_err, de_err, dagor_motors.MAX_SPEED_HA, dagor_motors.MAX_SPEED_DE, 1) * abs(ha_err) ** 2 / 500) ** (1 / 3)
             ha_speed = ha_speed * dagor_motors.SPEED_LIMIT / dagor_motors.MAX_SPEED_HA
             ha_speed = min( ha_speed - (27 if sign(ha_err) == 1 else -27), dagor_motors.SPEED_LIMIT )
             ha_speed = int( ha_speed * sign(ha_err) )
             
-            de_speed = (9 * dagor_motors.MAX_SPEED_DE * abs(de_err) ** 2 / 500) ** (1 / 3)
+            de_speed = (9 * adjust_speed(ha_err, de_err, dagor_motors.MAX_SPEED_HA, dagor_motors.MAX_SPEED_DE, 2) * abs(de_err) ** 2 / 500) ** (1 / 3)
             de_speed = de_speed * dagor_motors.SPEED_LIMIT / dagor_motors.MAX_SPEED_DE
             de_speed = min( de_speed, dagor_motors.SPEED_LIMIT )
             de_speed = int( de_speed * sign(de_err) )
