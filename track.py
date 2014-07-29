@@ -47,7 +47,7 @@ def read_coordinates_file():
             celest['ra'], celest['de'] = g.readline().split(" ")
             celest['ra'] = parse_hours(celest['ra'])
             celest['de'] = parse_degrees(celest['de'])
-            return dagor_position.celest_to_internal(celest)
+            return celest
     except (IOError, ValueError):
         return None
 
@@ -210,31 +210,33 @@ def speed_tracking(manual_internal=None):
 
     t_start = time()  #@TODO make sure this behaves well on leap seconds
 
-
     start_internal = dagor_position.get_internal()
+    internal = None
+    manual_coords = None
 
 
     try:
         while True:
             _wait_for_time(dagor_motors._TRACKING_CHECK_INTERVAL, dots=True, enter_abort=True, interval=dagor_motors._TRACKING_CHECK_INTERVAL / 10, dot_skip=10)
+
+            # Getting target coords, "internal" system.
+            # Target priorities:
+            #   1) manual_internal
+            #   2) coords file
+            #   3) current position
+            if not internal:  # first loop run
+                internal = manual_internal if manual_internal else start_internal
+            else:  # after first loop run
+                if not manual_internal:
+                    old_manual_coords = manual_coords
+                    manual_coords = read_coordinates_file()
+                    if manual_coords and manual_coords != old_manual_coords:
+                        internal = dagor_position.celest_to_internal(manual_coords)
+                        t_start = time()
+
+            ha_target, de_target = internal['ha'], internal['de']  #@TODO clean this up
+
             manual_corrections = read_corrections_file()
-
-
-            manual_coords = read_coordinates_file()
-
-            if manual_internal:
-                internal = manual_internal
-                start_internal = dagor_position.get_internal()
-                t_start = time()
-            elif manual_coords is not None:
-                internal = read_coordinates_file()
-                start_internal = dagor_position.get_internal()
-                t_start = time()
-            else:
-                internal = start_internal
-
-            ha_target, de_target = internal['ha'], internal['de']
-
 
             t_now = time()
             internal_now = dagor_position.get_internal()
