@@ -142,21 +142,21 @@ def sync_console():
             elif known_sequences[data] == 'ARROW_LEFT':
                 manual_corrections['ha_offset'] -= TRACKING_CORRECTIONS_STEP_HA
             elif known_sequences[data] == 'SHIFT_ARROW_UP':
-                manual_corrections['de_offset'] -= TRACKING_CORRECTIONS_STEP_DE_SMALL
+                manual_corrections['de_offset'] -= TRACKING_CORRECTIONS_STEP_DE / 6
             elif known_sequences[data] == 'SHIFT_ARROW_DOWN':
-                manual_corrections['de_offset'] += TRACKING_CORRECTIONS_STEP_DE_SMALL
+                manual_corrections['de_offset'] += TRACKING_CORRECTIONS_STEP_DE / 6
             elif known_sequences[data] == 'SHIFT_ARROW_RIGHT':
-                manual_corrections['ha_offset'] += TRACKING_CORRECTIONS_STEP_HA_SMALL
+                manual_corrections['ha_offset'] += TRACKING_CORRECTIONS_STEP_HA / 6
             elif known_sequences[data] == 'SHIFT_ARROW_LEFT':
-                manual_corrections['ha_offset'] -= TRACKING_CORRECTIONS_STEP_HA_SMALL
+                manual_corrections['ha_offset'] -= TRACKING_CORRECTIONS_STEP_HA / 6
             elif known_sequences[data] == 'CTRL_ARROW_UP':
-                manual_corrections['de_offset'] -= TRACKING_CORRECTIONS_STEP_DE_BIG
+                manual_corrections['de_offset'] -= TRACKING_CORRECTIONS_STEP_DE * 10
             elif known_sequences[data] == 'CTRL_ARROW_DOWN':
-                manual_corrections['de_offset'] += TRACKING_CORRECTIONS_STEP_DE_BIG
+                manual_corrections['de_offset'] += TRACKING_CORRECTIONS_STEP_DE * 10
             elif known_sequences[data] == 'CTRL_ARROW_RIGHT':
-                manual_corrections['ha_offset'] += TRACKING_CORRECTIONS_STEP_HA_BIG
+                manual_corrections['ha_offset'] += TRACKING_CORRECTIONS_STEP_HA * 10
             elif known_sequences[data] == 'CTRL_ARROW_LEFT':
-                manual_corrections['ha_offset'] -= TRACKING_CORRECTIONS_STEP_HA_BIG
+                manual_corrections['ha_offset'] -= TRACKING_CORRECTIONS_STEP_HA * 10
             if 'ARROW' in known_sequences[data]:  # any arrow
                 if abs(manual_corrections['ha_offset']) < TRACKING_CORRECTIONS_STEP_HA / 6:
                     manual_corrections['ha_offset'] = 0
