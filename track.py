@@ -29,6 +29,7 @@ import sys
 from common import NonBlockingConsole, BASE_PATH, EnterAbort, print_, _wait_for_time, sign, p_, _wait_for_stop
 from formats import format_hours, format_degrees, parse_degrees, parse_hours
 import motors as dagor_motors
+import path as dagor_path
 import position as dagor_position
 
 TRACKING_COORDINATES_FILE = os.path.join(BASE_PATH, 'coords.txt')
@@ -83,16 +84,24 @@ def read_corrections_file():
     return manual_corrections
 
 
-def adjust_speed(ha_err, de_err, max_ha, max_de, case):
+def adjust_speed(ha_err, de_err, max_ha, max_de):
     t_ha = abs(ha_err) / max_ha
     t_de = abs(de_err) / max_de
     t = max(t_ha, t_de)
     max_ha = min(t_ha / t * max_ha, max_ha)
     max_de = min(t_de / t * max_de, max_de)
-    if case==1:
-        return max_ha
-    else:
-        return max_de
+    return {
+        'speed_ha': max_ha,
+        'speed_de': max_de,
+    }
+
+
+def calculate_distance(target):
+    position = dagor_position.get_internal()
+    dist_ha = (position['ha'] - target.ha) * 15
+    dist_de = position['de'] - target.de
+    distance = (dist_ha ** 2 + dist_de ** 2) ** (1/2)
+    return distance
 
 
 def sync_console():
@@ -212,7 +221,7 @@ def speed_tracking(manual_internal=None):
 
     start_internal = dagor_position.get_internal()
     internal = None
-    manual_coords = None
+    file_celest = None
 
 
     try:
@@ -226,15 +235,22 @@ def speed_tracking(manual_internal=None):
             #   3) current position
             if not internal:  # first loop run
                 internal = manual_internal if manual_internal else start_internal
+                path = dagor_path.get_path(dagor_position.get_internal(), internal)
             else:  # after first loop run
                 if not manual_internal:
-                    old_manual_coords = manual_coords
-                    manual_coords = read_coordinates_file()
-                    if manual_coords and manual_coords != old_manual_coords:
-                        internal = dagor_position.celest_to_internal(manual_coords)
+                    old_file_coords = file_celest
+                    file_celest = read_coordinates_file()
+                    if file_celest and file_celest != old_file_coords:
+                        internal = dagor_position.celest_to_internal(file_celest)
                         t_start = time()
+                        path = dagor_path.get_path(dagor_position.get_internal(), internal)
 
-            ha_target, de_target = internal['ha'], internal['de']  #@TODO clean this up
+            if len(path) > 2:
+                if calculate_distance(path[1]) < 0.8:
+                    del path[1]
+                target = path[1]
+            else:
+                target = dagor_path.Position(ha = internal['ha'], de = internal['de'])
 
             manual_corrections = read_corrections_file()
 
@@ -242,16 +258,17 @@ def speed_tracking(manual_internal=None):
             internal_now = dagor_position.get_internal()
             ha_now, de_now = internal_now['ha'] + manual_corrections['ha_offset'], internal_now['de'] + manual_corrections['de_offset']
 
-            ha_err = (ha_now - ha_target) - (t_now - t_start) / 60 / 60 / 0.99726958  # sidereal day
+            ha_err = (ha_now - target.ha) - (t_now - t_start) / 60 / 60 / 0.99726958  # sidereal day
 
-            de_err = (de_now - de_target)
+            de_err = (de_now - target.de)
 
-            ha_speed = (9 * adjust_speed(ha_err, de_err, dagor_motors.MAX_SPEED_HA, dagor_motors.MAX_SPEED_DE, 1) * abs(ha_err) ** 2 / 500) ** (1 / 3)
+            speeds = adjust_speed(ha_err, de_err, dagor_motors.MAX_SPEED_HA, dagor_motors.MAX_SPEED_DE)
+            ha_speed = (9 * speeds['speed_ha'] * abs(ha_err) ** 2 / 500) ** (1 / 3)
             ha_speed = ha_speed * dagor_motors.SPEED_LIMIT / dagor_motors.MAX_SPEED_HA
             ha_speed = min( ha_speed - (27 if sign(ha_err) == 1 else -27), dagor_motors.SPEED_LIMIT )
             ha_speed = int( ha_speed * sign(ha_err) )
             
-            de_speed = (9 * adjust_speed(ha_err, de_err, dagor_motors.MAX_SPEED_HA, dagor_motors.MAX_SPEED_DE, 2) * abs(de_err) ** 2 / 500) ** (1 / 3)
+            de_speed = (9 * speeds['speed_de'] * abs(de_err) ** 2 / 500) ** (1 / 3)
             de_speed = de_speed * dagor_motors.SPEED_LIMIT / dagor_motors.MAX_SPEED_DE
             de_speed = min( de_speed, dagor_motors.SPEED_LIMIT )
             de_speed = int( de_speed * sign(de_err) )
@@ -264,7 +281,11 @@ def speed_tracking(manual_internal=None):
             celest = dagor_position.get_celest()
             od['ra'] = format_hours(celest['ra'])
             od['de'] = format_degrees(celest['de'])
-            od['manual_coords'] = manual_coords
+            od['file_celest'] = file_celest
+            od['manual_internal'] = manual_internal
+            od['path'] = path
+            od['get_internal'] = dagor_position.get_internal()
+            od['internal'] = internal
             p_(od)
 
             dagor_motors._ha.SetSpeed = ha_speed
