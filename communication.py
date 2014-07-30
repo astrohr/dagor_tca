@@ -3,6 +3,7 @@ import json
 from flask import Flask
 from flask import request
 from formats import parse_degrees, parse_hours
+import position as dagor_position
 
 app = Flask(__name__)
 TRACKING_COORDINATES_FILE = 'coords.txt'
@@ -25,7 +26,6 @@ def target_repr():
 
 @app.route('/target', methods=['GET', 'PUT'])
 def target():
-    print request.method
     if request.method == 'GET':
         return target_repr()
 
@@ -42,8 +42,7 @@ def target():
 
 
 @app.route('/delta', methods=['PUT'])
-def coords():
-    print request.method
+def putdelta():
 
     coords = json.loads(request.data)
     try:
@@ -56,6 +55,19 @@ def coords():
     except Exception as e:
         print e
     return "ok"
+
+
+@app.route('/status', methods=['GET'])
+def getstatus():
+
+    current = {
+        "celest" : dagor_position.get_celest(),
+        "local" : dagor_position.get_local(),
+        "altaz" : dagor_position.get_altaz(),
+    }
+    return json.dumps(current)
+
+
 
 
 
