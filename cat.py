@@ -3,6 +3,7 @@
 
 Usage:
   cat.py get [float] <OBJECT> [(from <CATALOG>)] [as (celest | local | altaz)]
+  cat.py dump all [(from <CATALOG>)] [in (json)]
   cat.py [-h | --help | help]
   cat.py --version
 
@@ -14,6 +15,7 @@ Options:
   -h --help         Show this screen.
 
 """
+import json
 import sys
 import os
 from docopt import docopt
@@ -51,10 +53,47 @@ def get_celest(name, catalog_name=None):
     }
 
 
+def get_all_objects(catalog_name=None):
+    if not catalog_name:
+        catalog_name = 'default'
+    with open(os.path.join(BASE_PATH, 'catalogs/%s.edb' % catalog_name)) as f:
+        lines = f.read().splitlines()
+    for line in lines:
+        try:
+            obj = ephem.readdb(line)
+            obj.compute(dagor_position.tican())
+            yield obj
+        except ValueError:
+            pass
+
+
+def dump_as_json(catalog_name=None, return_format='json'):
+    retval = []
+    for obj in get_all_objects(catalog_name):
+        celest = {
+            'ra': obj._ra,
+            'de': obj._dec,
+        }
+        local = dagor_position.celest_to_local(celest)
+        altaz = dagor_position.celest_to_altaz(celest)
+        retval.append({
+            'name': obj.name,
+            'coordinates': {
+                'celest': celest,
+                'local': local,
+                'altaz': altaz,
+            }
+        })
+    if return_format == 'json':
+        return json.dumps(retval)
+    else:
+        raise NotImplementedError()
+
+
+
 # Run as CLI client
 
 def _main(args):
-
     if args['get']:
         name = args['<OBJECT>']
         system = 'celest'
@@ -86,6 +125,9 @@ def _main(args):
             else:
                 print altaz['alt']
                 print altaz['az']
+    if args['dump']:
+        if args['all']:
+            print dump_as_json()
 
 if __name__ == '__main__':
 
