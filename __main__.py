@@ -158,6 +158,7 @@ def _main(args):
                         'alt': 20,
                         'az': 180,
                     }
+                    chirality = dagor_position.CHIRAL_W
                     quick = True
                     local_end = dagor_position.altaz_to_local(altaz_end)
                 else:
