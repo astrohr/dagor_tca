@@ -83,6 +83,7 @@ _DE_REAL_OFFSET = 279.44431524230004 + 0.040461855 + -0.0156058897 + 0.0023 + 0.
 
 CHIRAL_E = "CHIRAL_E"
 CHIRAL_W = "CHIRAL_W"
+CHIRAL_CLOSEST = 'CHIRAL_CLOSEST'
 
 CHIRAL_DE_BOUNDARY = 189.9909042
 
@@ -305,8 +306,16 @@ def get_altaz():
     return celest_to_altaz(get_celest())
 
 
-# Coordinate conversions
+# Helpers
 
+def angular_distance(internal_0, internal_1):
+    dist_ha = (internal_0['ha'] - internal_1['ha']) * 15
+    dist_de = internal_0['de'] - internal_1['de']
+    distance = (dist_ha ** 2 + dist_de ** 2) ** (1/2)
+    return distance
+
+
+# Coordinate conversions
 
 def internal_to_local(internal):
     """
@@ -331,9 +340,21 @@ def internal_to_local(internal):
     }
 
 
+def get_closest_chirality(local):
+    current_internal = get_internal()
+    distance_w = angular_distance(current_internal, local_to_internal(local, CHIRAL_W))
+    distance_e = angular_distance(current_internal, local_to_internal(local, CHIRAL_E))
+    if distance_w <= distance_e:
+        return CHIRAL_W
+    else:
+        return CHIRAL_E
+
+
 def local_to_internal(local, chirality=None):
     if chirality is None:
         chirality = get_chirality()
+    elif chirality == CHIRAL_CLOSEST:
+        chirality = get_closest_chirality(local)
     ha = local['ha']
     de = local['de']
     if not 0 <= ha <= 24:
@@ -406,11 +427,15 @@ def altaz_to_local(altaz):
 
 
 def internal_to_altaz(internal):
-    raise NotImplementedError
+    return local_to_altaz(altaz_to_local(internal))
 
 
 def altaz_to_internal(altaz, chirality=None):
     return local_to_internal(altaz_to_local(altaz), chirality)
+
+
+def internal_to_celest(internal):
+    return local_to_celest(internal_to_local(internal))
 
 
 # Run as CLI client
