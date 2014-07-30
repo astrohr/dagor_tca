@@ -15,7 +15,6 @@ Options:
   -h --help         Show this screen.
 
 """
-import json
 import sys
 import os
 from docopt import docopt
