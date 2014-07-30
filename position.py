@@ -409,8 +409,8 @@ def internal_to_altaz(internal):
     raise NotImplementedError
 
 
-def altaz_to_internal(altaz):
-    return local_to_internal(altaz_to_local(altaz))  #@TODO allow specify chirality?
+def altaz_to_internal(altaz, chirality=None):
+    return local_to_internal(altaz_to_local(altaz), chirality)
 
 
 # Run as CLI client
