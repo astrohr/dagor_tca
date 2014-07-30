@@ -32,7 +32,6 @@ def target():
     elif request.method == 'PUT':
         coords = json.loads(request.data)
         line = str(coords["de"]) + " " + str(coords["ra"])
-        print line
         try:
             f = open(TRACKING_COORDINATES_FILE, 'w')
             f.write(line)
@@ -40,6 +39,24 @@ def target():
         except Exception as e:
             print e
         return target_repr()
+
+
+@app.route('/delta', methods=['PUT'])
+def coords():
+    print request.method
+
+    coords = json.loads(request.data)
+    try:
+        f = open(TRACKING_COORDINATES_FILE, 'r+')
+        rascension, declination = f.readline().split(" ")
+        rascension = parse_hours(rascension) + parse_hours(coords['ra'])
+        declination = parse_degrees(declination) + parse_degrees(coords['de'])
+        f.write(str(rascension) + " " + str(declination))
+        f.close()
+    except Exception as e:
+        print e
+    return "ok"
+
 
 
 if __name__ == '__main__':
