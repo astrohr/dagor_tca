@@ -4,6 +4,7 @@ from flask import Flask
 from flask import request
 from formats import parse_degrees, parse_hours
 import position as dagor_position
+import cat as dagor_cat
 
 app = Flask(__name__)
 TRACKING_COORDINATES_FILE = 'coords.txt'
@@ -26,6 +27,7 @@ def target_repr():
 
 @app.route('/target', methods=['GET', 'PUT'])
 def target():
+
     if request.method == 'GET':
         return target_repr()
 
@@ -44,16 +46,17 @@ def target():
 @app.route('/delta', methods=['PUT'])
 def putdelta():
 
-    coords = json.loads(request.data)
     try:
-        f = open(TRACKING_COORDINATES_FILE, 'r+')
-        rascension, declination = f.readline().split(" ")
-        rascension = parse_hours(rascension) + parse_hours(coords['ra'])
-        declination = parse_degrees(declination) + parse_degrees(coords['de'])
+        coords = json.loads(request.data)
+        f = open(TRACKING_COORDINATES_FILE, 'w')
+        current = dagor_position.get_celest()
+        rascension = current['ra'] + parse_hours(str(coords['ra']))
+        declination = current['de'] + parse_degrees(str(coords['de']))
         f.write(str(rascension) + " " + str(declination))
         f.close()
     except Exception as e:
         print e
+        return str(e)
     return "ok"
 
 
@@ -66,6 +69,14 @@ def getstatus():
         "altaz" : dagor_position.get_altaz(),
     }
     return json.dumps(current)
+
+
+@app.route('/cat', methods=['GET'])
+def getcat():
+
+    return json.dumps({
+        'catalog': dagor_cat.dump(),
+    })
 
 
 

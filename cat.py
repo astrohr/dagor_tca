@@ -67,7 +67,7 @@ def get_all_objects(catalog_name=None):
             pass
 
 
-def dump_as_json(catalog_name=None, return_format='json'):
+def dump(catalog_name=None):
     retval = []
     for obj in get_all_objects(catalog_name):
         celest = {
@@ -84,10 +84,7 @@ def dump_as_json(catalog_name=None, return_format='json'):
                 'altaz': altaz,
             }
         })
-    if return_format == 'json':
-        return json.dumps(retval)
-    else:
-        raise NotImplementedError()
+    return retval
 
 
 
