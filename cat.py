@@ -124,7 +124,7 @@ def _main(args):
                 print altaz['az']
     if args['dump']:
         if args['all']:
-            print dump_as_json()
+            print dump()
 
 if __name__ == '__main__':
 
