@@ -191,7 +191,10 @@ class Space(object):
             return [path[i] for i in range(0, len(path)) if i in direct_path]
 
         path = astar(p_0, neighbor_positions, goal, 0, cost, heuristic)
-        path[-1] = p_1
+        if path == []:
+            path = [p_0, p_1]
+        else:
+            path[-1] = p_1
         return smooth(path)
 
 
