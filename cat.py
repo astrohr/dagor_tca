@@ -86,7 +86,6 @@ def dump(catalog_name=None):
     return retval
 
 
-
 # Run as CLI client
 
 def _main(args):
