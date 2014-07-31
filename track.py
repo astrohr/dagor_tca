@@ -259,12 +259,12 @@ def speed_tracking(manual_internal=None):
             speeds = adjust_speed(ha_err, de_err, dagor_motors.MAX_SPEED_HA, dagor_motors.MAX_SPEED_DE)
             ha_speed = (9 * speeds['speed_ha'] * abs(ha_err) ** 2 / 500) ** (1 / 3)
             ha_speed = ha_speed * dagor_motors.SPEED_LIMIT / dagor_motors.MAX_SPEED_HA
-            ha_speed = min( ha_speed - (27 if sign(ha_err) == 1 else -27), dagor_motors.SPEED_LIMIT )
+            ha_speed = min( ha_speed - (27 if sign(ha_err) == 1 else -27), dagor_motors.SPEED_LIMIT * speeds['speed_ha'] / dagor_motors.MAX_SPEED_HA)
             ha_speed = int( ha_speed * sign(ha_err) )
             
             de_speed = (9 * speeds['speed_de'] * abs(de_err) ** 2 / 500) ** (1 / 3)
             de_speed = de_speed * dagor_motors.SPEED_LIMIT / dagor_motors.MAX_SPEED_DE
-            de_speed = min( de_speed, dagor_motors.SPEED_LIMIT )
+            de_speed = min( de_speed, dagor_motors.SPEED_LIMIT * speeds['speed_de'] / dagor_motors.MAX_SPEED_DE)
             de_speed = int( de_speed * sign(de_err) )
 
             od = OrderedDict()
