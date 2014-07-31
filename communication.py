@@ -52,6 +52,14 @@ def putdelta():
         current = dagor_position.get_celest()
         rascension = current['ra'] + parse_hours(str(coords['ra']))
         declination = current['de'] + parse_degrees(str(coords['de']))
+        if declination > 90:
+            declination = 180 - declination
+            rascension = rascension + 12
+        while rascension >= 24:
+            rascension = rascension - 24
+        while rascension < 0:
+            rascension = 24 - rascension
+
         f.write(str(rascension) + " " + str(declination))
         f.close()
     except Exception as e:
