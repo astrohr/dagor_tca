@@ -158,6 +158,7 @@ def _main(args):
                         'alt': 20,
                         'az': 180,
                     }
+                    chirality = dagor_position.CHIRAL_W
                     quick = True
                     local_end = dagor_position.altaz_to_local(altaz_end)
                 else:
@@ -241,12 +242,10 @@ def move_to_local(local=None, celest=None, chirality=None, quick=False, track=Fa
         raise AttributeError('Use either local or celest coordinates!')
     internal_start = dagor_position.get_internal()
     track_correction = -27 if track else 0
-    print local
     if local:
         internal_end = dagor_position.local_to_internal(local, chirality)
     else:  # celest
         internal_end = dagor_position.celest_to_internal(celest, chirality)
-
     try:
         path = dagor_path.get_path(internal_start, internal_end)
     except dagor_path.NoPath:
@@ -257,25 +256,19 @@ def move_to_local(local=None, celest=None, chirality=None, quick=False, track=Fa
             dagor_path.Position(internal_end['ha'], internal_end['de']),
         ]
 
-    print internal_end
-    print path
-
     #steps = [(1.3, 3000), (0.1, 1000), (0.0, 300), ]
-    steps = [(1000, 3000), ]
+    steps = [(1, 3000), (0, 300), ]
     if quick:
         steps = [(0, 3000), ]
 
     print "Moving"
     dagor_motors.init()
+    print "path: {}".format(path)
     for position in path[1:]:
         for i, (difference, speed) in enumerate(steps):
-            ha_offset = 0
-            if celest:
-                internal_current = dagor_position.celest_to_internal(celest)
-                ha_offset = internal_current['ha'] - internal_end['ha']
             internal_now = dagor_position.get_internal()
             position_delta = {
-                'ha': position.ha - internal_now['ha'] + ha_offset,
+                'ha': position.ha - internal_now['ha'],
                 'de': position.de - internal_now['de'],
             }
             step_delta = position_delta.copy()
@@ -287,9 +280,10 @@ def move_to_local(local=None, celest=None, chirality=None, quick=False, track=Fa
                 step_delta['ha'] -= difference / 15 * sign(step_delta['ha'])
             else:
                 step_delta['ha'] = None
-            print position_delta
-            print step_delta
+            print "position_delta: {}".format(position_delta)
+            #print step_delta
             if step_delta['ha'] is None and step_delta['de'] is None:
+                print "no step delta, next"
                 continue
             speeds = {
                 'ha': speed,
@@ -304,8 +298,8 @@ def move_to_local(local=None, celest=None, chirality=None, quick=False, track=Fa
                     abs(speeds['ha'] * (step_delta['ha'] * 15) / step_delta['de'] * 3.2),
                     abs(speeds['ha'])
                 )
-            speeds['ha'] += 0  #track_correction
-            print speeds
+            speeds['ha'] += 0  # track_correction
+            print "speeds: {}".format(speeds)
             dagor_motors.move_by(step_delta, speeds)
             sys.stdout.write('moving')
             sys.stdout.flush()
@@ -316,6 +310,7 @@ def move_to_local(local=None, celest=None, chirality=None, quick=False, track=Fa
         if track:
             if celest:
                 dagor_track.speed_tracking(internal_end)
+
 
 if __name__ == '__main__':
 

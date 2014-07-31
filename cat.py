@@ -15,7 +15,6 @@ Options:
   -h --help         Show this screen.
 
 """
-import json
 import sys
 import os
 from docopt import docopt
@@ -87,7 +86,6 @@ def dump(catalog_name=None):
     return retval
 
 
-
 # Run as CLI client
 
 def _main(args):
@@ -124,7 +122,7 @@ def _main(args):
                 print altaz['az']
     if args['dump']:
         if args['all']:
-            print dump_as_json()
+            print dump()
 
 if __name__ == '__main__':
 

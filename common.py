@@ -36,9 +36,13 @@ def print_(msg):
 
 
 def p_(vars, end="\n"):
+    if set(vars.keys()) == p_.last_vars:
+        sys.stdout.write("\x1b[A"  * (len(vars) + 1) + "\x1b[2K\x1b[J")
+    p_.last_vars = set(vars.keys())
     sys.stdout.write("\n".join(["{k} = {v}".format(k=k, v=v) for k, v in vars.items()]))
     sys.stdout.write(end)
     sys.stdout.flush()
+p_.last_vars = set()
 
 
 class EnterAbort(Exception):

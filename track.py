@@ -96,14 +96,6 @@ def adjust_speed(ha_err, de_err, max_ha, max_de):
     }
 
 
-def calculate_distance(target):
-    position = dagor_position.get_internal()
-    dist_ha = (position['ha'] - target.ha) * 15
-    dist_de = position['de'] - target.de
-    distance = (dist_ha ** 2 + dist_de ** 2) ** (1/2)
-    return distance
-
-
 def sync_console():
     with NonBlockingConsole() as nbc:
         print "\x1b[2J"
@@ -241,16 +233,18 @@ def speed_tracking(manual_internal=None):
                     old_file_coords = file_celest
                     file_celest = read_coordinates_file()
                     if file_celest and file_celest != old_file_coords:
-                        internal = dagor_position.celest_to_internal(file_celest)
+                        internal = dagor_position.celest_to_internal(file_celest, chirality=dagor_position.CHIRAL_CLOSEST)
                         t_start = time()
+                        print "internal: {}".format(internal)
                         path = dagor_path.get_path(dagor_position.get_internal(), internal)
 
             if len(path) > 2:
-                if calculate_distance(path[1]) < 0.8:
+                if dagor_position.angular_distance(dagor_position.get_internal(),
+                            {'ha': path[1].ha, 'de': path[1].de}) < 0.8:
                     del path[1]
                 target = path[1]
             else:
-                target = dagor_path.Position(ha = internal['ha'], de = internal['de'])
+                target = dagor_path.Position(ha=internal['ha'], de=internal['de'])
 
             manual_corrections = read_corrections_file()
 
