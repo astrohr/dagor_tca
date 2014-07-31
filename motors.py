@@ -187,6 +187,10 @@ class MotorCommunication(object):
     AnalogFilter = MotorParameter(17, 1)  # ms
     AnalogDeadBand = MotorParameter(28, 1)  # mV
 
+    COMMAND_READ_EEPROM = 1
+    COMMAND_WRITE_EEPROM = 2
+    Commands = MotorParameter(69, 1)
+
     tasks = range(1, MAX_TASKS+1)
 
 
@@ -231,6 +235,7 @@ class MotorCommunication(object):
         self.configure_DGTIO()
         self.configure_speed()
         self.configure_tasks()
+        self.Commands = self.COMMAND_WRITE_EEPROM
 
     def configure_DGTIO(self):
         #self.DGTOUT1Conf = 3  # Homing ok
