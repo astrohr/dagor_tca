@@ -123,7 +123,6 @@ def sync_console():
             print "SHIFT + S : Synchronize"
             print "ESCAPE : quit"
             print
-            #print data.encode('string-escape') if data and data != '\x1b' else last_data.encode('string-escape')
             known_sequences = {
                 '\x1b': 'ESCAPE',
                 '\x1b[A': 'ARROW_UP',
@@ -134,12 +133,18 @@ def sync_console():
                 '\x1b[1;2B': 'SHIFT_ARROW_DOWN',
                 '\x1b[1;2C': 'SHIFT_ARROW_LEFT',
                 '\x1b[1;2D': 'SHIFT_ARROW_RIGHT',
+                '\x1bOA': 'SHIFT_ARROW_UP',
+                '\x1bOB': 'SHIFT_ARROW_DOWN',
+                '\x1bOC': 'SHIFT_ARROW_LEFT',
+                '\x1bOD': 'SHIFT_ARROW_RIGHT',
                 '\x1b[1;5A': 'CTRL_ARROW_UP',
                 '\x1b[1;5B': 'CTRL_ARROW_DOWN',
                 '\x1b[1;5C': 'CTRL_ARROW_LEFT',
                 '\x1b[1;5D': 'CTRL_ARROW_RIGHT',
                 'S': 'SYNC',
             }
+            print data.encode('string-escape') if data and data != '\x1b' else last_data.encode('string-escape')
+
             if data not in known_sequences.keys():
                 continue
             if known_sequences[data] == 'ESCAPE':
@@ -159,9 +164,9 @@ def sync_console():
             elif known_sequences[data] == 'SHIFT_ARROW_DOWN':
                 manual_corrections['de_offset'] += TRACKING_CORRECTIONS_STEP_DE / 6
             elif known_sequences[data] == 'SHIFT_ARROW_RIGHT':
-                manual_corrections['ha_offset'] += TRACKING_CORRECTIONS_STEP_HA / 6
+                manual_corrections['ha_offset'] += TRACKING_CORRECTIONS_STEP_HA / 20
             elif known_sequences[data] == 'SHIFT_ARROW_LEFT':
-                manual_corrections['ha_offset'] -= TRACKING_CORRECTIONS_STEP_HA / 6
+                manual_corrections['ha_offset'] -= TRACKING_CORRECTIONS_STEP_HA / 20
             elif known_sequences[data] == 'CTRL_ARROW_UP':
                 manual_corrections['de_offset'] -= TRACKING_CORRECTIONS_STEP_DE * 10
             elif known_sequences[data] == 'CTRL_ARROW_DOWN':
@@ -171,14 +176,13 @@ def sync_console():
             elif known_sequences[data] == 'CTRL_ARROW_LEFT':
                 manual_corrections['ha_offset'] -= TRACKING_CORRECTIONS_STEP_HA * 10
             if 'ARROW' in known_sequences[data]:  # any arrow
-                if abs(manual_corrections['ha_offset']) < TRACKING_CORRECTIONS_STEP_HA / 6:
+                if abs(manual_corrections['ha_offset']) < TRACKING_CORRECTIONS_STEP_HA / 20:
                     manual_corrections['ha_offset'] = 0
-                if abs(manual_corrections['de_offset']) < TRACKING_CORRECTIONS_STEP_DE / 6:
+                if abs(manual_corrections['de_offset']) < TRACKING_CORRECTIONS_STEP_DE / 20:
                     manual_corrections['de_offset'] = 0
                 write_correction_file(manual_corrections)
 
             elif known_sequences[data] == 'SYNC':
-                reset_correction_file()
                 internal = dagor_position.get_internal()
                 new_internal = {
                     'ha': internal['ha'] + manual_corrections['ha_offset'],
@@ -187,7 +191,7 @@ def sync_console():
                 dagor_position.set_internal(new_internal)
                 manual_corrections['ha_offset'] = 0
                 manual_corrections['de_offset'] = 0
-                write_correction_file(manual_corrections)
+                reset_correction_file()
 
 
 def speed_tracking(manual_internal=None):
