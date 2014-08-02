@@ -119,7 +119,7 @@ def sync_console():
             print "\nAvailable commands:"
             print "ARROWS : Nudge"
             print "SHIFT + ARROWS : Small nudge"
-            print "CTRL + ARROWS : Big nudge"
+            print "CTRL + ARROWS : Big nudge, not working with Putty / Windows"
             print "SHIFT + S : Synchronize"
             print "ESCAPE : quit"
             print
@@ -133,17 +133,18 @@ def sync_console():
                 '\x1b[1;2B': 'SHIFT_ARROW_DOWN',
                 '\x1b[1;2C': 'SHIFT_ARROW_LEFT',
                 '\x1b[1;2D': 'SHIFT_ARROW_RIGHT',
-                '\x1bOA': 'SHIFT_ARROW_UP',
-                '\x1bOB': 'SHIFT_ARROW_DOWN',
-                '\x1bOC': 'SHIFT_ARROW_LEFT',
-                '\x1bOD': 'SHIFT_ARROW_RIGHT',
+                '\x1bOA': 'SHIFT_ARROW_UP',  # putty / win ?
+                '\x1bOB': 'SHIFT_ARROW_DOWN',  # putty / win ?
+                '\x1bOC': 'SHIFT_ARROW_LEFT',  # putty / win ?
+                '\x1bOD': 'SHIFT_ARROW_RIGHT',  # putty / win ?
                 '\x1b[1;5A': 'CTRL_ARROW_UP',
                 '\x1b[1;5B': 'CTRL_ARROW_DOWN',
                 '\x1b[1;5C': 'CTRL_ARROW_LEFT',
                 '\x1b[1;5D': 'CTRL_ARROW_RIGHT',
                 'S': 'SYNC',
+                'R': 'RESET',
             }
-            print data.encode('string-escape') if data and data != '\x1b' else last_data.encode('string-escape')
+            #print data.encode('string-escape') if data and data != '\x1b' else last_data.encode('string-escape')
 
             if data not in known_sequences.keys():
                 continue
@@ -189,6 +190,11 @@ def sync_console():
                     'de': internal['de'] + manual_corrections['de_offset'],
                 }
                 dagor_position.set_internal(new_internal)
+                manual_corrections['ha_offset'] = 0
+                manual_corrections['de_offset'] = 0
+                reset_correction_file()
+
+            elif known_sequences[data] == 'RESET':
                 manual_corrections['ha_offset'] = 0
                 manual_corrections['de_offset'] = 0
                 reset_correction_file()
