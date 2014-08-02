@@ -70,8 +70,8 @@ def dump(catalog_name=None):
     retval = []
     for obj in get_all_objects(catalog_name):
         celest = {
-            'ra': obj._ra,
-            'de': obj._dec,
+            'ra': obj._ra * 12 / math.pi,
+            'de': obj._dec * 180 / math.pi,
         }
         local = dagor_position.celest_to_local(celest)
         altaz = dagor_position.celest_to_altaz(celest)
