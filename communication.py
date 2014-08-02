@@ -33,7 +33,7 @@ def target():
 
     elif request.method == 'PUT':
         coords = json.loads(request.data)
-        line = str(coords["de"]) + " " + str(coords["ra"])
+        line = str(coords["ra"]) + " " + str(coords["de"])
         try:
             f = open(TRACKING_COORDINATES_FILE, 'w')
             f.write(line)
