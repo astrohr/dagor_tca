@@ -31,6 +31,7 @@ from formats import format_hours, format_degrees, parse_degrees, parse_hours
 import motors as dagor_motors
 import path as dagor_path
 import position as dagor_position
+import cat as dagor_catalog
 
 TRACKING_COORDINATES_FILE = os.path.join(BASE_PATH, 'coords.txt')
 TRACKING_CORRECTIONS_FILE = os.path.join(BASE_PATH, 'tracking_corrections.txt')
@@ -51,6 +52,17 @@ def read_coordinates_file():
             return celest
     except (IOError, ValueError):
         return None
+
+
+def write_coordinates_file(celest):
+    with open(TRACKING_COORDINATES_FILE, 'w') as f:
+        line = "{ra} {de}".format(**celest)
+        f.write(line)
+
+
+def reset_coordinates_file():
+    with open(TRACKING_COORDINATES_FILE, 'w') as f:
+        f.write('')
 
 
 def reset_correction_file():
@@ -121,6 +133,7 @@ def sync_console():
             print "SHIFT + ARROWS : Small nudge"
             print "CTRL + ARROWS : Big nudge, not working with Putty / Windows"
             print "SHIFT + S : Synchronize"
+            print "SHIFT + T : Set new Target from catalog"
             print "ESCAPE : quit"
             print
             known_sequences = {
@@ -143,6 +156,7 @@ def sync_console():
                 '\x1b[1;5D': 'CTRL_ARROW_RIGHT',
                 'S': 'SYNC',
                 'R': 'RESET',
+                'T': 'TARGET',
             }
             #print data.encode('string-escape') if data and data != '\x1b' else last_data.encode('string-escape')
 
@@ -199,6 +213,18 @@ def sync_console():
                 manual_corrections['de_offset'] = 0
                 reset_correction_file()
 
+            elif known_sequences[data] == 'TARGET':
+                os.system("stty echo")
+                target = raw_input('Enter catalog name: ')
+                try:
+                    celest = dagor_catalog.get_celest(target)
+                except ValueError:
+                    celest = None
+                    raw_input("Not found in catalog")
+                if celest:
+                    print celest
+                    write_coordinates_file(celest)
+
 
 def speed_tracking(manual_internal=None):
 
@@ -236,6 +262,7 @@ def speed_tracking(manual_internal=None):
             #   2) coords file
             #   3) current position
             if not internal:  # first loop run
+                reset_coordinates_file()
                 internal = manual_internal if manual_internal else start_internal
                 path = dagor_path.get_path(dagor_position.get_internal(), internal)
             else:  # after first loop run
@@ -246,7 +273,10 @@ def speed_tracking(manual_internal=None):
                         internal = dagor_position.celest_to_internal(file_celest, chirality=dagor_position.CHIRAL_CLOSEST)
                         t_start = time()
                         print "internal: {}".format(internal)
-                        path = dagor_path.get_path(dagor_position.get_internal(), internal)
+                        try:
+                            path = dagor_path.get_path(dagor_position.get_internal(), internal)
+                        except dagor_path.NoPath:
+                            internal = dagor_position.get_internal()
 
             if len(path) > 2:
                 if dagor_position.angular_distance(dagor_position.get_internal(),
