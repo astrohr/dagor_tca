@@ -30,15 +30,19 @@ def get_entry(name, catalog_name=None):
         catalog_name = 'default'
     with open(os.path.join(BASE_PATH, 'catalogs/%s.edb' % catalog_name)) as f:
         lines = f.read().splitlines()
-    if name[-1] not in (',', ' '):
+    if len(name) and name[-1] not in (',', ' '):
         name1 = name + ','
         name2 = name + ' '
-    for line in lines:
-        if line[:len(name1)] == name1:
-            return line
-    for line in lines:
-        if line[:len(name2)] == name2:
-            return line
+    else:
+        name1, name2 = None, None
+    if name1:
+        for line in lines:
+            if line[:len(name1)] == name1:
+                return line
+    if name2:
+        for line in lines:
+            if line[:len(name2)] == name2:
+                return line
     raise ValueError(u'No object named {} in catalog {}.'.format(name, catalog_name))
 
 
