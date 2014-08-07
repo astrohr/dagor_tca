@@ -235,6 +235,7 @@ class MotorCommunication(object):
         self.configure_DGTIO()
         self.configure_speed()
         self.configure_tasks()
+        self.OperationMode = OP_MODE_MANUAL
         self.Commands = self.COMMAND_WRITE_EEPROM
 
     def configure_DGTIO(self):
