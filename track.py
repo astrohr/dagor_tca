@@ -31,6 +31,7 @@ from formats import format_hours, format_degrees, parse_degrees, parse_hours
 import motors as dagor_motors
 import path as dagor_path
 import position as dagor_position
+import cat as dagor_catalog
 
 TRACKING_COORDINATES_FILE = os.path.join(BASE_PATH, 'coords.txt')
 TRACKING_CORRECTIONS_FILE = os.path.join(BASE_PATH, 'tracking_corrections.txt')
@@ -51,6 +52,17 @@ def read_coordinates_file():
             return celest
     except (IOError, ValueError):
         return None
+
+
+def write_coordinates_file(celest):
+    with open(TRACKING_COORDINATES_FILE, 'w') as f:
+        line = "{ra} {de}".format(**celest)
+        f.write(line)
+
+
+def reset_coordinates_file():
+    with open(TRACKING_COORDINATES_FILE, 'w') as f:
+        f.write('')
 
 
 def reset_correction_file():
@@ -119,11 +131,11 @@ def sync_console():
             print "\nAvailable commands:"
             print "ARROWS : Nudge"
             print "SHIFT + ARROWS : Small nudge"
-            print "CTRL + ARROWS : Big nudge"
+            print "CTRL + ARROWS : Big nudge, not working with Putty / Windows"
             print "SHIFT + S : Synchronize"
+            print "SHIFT + T : Set new Target from catalog"
             print "ESCAPE : quit"
             print
-            #print data.encode('string-escape') if data and data != '\x1b' else last_data.encode('string-escape')
             known_sequences = {
                 '\x1b': 'ESCAPE',
                 '\x1b[A': 'ARROW_UP',
@@ -134,12 +146,20 @@ def sync_console():
                 '\x1b[1;2B': 'SHIFT_ARROW_DOWN',
                 '\x1b[1;2C': 'SHIFT_ARROW_LEFT',
                 '\x1b[1;2D': 'SHIFT_ARROW_RIGHT',
+                '\x1bOA': 'SHIFT_ARROW_UP',  # putty / win ?
+                '\x1bOB': 'SHIFT_ARROW_DOWN',  # putty / win ?
+                '\x1bOC': 'SHIFT_ARROW_LEFT',  # putty / win ?
+                '\x1bOD': 'SHIFT_ARROW_RIGHT',  # putty / win ?
                 '\x1b[1;5A': 'CTRL_ARROW_UP',
                 '\x1b[1;5B': 'CTRL_ARROW_DOWN',
                 '\x1b[1;5C': 'CTRL_ARROW_LEFT',
                 '\x1b[1;5D': 'CTRL_ARROW_RIGHT',
                 'S': 'SYNC',
+                'R': 'RESET',
+                'T': 'TARGET',
             }
+            #print data.encode('string-escape') if data and data != '\x1b' else last_data.encode('string-escape')
+
             if data not in known_sequences.keys():
                 continue
             if known_sequences[data] == 'ESCAPE':
@@ -159,9 +179,9 @@ def sync_console():
             elif known_sequences[data] == 'SHIFT_ARROW_DOWN':
                 manual_corrections['de_offset'] += TRACKING_CORRECTIONS_STEP_DE / 6
             elif known_sequences[data] == 'SHIFT_ARROW_RIGHT':
-                manual_corrections['ha_offset'] += TRACKING_CORRECTIONS_STEP_HA / 6
+                manual_corrections['ha_offset'] += TRACKING_CORRECTIONS_STEP_HA / 20
             elif known_sequences[data] == 'SHIFT_ARROW_LEFT':
-                manual_corrections['ha_offset'] -= TRACKING_CORRECTIONS_STEP_HA / 6
+                manual_corrections['ha_offset'] -= TRACKING_CORRECTIONS_STEP_HA / 20
             elif known_sequences[data] == 'CTRL_ARROW_UP':
                 manual_corrections['de_offset'] -= TRACKING_CORRECTIONS_STEP_DE * 10
             elif known_sequences[data] == 'CTRL_ARROW_DOWN':
@@ -171,14 +191,13 @@ def sync_console():
             elif known_sequences[data] == 'CTRL_ARROW_LEFT':
                 manual_corrections['ha_offset'] -= TRACKING_CORRECTIONS_STEP_HA * 10
             if 'ARROW' in known_sequences[data]:  # any arrow
-                if abs(manual_corrections['ha_offset']) < TRACKING_CORRECTIONS_STEP_HA / 6:
+                if abs(manual_corrections['ha_offset']) < TRACKING_CORRECTIONS_STEP_HA / 20:
                     manual_corrections['ha_offset'] = 0
-                if abs(manual_corrections['de_offset']) < TRACKING_CORRECTIONS_STEP_DE / 6:
+                if abs(manual_corrections['de_offset']) < TRACKING_CORRECTIONS_STEP_DE / 20:
                     manual_corrections['de_offset'] = 0
                 write_correction_file(manual_corrections)
 
             elif known_sequences[data] == 'SYNC':
-                reset_correction_file()
                 internal = dagor_position.get_internal()
                 new_internal = {
                     'ha': internal['ha'] + manual_corrections['ha_offset'],
@@ -187,7 +206,24 @@ def sync_console():
                 dagor_position.set_internal(new_internal)
                 manual_corrections['ha_offset'] = 0
                 manual_corrections['de_offset'] = 0
-                write_correction_file(manual_corrections)
+                reset_correction_file()
+
+            elif known_sequences[data] == 'RESET':
+                manual_corrections['ha_offset'] = 0
+                manual_corrections['de_offset'] = 0
+                reset_correction_file()
+
+            elif known_sequences[data] == 'TARGET':
+                os.system("stty echo")
+                target = raw_input('Enter catalog name: ')
+                try:
+                    celest = dagor_catalog.get_celest(target)
+                except ValueError:
+                    celest = None
+                    raw_input("Not found in catalog")
+                if celest:
+                    print celest
+                    write_coordinates_file(celest)
 
 
 def speed_tracking(manual_internal=None):
@@ -226,6 +262,7 @@ def speed_tracking(manual_internal=None):
             #   2) coords file
             #   3) current position
             if not internal:  # first loop run
+                reset_coordinates_file()
                 internal = manual_internal if manual_internal else start_internal
                 path = dagor_path.get_path(dagor_position.get_internal(), internal)
             else:  # after first loop run
@@ -236,7 +273,10 @@ def speed_tracking(manual_internal=None):
                         internal = dagor_position.celest_to_internal(file_celest, chirality=dagor_position.CHIRAL_CLOSEST)
                         t_start = time()
                         print "internal: {}".format(internal)
-                        path = dagor_path.get_path(dagor_position.get_internal(), internal)
+                        try:
+                            path = dagor_path.get_path(dagor_position.get_internal(), internal)
+                        except dagor_path.NoPath:
+                            internal = dagor_position.get_internal()
 
             if len(path) > 2:
                 if dagor_position.angular_distance(dagor_position.get_internal(),
@@ -259,12 +299,12 @@ def speed_tracking(manual_internal=None):
             speeds = adjust_speed(ha_err, de_err, dagor_motors.MAX_SPEED_HA, dagor_motors.MAX_SPEED_DE)
             ha_speed = (9 * speeds['speed_ha'] * abs(ha_err) ** 2 / 500) ** (1 / 3)
             ha_speed = ha_speed * dagor_motors.SPEED_LIMIT / dagor_motors.MAX_SPEED_HA
-            ha_speed = min( ha_speed - (27 if sign(ha_err) == 1 else -27), dagor_motors.SPEED_LIMIT )
+            ha_speed = min( ha_speed - (27 if sign(ha_err) == 1 else -27), dagor_motors.SPEED_LIMIT * speeds['speed_ha'] / dagor_motors.MAX_SPEED_HA)
             ha_speed = int( ha_speed * sign(ha_err) )
             
             de_speed = (9 * speeds['speed_de'] * abs(de_err) ** 2 / 500) ** (1 / 3)
             de_speed = de_speed * dagor_motors.SPEED_LIMIT / dagor_motors.MAX_SPEED_DE
-            de_speed = min( de_speed, dagor_motors.SPEED_LIMIT )
+            de_speed = min( de_speed, dagor_motors.SPEED_LIMIT * speeds['speed_de'] / dagor_motors.MAX_SPEED_DE)
             de_speed = int( de_speed * sign(de_err) )
 
             od = OrderedDict()
