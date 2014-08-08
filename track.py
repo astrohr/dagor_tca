@@ -261,7 +261,7 @@ def speed_tracking(manual_internal=None):
     t_start = time()  #@TODO make sure this behaves well on leap seconds
 
     start_internal = dagor_position.get_internal()
-    internal = None
+    target_interal = None
     file_celest = None
 
     on_target_since = None
@@ -274,22 +274,22 @@ def speed_tracking(manual_internal=None):
             #   1) manual_internal
             #   2) coords file
             #   3) current position
-            if not internal:  # first loop run
+            if not target_interal:  # first loop run
                 reset_coordinates_file()
-                internal = manual_internal if manual_internal else start_internal
-                path = dagor_path.get_path(dagor_position.get_internal(), internal)
+                target_interal = manual_internal if manual_internal else start_internal
+                path = dagor_path.get_path(dagor_position.get_internal(), target_interal)
             else:  # after first loop run
                 if not manual_internal:
                     old_file_coords = file_celest
                     file_celest = read_coordinates_file()
                     if file_celest and file_celest != old_file_coords:
-                        internal = dagor_position.celest_to_internal(file_celest, chirality=dagor_position.CHIRAL_CLOSEST)
+                        target_interal = dagor_position.celest_to_internal(file_celest, chirality=dagor_position.CHIRAL_CLOSEST)
                         t_start = time()
-                        print "internal: {}".format(internal)
+                        print "target_interal: {}".format(target_interal)
                         try:
-                            path = dagor_path.get_path(dagor_position.get_internal(), internal)
+                            path = dagor_path.get_path(dagor_position.get_internal(), target_interal)
                         except dagor_path.NoPath:
-                            internal = dagor_position.get_internal()
+                            target_interal = dagor_position.get_internal()
 
             if len(path) > 2:
                 if dagor_position.angular_distance(dagor_position.get_internal(),
@@ -297,7 +297,7 @@ def speed_tracking(manual_internal=None):
                     del path[1]
                 target = path[1]
             else:
-                target = dagor_path.Position(ha=internal['ha'], de=internal['de'])
+                target = dagor_path.Position(ha=target_interal['ha'], de=target_interal['de'])
 
             manual_corrections = read_corrections_file()
 
@@ -339,7 +339,7 @@ def speed_tracking(manual_internal=None):
             od['manual_internal'] = manual_internal
             od['path'] = path
             od['get_internal'] = dagor_position.get_internal()
-            od['internal'] = internal
+            od['target_interal'] = target_interal
             od['on_target'] = on_target
 
             console_header()
