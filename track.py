@@ -38,6 +38,9 @@ TRACKING_CORRECTIONS_FILE = os.path.join(BASE_PATH, 'tracking_corrections.txt')
 TRACKING_CORRECTIONS_STEP_HA = parse_degrees('0:01')
 TRACKING_CORRECTIONS_STEP_DE = parse_hours('0h01m')
 
+TRACKING_OK_TARGET_ZONE_HA = parse_degrees('00:00:01') / 2 / 15
+TRACKING_OK_TARGET_ZONE_DE = parse_degrees('00:00:01') / 2
+
 
 def read_coordinates_file():
     celest = {
@@ -235,6 +238,14 @@ def speed_tracking(manual_internal=None):
         print_("Press Enter to stop at any time")
         print_("")
 
+    def stop_tracking():
+        print_("Stopping")
+        dagor_motors._ha.SetSpeed = 0
+        dagor_motors._de.SetSpeed = 0
+        _wait_for_stop(dagor_motors._ha, dots=True)
+        _wait_for_stop(dagor_motors._de, dots=True)
+
+
     dagor_motors.init()
     if dagor_motors._ha.OperationMode != dagor_motors.OP_MODE_SPEED:
         dagor_motors.require_stopped(dagor_motors._ha)
@@ -253,6 +264,7 @@ def speed_tracking(manual_internal=None):
     internal = None
     file_celest = None
 
+    on_target_since = None
     try:
         while True:
             _wait_for_time(dagor_motors._TRACKING_CHECK_INTERVAL, dots=True, enter_abort=True, interval=dagor_motors._TRACKING_CHECK_INTERVAL / 10, dot_skip=10)
@@ -308,6 +320,13 @@ def speed_tracking(manual_internal=None):
             de_speed = min( de_speed, dagor_motors.SPEED_LIMIT * speeds['speed_de'] / dagor_motors.MAX_SPEED_DE)
             de_speed = int( de_speed * sign(de_err) )
 
+            if abs(ha_err) < TRACKING_OK_TARGET_ZONE_HA and abs(de_err) < TRACKING_OK_TARGET_ZONE_DE:
+                if not on_target_since:
+                    on_target_since = time()
+            else:
+                on_target_since = None
+            on_target = time() - on_target_since > 3 if on_target_since else False
+
             od = OrderedDict()
             od['ha_speed'] = ha_speed
             od['ha_err'] = ha_err
@@ -321,6 +340,7 @@ def speed_tracking(manual_internal=None):
             od['path'] = path
             od['get_internal'] = dagor_position.get_internal()
             od['internal'] = internal
+            od['on_target'] = on_target
 
             console_header()
             p_(od)
@@ -328,13 +348,19 @@ def speed_tracking(manual_internal=None):
             dagor_motors._ha.SetSpeed = ha_speed
             dagor_motors._de.SetSpeed = de_speed
 
+    except dagor_path.NoPath as e:
+        print_("No path: {}".format(e))
+        stop_tracking()
+
     except EnterAbort:
-        print_("Stopping")
-        dagor_motors._ha.SetSpeed = 0
-        dagor_motors._de.SetSpeed = 0
-        _wait_for_stop(dagor_motors._ha, dots=True)
-        _wait_for_stop(dagor_motors._de, dots=True)
-        print_("END")
+        stop_tracking()
+
+    except Exception as e:
+        print_(e.message)
+        stop_tracking()
+        print_("Exception info:\n")
+        raise
+
 
 
 # Run as CLI client

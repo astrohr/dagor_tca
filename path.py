@@ -212,10 +212,12 @@ class NoPath(Exception):
     pass
 
 class ImpossibleStart(NoPath):
-    pass
+    def __str__(self):
+        return 'Impossible Start Position'
 
 class ImpossibleEnd(NoPath):
-    pass
+    def __str__(self):
+        return 'Impossible End Position'
 
 
 def get_path(start_internal, end_internal, space=None):
