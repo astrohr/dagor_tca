@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Dagor tracking 1.0
+"""Dagor tracking 1.1
 
 Usage:
   track.py start
