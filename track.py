@@ -228,8 +228,13 @@ def sync_console():
 
 def speed_tracking(manual_internal=None):
 
-    print_('DYNAMIC TRACKING')
-    print_('----------------')
+    def console_header():
+        print_("\x1b[2J\x1b[0;0H")
+        print_('DYNAMIC TRACKING')
+        print_('----------------')
+        print_("Press Enter to stop at any time")
+        print_("")
+
     dagor_motors.init()
     if dagor_motors._ha.OperationMode != dagor_motors.OP_MODE_SPEED:
         dagor_motors.require_stopped(dagor_motors._ha)
@@ -239,18 +244,14 @@ def speed_tracking(manual_internal=None):
     dagor_motors._ha.OperationMode = dagor_motors.OP_MODE_SPEED
     dagor_motors._de.OperationMode = dagor_motors.OP_MODE_SPEED
     dagor_motors._de.SetSpeed = 0
-    print_("Press Enter to stop at any time")
+
     # start:
-
-    print_("Tracking")
-
 
     t_start = time()  #@TODO make sure this behaves well on leap seconds
 
     start_internal = dagor_position.get_internal()
     internal = None
     file_celest = None
-
 
     try:
         while True:
@@ -320,6 +321,8 @@ def speed_tracking(manual_internal=None):
             od['path'] = path
             od['get_internal'] = dagor_position.get_internal()
             od['internal'] = internal
+
+            console_header()
             p_(od)
 
             dagor_motors._ha.SetSpeed = ha_speed
