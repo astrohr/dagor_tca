@@ -90,17 +90,17 @@ class ModbusProtocol(object):
             try:
                 self.master.execute(motor_address, cst.WRITE_MULTIPLE_REGISTERS, start_register, output_value=data)
             except modbus.ModbusError, e:
-                print("%s- Code=%d" % (e, e.get_exception_code()))
                 pass
             except modbus.ModbusInvalidResponseError, e:
-                print("InvalidResponseError while writing to register %d of motor %d" % (start_register, motor_address))
-                print(e)
                 pass
             else:
-                if i > 1:
-                    print "retry %d Ok" % i
                 return
         if e:
+            if isinstance(e, modbus.ModbusError):
+                print("%s- Code=%d" % (e, e.get_exception_code()))
+            elif isinstance(e, modbus.ModbusInvalidResponseError):
+                print("InvalidResponseError while writing to register %d of motor %d" % (start_register, motor_address))
+            print(e)
             raise e
 
     def read_registers(self, motor_address, start_register, number_of_registers):
