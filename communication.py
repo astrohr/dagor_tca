@@ -1,10 +1,12 @@
-
+#!/usr/bin/env python
+""" REST api service """
 import json
 from flask import Flask
 from flask import request
 from formats import parse_degrees, parse_hours
 import position as dagor_position
 import cat as dagor_cat
+import lights as dagor_lights
 
 app = Flask(__name__)
 TRACKING_COORDINATES_FILE = 'coords.txt'
@@ -33,7 +35,7 @@ def target():
 
     elif request.method == 'PUT':
         coords = json.loads(request.data)
-        line = str(coords["de"]) + " " + str(coords["ra"])
+        line = str(coords["ra"]) + " " + str(coords["de"])
         try:
             f = open(TRACKING_COORDINATES_FILE, 'w')
             f.write(line)
@@ -85,6 +87,23 @@ def getcat():
     return json.dumps({
         'catalog': dagor_cat.dump(),
     })
+
+
+@app.route('/lights', methods=['GET', 'PUT',])
+def lights():
+    if request.method == 'PUT':
+        try:
+            state = json.loads(request.data.strip())['lights']
+            dagor_lights.set_lights(state)
+        except Exception as e:
+            print e
+            return str(e)
+    # GET (always):
+    return json.dumps({
+        'lights': dagor_lights.get_lights(),
+    })
+
+
 
 
 

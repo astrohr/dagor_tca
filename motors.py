@@ -59,8 +59,8 @@ MAX_TASKS = 2
 SPEED_LIMIT = 3000
 MAX_SPEED_DE = 1.456  # deg/sec
 MAX_SPEED_HA = 3.075e-2  # h/sec
-ACC_RAMP = 5000
-EMER_RAMP = 500
+ACC_RAMP = 7000
+EMER_RAMP = 1000
 TRACKING_SPEED = -27
 
 OP_MODE_MANUAL = 0
@@ -90,17 +90,17 @@ class ModbusProtocol(object):
             try:
                 self.master.execute(motor_address, cst.WRITE_MULTIPLE_REGISTERS, start_register, output_value=data)
             except modbus.ModbusError, e:
-                print("%s- Code=%d" % (e, e.get_exception_code()))
                 pass
             except modbus.ModbusInvalidResponseError, e:
-                print("InvalidResponseError while writing to register %d of motor %d" % (start_register, motor_address))
-                print(e)
                 pass
             else:
-                if i > 1:
-                    print "retry %d Ok" % i
                 return
         if e:
+            if isinstance(e, modbus.ModbusError):
+                print("%s- Code=%d" % (e, e.get_exception_code()))
+            elif isinstance(e, modbus.ModbusInvalidResponseError):
+                print("InvalidResponseError while writing to register %d of motor %d" % (start_register, motor_address))
+            print(e)
             raise e
 
     def read_registers(self, motor_address, start_register, number_of_registers):
@@ -187,8 +187,10 @@ class MotorCommunication(object):
     AnalogFilter = MotorParameter(17, 1)  # ms
     AnalogDeadBand = MotorParameter(28, 1)  # mV
 
-    COMMAND_READ_EEPROM = 1
+    COMMAND_READ_EEPROM = 1  # configuration
     COMMAND_WRITE_EEPROM = 2
+    COMMAND_WRITE_FLASH = 32  # task configuration
+    COMMAND_READ_FLASH = 64
     Commands = MotorParameter(69, 1)
 
     tasks = range(1, MAX_TASKS+1)
@@ -235,7 +237,14 @@ class MotorCommunication(object):
         self.configure_DGTIO()
         self.configure_speed()
         self.configure_tasks()
+        self.OperationMode = OP_MODE_MANUAL
         self.Commands = self.COMMAND_WRITE_EEPROM
+
+    def configure_flash(self):
+        """
+        Take care: writing to flash memory interrupts modbus communication
+        """
+        self.Commands = self.COMMAND_WRITE_FLASH
 
     def configure_DGTIO(self):
         #self.DGTOUT1Conf = 3  # Homing ok

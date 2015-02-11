@@ -40,10 +40,11 @@ import sys
 def _main(args):
     ser = serial.Serial()
     ser.port = '/dev/ttyACM0'
-    ser.baudrate = 115200
+    ser.baudrate = 9600  # 115200
     ser.timeout = 1
-    ser.setDTR(args['--reset'] or args['reset'])  #don't reset unless explicitly specified
+    # ser.setDTR(args['--reset'] or args['reset'])  #don't reset unless explicitly specified
     ser.open()
+    ser.setDTR(args['--reset'] or args['reset'])  #don't reset unless explicitly specified
 
     if args['status']:
         ser.write('status\n')
@@ -94,7 +95,6 @@ def _main(args):
 
 if __name__ == '__main__':
     args = docopt(__doc__, version=__doc__.split('\n'[0]), options_first=True)
-    print args
     if len(sys.argv) == 1:
         print __doc__.strip()
         exit(0)

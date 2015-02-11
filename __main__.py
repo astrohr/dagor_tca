@@ -2,7 +2,7 @@
 """Dagor central CLI interface 0.1
 
 Usage:
-  tca boot
+  tca configure
   tca get [float] (celest | local | altaz)
   tca get chirality
   tca move to local <HA> <DE> [ce | cw] [quick] [track]
@@ -20,11 +20,12 @@ Usage:
   tca set celest <RA> <DE> [blind]
   tca set star <NAME> [blind]
   tca set cat <NAME> [(from <CATALOG>)] [blind]
+  tca lights [0 | 1 | 2 | 3]
   tca [-h | --help | help]
   tca --version
 
 Commands:
-  boot              Configure motor drivers before first use.
+  configure         Configure motor drivers before first use and write configuration to EEPROM and Flash memory.
   get               Display current encoder readout.
                     celest: celestial coordinates (right ascension and declination)
                     local: local coordinates (hour angle and declination)
@@ -57,6 +58,7 @@ import cat as dagor_catalog
 import motors as dagor_motors
 import track as dagor_track
 import path as dagor_path
+import lights as dagor_lights
 import sys
 #from common import exit_
 
@@ -72,12 +74,14 @@ def stepped_move_by(delta_local):
 
 def _main(args):
 
-    if args['boot']:
+    if args['configure']:
         dagor_motors.init()
         dagor_motors._ha.disable()
         dagor_motors._de.disable()
         dagor_motors._ha.configure()
         dagor_motors._de.configure()
+        dagor_motors._de.configure_flash()  # order is important when writing to flash (not eeprom)
+        dagor_motors._ha.configure_flash()
 
     if args['get']:
         values = {}
@@ -233,6 +237,18 @@ def _main(args):
         elif args['cat']:
             celest = dagor_catalog.get_celest(args['<NAME>'], args['<CATALOG>'])
             dagor_position.set_internal(dagor_position.celest_to_internal(celest), args['blind'])
+
+    if args['lights']:
+        if args['0']:
+            n = 0
+        elif args['1']:
+            n = 1
+        elif args['2']:
+            n = 2
+        elif args['3']:
+            n = 3
+        dagor_lights.set_lights(n)
+        
 
 
 def move_to_local(local=None, celest=None, chirality=None, quick=False, track=False):
