@@ -28,7 +28,7 @@ RESET_DISABLED = True
 SERIAL = {
     'PORT' : '/dev/ttyUSB0',
     'BAUDRATE' : 9600,
-    'TIMEOUT' : 1,  # if no data available, block for max this many second
+    'TIMEOUT' : 0.1,  # if no data available, block for max this many second
 }
 
 
