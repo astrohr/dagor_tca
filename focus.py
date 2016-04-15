@@ -1,17 +1,16 @@
 #!/usr/bin/env python
-"""Dagor switches interface version 0.8.
+"""Dagor focus interface version 0.8.
 
 Usage:
-    switches.py status
-    switches.py switch <N> (on|off)
-    switches.py switch all (on|off)
-    switches.py reset
-    switches.py -h | --help
-    switches.py --version
+    focus.py status
+    focus.py step_tp <N>
+    focus.py reset
+    focus.py -h | --help
+    focus.py --version
 
 Commands:
-    status         Display status of switches
-    switch         Switch a particular switch on or off. Sepcify "all" to affect all available switches. (NOT IMPLEMENTED9
+    status         Display focuser status
+    step_to         Switch a particular switch on or off. Sepcify "all" to affect all available switches. (NOT IMPLEMENTED9
     reset          Reset Arduino. (NOT IMPLEMENTED)
 
 Options:
@@ -26,14 +25,14 @@ from time import sleep
 
 RESET_DISABLED = True
 SERIAL = {
-    'PORT' : '/dev/ttyUSB0',
-    'BAUDRATE' : 9600,
+    'PORT' : '/dev/tty.usbserial-A703F1A4',
+    'BAUDRATE' : 115200,
     'TIMEOUT' : 0.1,  # if no data available, block for max this many seconds
 }
 
 
-class SwitchController(object):
-    """ Controls one or more switches, responds to serial/USB communication.
+class FocuserController(object):
+    """ Controls the focuser, responds to serial/USB communication.
 
         Note: it always requests latest status from Arduino controller.
         
