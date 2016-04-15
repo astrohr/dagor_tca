@@ -1,0 +1,58 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: IK220App - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating command line "rc.exe /l 0x407 /fo".\Debug/IK220App.res" /d "_DEBUG" "C:\Documents and Settings\VSA 2009\Desktop\CD Zvjezdarnica\01_Heidenhain\01_IK220 Driver software\Id.Nr. 246 262-05\Disk2\IK220App\IK220App.rc"" 
+Creating temporary file "C:\DOCUME~1\VSA200~1\LOCALS~1\Temp\RSP4.tmp" with contents
+[
+/nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR".\Debug/" /Fp".\Debug/IK220App.pch" /Yu"stdafx.h" /Fo".\Debug/" /Fd".\Debug/" /FD /c 
+"C:\Documents and Settings\VSA 2009\Desktop\CD Zvjezdarnica\01_Heidenhain\01_IK220 Driver software\Id.Nr. 246 262-05\Disk2\IK220App\IK220App.cpp"
+"C:\Documents and Settings\VSA 2009\Desktop\CD Zvjezdarnica\01_Heidenhain\01_IK220 Driver software\Id.Nr. 246 262-05\Disk2\IK220App\IK220AppDlg.cpp"
+"C:\Documents and Settings\VSA 2009\Desktop\CD Zvjezdarnica\01_Heidenhain\01_IK220 Driver software\Id.Nr. 246 262-05\Disk2\IK220App\SetupDlg.cpp"
+"C:\Documents and Settings\VSA 2009\Desktop\CD Zvjezdarnica\01_Heidenhain\01_IK220 Driver software\Id.Nr. 246 262-05\Disk2\IK220App\StatusDlg.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\VSA200~1\LOCALS~1\Temp\RSP4.tmp" 
+Creating temporary file "C:\DOCUME~1\VSA200~1\LOCALS~1\Temp\RSP5.tmp" with contents
+[
+/nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR".\Debug/" /Fp".\Debug/IK220App.pch" /Yc"stdafx.h" /Fo".\Debug/" /Fd".\Debug/" /FD /c 
+"C:\Documents and Settings\VSA 2009\Desktop\CD Zvjezdarnica\01_Heidenhain\01_IK220 Driver software\Id.Nr. 246 262-05\Disk2\IK220App\StdAfx.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\VSA200~1\LOCALS~1\Temp\RSP5.tmp" 
+Creating temporary file "C:\DOCUME~1\VSA200~1\LOCALS~1\Temp\RSP6.tmp" with contents
+[
+/nologo /subsystem:windows /incremental:yes /pdb:".\Debug/IK220App.pdb" /debug /machine:I386 /out:".\Debug/IK220App.exe" 
+".\Debug\IK220App.obj"
+".\Debug\IK220AppDlg.obj"
+".\Debug\SetupDlg.obj"
+".\Debug\StatusDlg.obj"
+".\Debug\StdAfx.obj"
+".\Debug\IK220App.res"
+"..\Include\IK220Dll.lib"
+]
+Creating command line "link.exe @C:\DOCUME~1\VSA200~1\LOCALS~1\Temp\RSP6.tmp"
+<h3>Output Window</h3>
+Compiling resources...
+Compiling...
+StdAfx.cpp
+Compiling...
+IK220App.cpp
+IK220AppDlg.cpp
+SetupDlg.cpp
+StatusDlg.cpp
+Generating Code...
+Linking...
+Creating command line "bscmake.exe /nologo /o".\Debug/IK220App.bsc"  ".\Debug\StdAfx.sbr" ".\Debug\IK220App.sbr" ".\Debug\IK220AppDlg.sbr" ".\Debug\SetupDlg.sbr" ".\Debug\StatusDlg.sbr""
+Creating browse info file...
+<h3>Output Window</h3>
+
+
+
+<h3>Results</h3>
+IK220App.exe - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

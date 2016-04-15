@@ -1,4 +1,0 @@
-#!/usb/bin/env python
-
-
-

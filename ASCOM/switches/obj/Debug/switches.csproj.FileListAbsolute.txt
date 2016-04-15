@@ -1,0 +1,9 @@
+\\psf\Host\Volumes\CaseSensitive\projects\dagor\ASCOM\switches\bin\Debug\ASCOM.DAGOR.Switch.dll.config
+\\psf\Host\Volumes\CaseSensitive\projects\dagor\ASCOM\switches\bin\Debug\ASCOM.DAGOR.Switch.dll
+\\psf\Host\Volumes\CaseSensitive\projects\dagor\ASCOM\switches\bin\Debug\ASCOM.DAGOR.Switch.pdb
+\\psf\Host\Volumes\CaseSensitive\projects\dagor\ASCOM\switches\bin\Debug\ASCOM.DAGOR.Switch.tlb
+\\psf\Host\Volumes\CaseSensitive\projects\dagor\ASCOM\switches\obj\Debug\ASCOM.DAGOR.Properties.Resources.resources
+\\psf\Host\Volumes\CaseSensitive\projects\dagor\ASCOM\switches\obj\Debug\ASCOM.DAGOR.SetupDialogForm.resources
+\\psf\Host\Volumes\CaseSensitive\projects\dagor\ASCOM\switches\obj\Debug\switches.csproj.GenerateResource.Cache
+\\psf\Host\Volumes\CaseSensitive\projects\dagor\ASCOM\switches\obj\Debug\ASCOM.DAGOR.Switch.dll
+\\psf\Host\Volumes\CaseSensitive\projects\dagor\ASCOM\switches\obj\Debug\ASCOM.DAGOR.Switch.pdb

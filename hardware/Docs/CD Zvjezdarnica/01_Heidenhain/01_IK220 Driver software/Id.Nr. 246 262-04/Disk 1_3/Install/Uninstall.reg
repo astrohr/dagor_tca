@@ -1,0 +1,6 @@
+REGEDIT4
+
+[HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\IK220Drv]
+"ErrorControl"=-
+"Start"=-
+"Type"=-

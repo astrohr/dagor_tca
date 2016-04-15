@@ -1,0 +1,64 @@
+ IK220VXD
+
+ Timestamp is 365a8c9d (Tue Nov 24 11:38:21 1998)
+
+ Preferred load address is 00400000
+
+ Start         Length     Name                   Class
+ 0001:00000000 000000ccH .data                   CODE
+ 0001:000000d0 000002dcH .text                   CODE
+ 0001:000003ac 00000050H _LDATA                  CODE
+ 0001:000003fc 00000048H _LTEXT                  CODE
+ 0002:00000000 00000032H PNP                     CODE
+ 0003:00000000 00000020H _IDATA                  CODE
+
+  Address         Publics by Value              Rva+Base   Lib:Object
+
+ 0001:000000d0       _IK220_MapPhysToLin        004010d0 f IK220VxD.obj
+ 0001:000001a2       _IK220_Unmap               004011a2 f IK220VxD.obj
+ 0001:00000267       _IK220_PciConfigReg        00401267 f IK220VxD.obj
+ 0001:000002b1       _OnSysDynamicDeviceInit    004012b1 f IK220VxD.obj
+ 0001:000002c8       _OnSysDynamicDeviceExit    004012c8 f IK220VxD.obj
+ 0001:000002df       _OnDeviceIoControl         004012df f IK220VxD.obj
+ 0001:000003ac       IK220VXD_DDB               004013ac   VxdDef.obj
+ 0001:000003fc       IK220VxD_Control           004013fc f VxdDef.obj
+ 0002:00000000       _CCODE__LinPageLock        00401600 f vxdwraps:vmm3e6.obj
+ 0002:00000008       _CCODE__PageFree           00401608 f vxdwraps:vmm2d6.obj
+ 0002:00000010       _CCODE__LinPageUnlock      00401610 f vxdwraps:vmm3f6.obj
+ 0002:00000018       _CCODE__Debug_Printf_Service 00401618 f vxdwraps:vmm096.obj
+ 0002:0000002c       _CCODE__CONFIGMG_Call_Enumerator_Function 0040162c f vxdwraps:cm556.obj
+
+ entry point at        0000:00000000
+
+ Static symbols
+
+ 0001:00000196       __PageReserve              00401196 f IK220VxD.obj
+ 0001:0000019c       __PageCommitPhys           0040119c f IK220VxD.obj
+ 0003:0000001d       $$$00001                   0040181d f VxdDef.obj
+ 0001:000003fc       $$$00002                   004013fc f VxdDef.obj
+ 0001:000003fc       $$$00003                   004013fc f VxdDef.obj
+ 0001:00000443       $$$00005                   00401443 f VxdDef.obj
+
+Line numbers for IK220VxD.obj(IK220VxD.c) segment LCODE_vxdpn
+
+    55 0001:000000d0    59 0001:000000d6    60 0001:000000ee    63 0001:000000f8
+    66 0001:0000011b    67 0001:00000134    68 0001:00000159    71 0001:00000171
+    74 0001:00000186    75 0001:00000190    76 0001:00000192    26 0001:00000196
+    34 0001:0000019c    80 0001:000001a2    83 0001:000001a6    85 0001:000001be
+    86 0001:000001d9    89 0001:000001e3    91 0001:00000201    92 0001:0000020e
+    93 0001:00000218    96 0001:0000021f    98 0001:00000239    99 0001:00000246
+   100 0001:00000250   104 0001:00000257   105 0001:00000261   106 0001:00000263
+   135 0001:00000267   136 0001:0000026b   145 0001:00000274   147 0001:000002a4
+   149 0001:000002a8   150 0001:000002ad   156 0001:000002b1   157 0001:000002b4
+   158 0001:000002c1   159 0001:000002c6   163 0001:000002c8   164 0001:000002cb
+   166 0001:000002d8   167 0001:000002dd   171 0001:000002df   172 0001:000002e3
+   175 0001:00000337   177 0001:00000339   180 0001:00000340   181 0001:00000352
+   182 0001:00000359   183 0001:00000364   184 0001:0000036d   185 0001:00000379
+   187 0001:0000037b   193 0001:00000389   195 0001:00000397   197 0001:000003a5
+   198 0001:000003a7
+
+Line numbers for VxdDef.obj(VxDDef.asm) segment LCODE_vxdpn
+
+     9 0001:000003fc    11 0001:0000040a    12 0001:00000418    13 0001:0000042a
+
+FIXUPS: 112a 28 18 68 24 11 27 11 5a 21 17 af e e 66 e f

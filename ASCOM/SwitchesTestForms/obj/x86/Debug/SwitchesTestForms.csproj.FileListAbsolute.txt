@@ -1,0 +1,8 @@
+\\psf\Host\Volumes\CaseSensitive\projects\dagor\ASCOM\SwitchesTestForms\bin\Debug\ASCOM.DAGOR.Test.exe.config
+\\psf\Host\Volumes\CaseSensitive\projects\dagor\ASCOM\SwitchesTestForms\bin\Debug\ASCOM.DAGOR.Test.exe
+\\psf\Host\Volumes\CaseSensitive\projects\dagor\ASCOM\SwitchesTestForms\bin\Debug\ASCOM.DAGOR.Test.pdb
+\\psf\Host\Volumes\CaseSensitive\projects\dagor\ASCOM\SwitchesTestForms\obj\x86\Debug\ASCOM.DAGOR.Form1.resources
+\\psf\Host\Volumes\CaseSensitive\projects\dagor\ASCOM\SwitchesTestForms\obj\x86\Debug\ASCOM.DAGOR.Properties.Resources.resources
+\\psf\Host\Volumes\CaseSensitive\projects\dagor\ASCOM\SwitchesTestForms\obj\x86\Debug\SwitchesTestForms.csproj.GenerateResource.Cache
+\\psf\Host\Volumes\CaseSensitive\projects\dagor\ASCOM\SwitchesTestForms\obj\x86\Debug\ASCOM.DAGOR.Test.exe
+\\psf\Host\Volumes\CaseSensitive\projects\dagor\ASCOM\SwitchesTestForms\obj\x86\Debug\ASCOM.DAGOR.Test.pdb

@@ -1,0 +1,8 @@
+# TRACKING speed correction
+# first line: HA
+# second line: DE
+# recommended increments: 10
+#00h03m10.000s
+#00:24:10.000
+00h00m00.000s
+00:00:00.000

@@ -1,0 +1,11 @@
+oak91encoder
+
+točan broj modela:
+91Q128-43-00110
+
+ - signal tipa "quadrature"
+ - 128 pulseva po okretaju
+ - TTL 5V
+ - 1'' kućište
+ - osovina 0.4'' dugačka, 0.25'' promjer
+ 

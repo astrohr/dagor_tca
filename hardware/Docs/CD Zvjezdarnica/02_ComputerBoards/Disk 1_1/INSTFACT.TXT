@@ -1,0 +1,488 @@
+Approximate disk space requirements:
+
+	Instacal and associated files:          1.5 MBytes
+	Universal Library (all languages)       4 MBytes
+
+
+Memory requirements:
+
+    Instacal:       Runs with less than 200k conventional memory
+
+
+File list C:\CB:
+
+	README
+	CB.CFG          board configuration file
+	INSTACAL.CFG    Instacal configuration file
+	BTHERM.DAT      thermocouple and RTD linearization data
+	RTD006.DAT
+	RTD002.DAT
+	RTD003.DAT
+	RTD004.DAT
+	RTD005.DAT
+	KTHERM.DAT
+	ETHERM.DAT
+	JTHERM.DAT
+	STHERM.DAT
+	TTHERM.DAT
+	RTD001.DAT
+	RTHERM.DAT
+	REV.DOC
+	MAKESTRM.EXE    creates a data file for use with cbFileInScan() function
+	RDSTREAM.EXE    reads streamer file from command line
+	FRAGTEST.EXE    tests streamer file for fragmentation
+	INSTACAL.EXE    board installation, test and calibration program
+	HELVB.FON       Instacal support files
+	HELP.IDX
+	HELP.TXT
+	UNPACK.BAT      Installation files (may be deleted after installation)
+
+  If installing for PCMCIA boards:
+	CBCLIENT.COM    client for use by Card & Socket Services
+	MAXRATE.EXE     determines maximum rate for PCM-DAS08 on a particular PC
+	SET422.EXE      set PCM-COM422 mode from 232 mode to 422 mode
+	PCM_HELP.TXT    PCMCIA troubleshooting help
+	EZGRP.EXE       PowerMizer support files
+	PWRMIZER.EXE
+	POWERUP.ICO
+	EZGRP.EZG
+
+	Modifications to SYSTEM.INI:
+	EMMEXCLUDE=D000-DFFF
+	
+  If installing for Windows programming (Visual Basic, C++, etc...)     
+	CBUL.386        VxD for Windows 3.x programming
+	CBW.DLL         DLL for Windows 3.x programming
+	GENUL.386       Generic DLL for Windows 3.x programming
+
+	Modifications to SYSTEM.INI:
+	device=c:\cb\cbul.386
+	DMABUFFERSIZE=064
+	
+				
+The following directories will be added (if the library for the associated language has been selected for installation):
+
+	C
+	BASIC
+	PASCAL
+	VBWIN
+	CWIN
+	DELPHI
+
+
+File list C:\CB\C
+
+	CB.H            header file for DOS programming in C
+	CBCC.LIB        compact C model library
+	CBCL.LIB        large C model library
+	CBCM.LIB        medium C model library
+	CBCS.LIB        small C model library
+	MAKEBC.BAT      command line compile for Borland C
+	MAKEMC.BAT      command line compile for Microsoft C
+	MAKETC.BAT      command line compile for Turbo C
+	ULAI01.C        example programs for C
+	ULAI02.C
+	ULAI03.C
+	ULAI04.C
+	ULAI05.C
+	ULAI06.C
+	ULAI07.C
+	ULAI08.C
+	ULAI09.C
+	ULAI10.C
+	ULAI11.C
+	ULAI12.C
+	ULAI13.C
+	ULAO01.C
+	ULAO02.C
+	ULCT01.C
+	ULCT02.C
+	ULCT03.C
+	ULCT04.C
+	ULCT05.C
+	ULDI01.C
+	ULDI02.C
+	ULDI03.C
+	ULDI04.C
+	ULDI05.C
+	ULDO01.C
+	ULDO02.C
+	ULDO03.C
+	ULDO04.C
+	ULDO05.C
+	ULFI01.C
+	ULFI02.C
+	ULFI03.C
+	ULGT01.C
+	ULGT02.C
+	ULGT03.C
+	ULGT04.C
+	ULMM01.C
+	ULMM02.C
+	ULMM03.C
+	ULTI01.C
+	ULTI02.C
+	
+	
+File list C:\CB\BASIC
+
+	CB.BI           Basic Include file
+	CBPB.QLB        Professional Basic Quick library (used in IDE)
+	CBPB.LIB        Professional Basic library (used in EXE)
+	CBQB.QLB        Quick Basic Quick library (used in IDE)
+	CBQB.LIB        Quick Basic library (used in EXE)
+	CBVB.LIB        Visual Basic for DOS library (used in EXE)
+	CBVB.QLB        Visual Basic for DOS Quick library (used in IDE)
+	MAKEPB.BAT      command line compile for Professional Basic
+	MAKEQB.BAT      command line compile for Quick Basic
+	MAKEVB.BAT      command line compile for Visual Basic for DOS
+	ULAI01.BAS      programming examples for Basic
+	ULAI02.BAS
+	ULAI03.BAS
+	ULAI04.BAS
+	ULAI05.BAS
+	ULAI06.BAS
+	ULAI07.BAS
+	ULAI08.BAS
+	ULAI09.BAS
+	ULAI10.BAS
+	ULAI11.BAS
+	ULAI12.BAS
+	ULAI13.BAS
+	ULAO01.BAS
+	ULAO02.BAS
+	ULCT01.BAS
+	ULCT02.BAS
+	ULCT03.BAS
+	ULCT04.BAS
+	ULCT05.BAS
+	ULDI01.BAS
+	ULDI02.BAS
+	ULDI03.BAS
+	ULDI04.BAS
+	ULDI05.BAS
+	ULDO01.BAS
+	ULDO02.BAS
+	ULDO03.BAS
+	ULDO04.BAS
+	ULDO05.BAS
+	ULFI01.BAS
+	ULFI02.BAS
+	ULFI03.BAS
+	ULGT01.BAS
+	ULGT02.BAS
+	ULGT03.BAS 
+	ULGT04.BAS
+	ULMM01.BAS
+	ULMM02.BAS
+	ULMM03.BAS
+	ULTI01.BAS
+	ULTI02.BAS
+	
+
+File list C:\CB\PASCAL
+
+	CB.PAS          Pascal declarations units
+	CB.TPU
+	CB3.PAS
+	CB3.TPU
+	CBTP1.OBJ
+	CBTP2.OBJ
+	CBTP3.OBJ
+	MAKETP.BAT      Turbo Pascal command line compile
+	ULAI01.PAS      Pascal example programs
+	ULAI02.PAS
+	ULAI03.PAS
+	ULAI04.PAS
+	ULAI05.PAS
+	ULAI06.PAS
+	ULAI07.PAS
+	ULAI08.PAS
+	ULAI09.PAS
+	ULAI10.PAS
+	ULAI11.PAS
+	ULAI12.PAS
+	ULAI13.PAS
+	ULAO01.PAS
+	ULAO02.PAS
+	ULCT01.PAS
+	ULCT02.PAS
+	ULCT03.PAS
+	ULCT04.PAS
+	ULCT05.PAS
+	ULDI01.PAS
+	ULDI02.PAS
+	ULDI03.PAS
+	ULDI04.PAS
+	ULDI05.PAS
+	ULDO01.PAS
+	ULDO02.PAS
+	ULDO03.PAS
+	ULDO04.PAS
+	ULDO05.PAS
+	ULFI01.PAS
+	ULFI02.PAS
+	ULFI03.PAS
+	ULGT01.PAS
+	ULGT02.PAS
+	ULGT03.PAS
+	ULGT04.PAS
+	ULMM01.PAS
+	ULMM02.PAS
+	ULMM03.PAS
+	ULTI01.PAS
+	ULTI02.PAS
+	
+
+File list C:\CB\VBWIN
+
+	CBW.BAS         Visual Basic for Windows declarations file
+	SINEWAVE.ICO    Visual Basic for Windows icon
+	ULAI01.FRM      Visual Basic for Windows example program form file 
+	ULAI01.MAK      Visual Basic for Windows example program project file
+	ULAI02.FRM
+	ULAI02.MAK
+	ULAI03.MAK
+	ULAI03.FRM
+	ULAI04.MAK
+	ULAI04.FRM
+	ULAI05.MAK
+	ULAI05.FRM
+	ULAI06.FRM
+	ULAI06.MAK
+	ULAI07.FRM
+	ULAI07.MAK
+	ULAI08.MAK
+	ULAI08.FRM
+	ULAI09.FRM
+	ULAI09.MAK
+	ULAI10.FRM
+	ULAI10.MAK
+	ULAI11.FRM
+	ULAI11.MAK
+	ULAI12.MAK
+	ULAI12FRM
+	ULAI13.FRM
+	ULAI13.MAK
+	ULAO01.FRM
+	ULAO01.MAK
+	ULAO02.FRM
+	ULAO02.MAK
+	ULCT01.FRM
+	ULCT01.MAK
+	ULCT02.MAK
+	ULCT02.FRM
+	ULCT03.MAK
+	ULCT03.FRM
+	ULCT04.MAK
+	ULCT04.FRM
+	ULCT05.MAK
+	ULCT05.FRM
+	ULDI01.FRM
+	ULDI01.MAK
+	ULDI02.MAK
+	ULDI02.FRM
+	ULDI03.FRM
+	ULDI03.MAK
+	ULDI04.MAK
+	ULDI04.FRM
+	ULDI05.FRM
+	ULDI05.MAK
+	ULDO01.MAK
+	ULDO01.FRM
+	ULDO02.MAK
+	ULDO02.FRM
+	ULDO04.FRM
+	ULDO04.MAK
+	ULDO05.MAK
+	ULDO05.FRM
+	ULFI01.MAK
+	ULFI01.FRM
+	ULFI02.MAK 
+	ULFI02.FRM
+	ULFI03.FRM
+	ULFI03.MAK
+	ULGT01.FRM
+	ULGT01.MAK
+	ULGT03.MAK
+	ULGT03.FRM
+	ULGT04.FRM
+	ULGT04.MAK
+	ULMM01.FRM
+	ULMM01.MAK
+	ULMM02.MAK
+	ULMM02.FRM
+	ULMM03.MAK
+	ULMM03.FRM
+	ULTI01.FRM
+	ULTI01.MAK
+	ULTI02.MAK
+	ULTI02.FRM
+	VB1XFER.TXT     information regarding conversion of VB2, 3 and 4 compatible
+			text files into VB1 project
+	
+
+File list C:\CB\CWIN
+
+	ANALOG.ICO      icon for use with Windows programs
+	CBW.LIB         interface to DLL for Windows C programs
+	CBW.H           header file for Windows C programming
+	WINCAI01.C      simple analog input example for Windows C programming
+	WINCAI01.RES
+	WINCAI01.RC
+	WINCAI01.MAK
+	WINCAI01.DEF
+	WINCAI01.IDE
+	WINCAI02.C      analog input scan example for Windows C programming
+	WINCAI03.C      background analog input scan example for Windows C programming
+	
+
+File list C:\CB\DELPHI
+
+	CBW.PAS         Delphi Universal Library declarations unit
+	AI01.PAS        Delphi example program main unit
+	AI01.DFM        Delphi example program form file
+	AI02.DFM
+	AI02.PAS
+	AI03.PAS
+	AI03.DFM
+	AI04.DFM
+	AI04.PAS
+	AI05.DFM
+	AI05.PAS
+	AI06.PAS
+	AI06.DFM
+	AI07.DFM
+	AI07.PAS
+	AI08.DFM
+	AI08.PAS
+	AI09.DFM
+	AI09.PAS
+	AI10.PAS
+	AI10.DFM
+	AI11.PAS
+	AI11.DFM
+	AI12.PAS
+	AI12.DFM
+	AI13.DFM
+	AI13.PAS
+	AI014.DFM
+	AI014.PAS
+	AO01.PAS
+	AO01.DFM
+	AO02.PAS
+	AO02.DFM
+	CT01.PAS
+	CT01.DFM
+	CT02.DFM
+	CT02.PAS
+	CT03.PAS
+	CT03.DFM
+	CT04.DFM
+	CT04.PAS
+	DI01.DFM
+	DI01.PAS
+	DI02.DFM
+	DI02.PAS
+	DI03.PAS
+	DI03.DFM
+	DI04.DFM
+	DI04.PAS
+	DI05.PAS
+	DI05.DFM
+	DO01.DFM
+	DO01.PAS
+	DO02.PAS
+	DO02.DFM
+	DO03.DFM
+	DO03.PAS
+	DO04.PAS
+	DO04.DFM
+	DO05.DFM
+	DO05.PAS
+	FI01.PAS
+	FI01.DFM
+	FI02.DFM
+	FI02.PAS
+	FI03.DFM
+	FI03.PAS
+	GT01.PAS
+	GT01.DFM
+	GT03.DFM
+	GT03.PAS
+	GT04.PAS
+	GT04.DFM
+	MM01.DFM
+	MM01.PAS
+	MM02.PAS
+	MM02.DFM
+	MM03.PAS
+	MM03.DFM
+	TI01.DFM
+	TI01.PAS
+	TI02.DFM
+	TI02.PAS
+	ULAI01.DPR      Delphi project files
+	ULAI02.DPR
+	ULAI03.DPR
+	ULAI04.DPR
+	ULAI05.DPR
+	ULAI06.DPR
+	ULAI07.DPR
+	ULAI08.DPR
+	ULAI09.DPR
+	ULAI10.DPR
+	ULAI11.DPR
+	ULAI12.DPR
+	ULAI13.DPR
+	ULAI14.DPR      example using thunk layer
+	ULAO01.DPR
+	ULAO02.DPR
+	ULCT01.DPR
+	ULCT02.DPR
+	ULCT03.DPR
+	ULCT04.DPR
+	ULDI01.DPR
+	ULDI02.DPR
+	ULDI03.DPR
+	ULDI04.DPR
+	ULDI05.DPR
+	ULDO01.DPR
+	ULDO02.DPR
+	ULDO03.DPR
+	ULDO04.DPR
+	ULDO05.DPR
+	ULFI01.DPR
+	ULFI02.DPR
+	ULFI03.DPR
+	ULGT01.DPR
+	ULGT03.DPR
+	ULGT04.DPR
+	ULMM01.DPR
+	ULMM02.DPR
+	ULMM03.DPR
+	ULTI01.DPR
+	ULTI02.DPR
+		
+
+Revision history.....
+
+Rev 4.0 - 4/7/97
+	Extended memory support added for Istacal test program to 
+	reduce conventional memory requirements.
+	ASCII vs Binary configuration file bug fixed.
+	Auto-detection of PCM /PCI boards added to Instacal.
+
+Rev 4.01
+	added board PCI-DAS1602/16.
+        Corrected PCM-DAS16xx gain and offset calibrations.
+
+Rev 4.1 - 8/6/97
+	Added boards...
+		CIO-DAS6402/12
+		CIO-DAS6402/16
+		CIO-DAS16/M1/16
+		PCI-DIO48H
+		PCI-PDISO8
+		PCI-PDISO16
+		CIO-RELAY16/M

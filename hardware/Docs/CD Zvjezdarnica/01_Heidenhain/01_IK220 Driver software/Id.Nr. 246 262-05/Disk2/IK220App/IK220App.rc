@@ -1,0 +1,326 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+// Generated Help ID header file
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include "resource.hm"
+#undef APSTUDIO_HIDDEN_SYMBOLS
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Deutsch (Deutschland) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
+#ifdef _WIN32
+LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 7, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif\r\n"
+    "#include ""res\\IK220App.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""l.deu\\afxres.rc""          // Standard components\r\n"
+    "#endif\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 217, 71
+STYLE DS_MODALFRAME | DS_3DLOOK | WS_POPUP | WS_VISIBLE | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "About IK220App"
+FONT 12, "Arial"
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
+    LTEXT           "IK220App, Version 4.04",IDC_STATIC,41,10,119,8,
+                    SS_NOPREFIX
+    LTEXT           "Copyright © 2000",IDC_STATIC,41,23,119,8
+    DEFPUSHBUTTON   "OK",IDOK,165,10,45,10,WS_GROUP
+    LTEXT           "Dr. Johannes Heidenhain GmbH",IDC_STATIC,41,36,102,8
+END
+
+IDD_IK220APP_DIALOG DIALOGEX 0, 0, 280, 192
+STYLE DS_MODALFRAME | DS_3DLOOK | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | 
+    WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "HEIDENHAIN IK 220"
+FONT 12, "Arial", 0, 0, 0x1
+BEGIN
+    PUSHBUTTON      "&Reset",IDC_RESET,155,35,52,13
+    PUSHBUTTON      "&Start",IDC_START,155,52,52,13
+    PUSHBUTTON      "Sto&p",IDC_STOP,155,69,52,13
+    PUSHBUTTON      "Rese&t with REF",IDC_RESET_RI,215,35,52,13
+    PUSHBUTTON      "St&art with REF",IDC_START_RI,215,52,52,13
+    PUSHBUTTON      "St&op with REF",IDC_STOP_RI,215,69,52,13
+    CONTROL         "Axis &1:",IDC_CHECK0,"Button",BS_AUTOCHECKBOX | 
+                    WS_GROUP | WS_TABSTOP,7,34,43,10
+    CONTROL         "Axis &2:",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,49,43,10
+    CONTROL         "Axis &3:",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,64,43,10
+    CONTROL         "Axis &4:",IDC_CHECK3,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,79,43,10
+    CONTROL         "Axis &5:",IDC_CHECK4,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,94,43,10
+    CONTROL         "Axis &6:",IDC_CHECK5,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,109,43,10
+    CONTROL         "Axis &7:",IDC_CHECK6,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,124,43,10
+    CONTROL         "Axis &8:",IDC_CHECK7,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,139,43,10
+    DEFPUSHBUTTON   "E&xit",IDCANCEL,220,175,45,10
+    EDITTEXT        IDC_Axis0,51,34,95,12,ES_NOHIDESEL | ES_READONLY | NOT 
+                    WS_TABSTOP,WS_EX_RIGHT
+    EDITTEXT        IDC_Axis1,51,49,95,12,ES_READONLY | NOT WS_TABSTOP,
+                    WS_EX_RIGHT
+    EDITTEXT        IDC_Axis2,51,64,95,12,ES_READONLY | NOT WS_TABSTOP,
+                    WS_EX_RIGHT
+    EDITTEXT        IDC_Axis3,51,80,95,12,ES_READONLY | NOT WS_TABSTOP,
+                    WS_EX_RIGHT
+    EDITTEXT        IDC_Axis4,51,94,95,12,ES_READONLY | NOT WS_TABSTOP,
+                    WS_EX_RIGHT
+    EDITTEXT        IDC_Axis5,51,109,95,12,ES_READONLY | NOT WS_TABSTOP,
+                    WS_EX_RIGHT
+    EDITTEXT        IDC_Axis6,51,124,95,12,ES_READONLY | NOT WS_TABSTOP,
+                    WS_EX_RIGHT
+    EDITTEXT        IDC_Axis7,51,140,95,12,ES_READONLY | NOT WS_TABSTOP,
+                    WS_EX_RIGHT
+    PUSHBUTTON      "S&etup",IDC_Setup,10,175,45,10
+    CTEXT           "Test Program for IK 220",IDC_HEADLINE,7,7,265,12,
+                    SS_SUNKEN,WS_EX_DLGMODALFRAME | WS_EX_NOPARENTNOTIFY
+    CONTROL         145,IDC_STATIC,"Static",SS_BITMAP | SS_SUNKEN | 
+                    WS_BORDER,178,94,61,61,WS_EX_NOPARENTNOTIFY,HIDC_STATIC
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME,175,91,68,67
+    PUSHBUTTON      "Stat&us",IDC_STATUS,117,175,45,10
+END
+
+IDD_SETUP DIALOGEX 0, 0, 214, 90
+STYLE DS_MODALFRAME | DS_3DLOOK | WS_POPUP | WS_VISIBLE | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Setup IK 220"
+FONT 12, "Arial", 0, 0, 0x1
+BEGIN
+    CONTROL         "11µA",IDC_SIGNAL,"Button",BS_AUTORADIOBUTTON | WS_GROUP,
+                    11,16,31,12
+    CONTROL         "1 Vss",IDC_SIGNAL1,"Button",BS_AUTORADIOBUTTON,11,29,34,
+                    10
+    GROUPBOX        "Signal",IDC_STATIC,6,4,50,40,WS_GROUP
+    CONTROL         "incremental",IDC_ENCODER,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP,79,16,52,10
+    CONTROL         "EnDat",IDC_ENCODER1,"Button",BS_AUTORADIOBUTTON,79,29,
+                    36,10
+    GROUPBOX        "Encoder",IDC_STATIC,69,4,73,40,WS_GROUP
+    LTEXT           "&Signal period:",IDC_STATIC,8,63,46,12,SS_CENTERIMAGE
+    EDITTEXT        IDC_PERIOD,66,63,40,12,0,WS_EX_RIGHT
+    DEFPUSHBUTTON   "OK",IDOK,160,9,45,10
+    PUSHBUTTON      "Cancel",IDCANCEL,160,24,45,10
+END
+
+IDD_STATUS DIALOG DISCARDABLE  0, 0, 280, 171
+STYLE DS_ABSALIGN | DS_MODALFRAME | DS_3DLOOK | WS_MINIMIZEBOX | 
+    WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "IK 220 - Status"
+FONT 12, "Arial"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,245,10,30,10
+    LTEXT           "Axis 1:",IDC_STA1,5,5,28,8
+    LTEXT           "Axis 2:",IDC_STA2,5,25,28,8
+    LTEXT           "Axis 3:",IDC_STA3,5,45,28,8
+    LTEXT           "Axis 4:",IDC_STA4,5,65,28,8
+    LTEXT           "Axis 5:",IDC_STA5,5,85,28,8
+    LTEXT           "Axis 6:",IDC_STA6,5,105,28,8
+    LTEXT           "Axis 7:",IDC_STA7,5,125,28,8
+    LTEXT           "Axis 8:",IDC_STA8,5,145,28,8
+    LTEXT           "",IDC_STEXT1,35,5,205,20
+    LTEXT           "",IDC_STEXT2,35,25,205,20
+    LTEXT           "",IDC_STEXT3,35,45,205,20
+    LTEXT           "",IDC_STEXT4,35,65,205,20
+    LTEXT           "",IDC_STEXT5,35,85,205,20
+    LTEXT           "",IDC_STEXT6,35,105,205,20
+    LTEXT           "",IDC_STEXT7,35,125,205,20
+    LTEXT           "",IDC_STEXT8,35,145,205,20
+END
+
+IDD_INITMSG DIALOG DISCARDABLE  0, 0, 186, 95
+STYLE DS_MODALFRAME | DS_3DLOOK | DS_CENTER | WS_POPUP | WS_VISIBLE | 
+    WS_CAPTION
+CAPTION "IK 220"
+FONT 10, "Arial"
+BEGIN
+    CTEXT           "Initializing IK 220",IDC_STATIC,23,20,140,15
+    CONTROL         "Progress1",IDC_PROGRESS1,"msctls_progress32",WS_BORDER,
+                    48,50,87,15
+END
+
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "Comments", "\0"
+            VALUE "CompanyName", "\0"
+            VALUE "FileDescription", "IK220App MFC Application\0"
+            VALUE "FileVersion", "1, 0, 0, 1\0"
+            VALUE "InternalName", "IK220App\0"
+            VALUE "LegalCopyright", "Copyright © 1997\0"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "OriginalFilename", "IK220App.EXE\0"
+            VALUE "PrivateBuild", "\0"
+            VALUE "ProductName", "IK220App Application\0"
+            VALUE "ProductVersion", "1, 0, 0, 1\0"
+            VALUE "SpecialBuild", "\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+#endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_BITMAP1             BITMAP  DISCARDABLE     "res\\bitmap1.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON    DISCARDABLE     "res\\icon1.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_SETUP, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 89
+    END
+
+    IDD_STATUS, DIALOG
+    BEGIN
+        RIGHTMARGIN, 152
+        BOTTOMMARGIN, 65
+    END
+
+    IDD_INITMSG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 88
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_ABOUTBOX            "&About IK220App..."
+END
+
+#endif    // Deutsch (Deutschland) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
+#ifdef _WIN32
+LANGUAGE 7, 1
+#pragma code_page(1252)
+#endif
+#include "res\IK220App.rc2"  // non-Microsoft Visual C++ edited resources
+#include "l.deu\afxres.rc"          // Standard components
+#endif
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

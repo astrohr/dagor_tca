@@ -1,0 +1,35 @@
+
+                         Computer Boards
+                            InstaCal
+
+                         Copyright (c) 1995
+                       Computer Boards,  Inc.
+                          125 High St, #6
+                        Mansfield, MA  02048
+                           (508) 261-1123
+                           (FAX) 261-1094
+				
+This disk contains both InstaCal - the Computer Boards installation
+and calibration program and a general Installation program for all
+ComputerBoards software.  Run the program by inserting the disk into
+the a: drive and type a:install.
+
+Install will make the following changes to your autoexec.bat
+file(assuming directory you choose is c:\cb):
+    - Add c:\cb to your path.
+    - Add the line 'set cbdirec=c:\cb'
+
+********************************************************************
+        IF YOU DO NOT SELECT "YES" WHEN ASKED TO MAKE THESE CHANGES,
+            YOUR SOFTWARE WILL NOT RUN CORRECTLY!!!
+********************************************************************
+
+If you are installing for a PCM card or for Windows programming,
+Install will also modify your Windows INI files.
+
+When installation is complete, run the program by entering <instacal>
+at the dos prompt. Instacal is menu driven program that will allow
+you to install, calibrate, and test your board. Simply select Install,
+then Board #0, then Board Type and select your board from the list.
+Once your board is selected you can configure it according to you
+system requirements.

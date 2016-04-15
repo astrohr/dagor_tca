@@ -1,0 +1,135 @@
+<html>
+<body>
+<pre>
+<h1>Erstellungsprotokoll</h1>
+<h3>
+--------------------Konfiguration: ik220 - Win32 kernel driver (release)--------------------
+</h3>
+<h3>Befehlszeilen</h3>
+Erstellen der temporären Datei  "C:\TEMP\RSP68.bat" mit Inhalten
+[
+@echo off
+mc iklog.mc
+]
+Erstellen der Befehlzeile "C:\TEMP\RSP68.bat"
+Creating command line "rc.exe /l 0x807 /x /fo"C:\my\mySoft\IK220_NT\Disk4\Release/ik220.res" /i "Z:\MsvcJHCN\VC98\include" /i "C:\MsvcJHCN\VC98\include" /d "NDEBUG" "C:\my\mySoft\IK220_NT\Disk4\ik220.rc"" 
+Benutzerdefinierte Build-Stufe wird für .\iklog.mc ausgeführt
+MC: Compiling iklog.mc
+Erstellen der temporären Datei  "C:\TEMP\RSP69.tmp" mit Inhalten
+[
+/nologo /G5 /Gz /MT /W3 /Z7 /O2 /Oy- /X /I "Include" /I "c:\MsvcJHCN\ddk\inc" /I "c:\MsvcJHCN\ddk\inc\ddk" /I "c:\MsvcJHCN\VC98\include" /D "NT_DDK" /D BINARY_COMPATIBLE=0 /D "NDEBUG" /D "WIN32" /D FPO=1 /D "CONDITION_HANDLING" /D "_X86_" /D "i386" /D "STD_CALL" /D "WIN32_LEAN_AND_MEAN" /D "NT_UP" /D "DEVL" /D "_DLL" /D "_UNICODE" /D NT_INST=0 /Fo"C:\my\mySoft\IK220_NT\Disk4\Release/" /Fd"C:\my\mySoft\IK220_NT\Disk4\Release/" /FD /Oxs /QIfdiv- /QIf /QI0f /GF /Oxs /c 
+"C:\my\mySoft\IK220_NT\Disk4\initunlo.c"
+"C:\my\mySoft\IK220_NT\Disk4\ioctl.c"
+"C:\my\mySoft\IK220_NT\Disk4\log.c"
+"C:\my\mySoft\IK220_NT\Disk4\openclos.c"
+"C:\my\mySoft\IK220_NT\Disk4\pnp.c"
+"C:\my\mySoft\IK220_NT\Disk4\power.c"
+"C:\my\mySoft\IK220_NT\Disk4\qsfile.c"
+"C:\my\mySoft\IK220_NT\Disk4\registry.c"
+"C:\my\mySoft\IK220_NT\Disk4\utils.c"
+"C:\my\mySoft\IK220_NT\Disk4\wmi.c"
+]
+Creating command line "cl.exe @C:\TEMP\RSP69.tmp" 
+Erstellen der temporären Datei  "C:\TEMP\RSP6A.tmp" mit Inhalten
+[
+c:\MsvcJHCN\ddk\lib\free\hal.lib c:\MsvcJHCN\ddk\lib\free\ntoskrnl.lib c:\MsvcJHCN\ddk\lib\free\wmilib.lib /nologo /base:"0x10000" /version:2.0 /entry:"DriverEntry@8" /incremental:no /pdb:"C:\my\mySoft\IK220_NT\Disk4\Release/IK220Drv.pdb" /map:"C:\my\mySoft\IK220_NT\Disk4\Release/IK220Drv.map" /debug /machine:I386 /nodefaultlib /out:"C:\my\mySoft\IK220_NT\Disk4\Release\IK220Drv.sys" /SUBSYSTEM:native 
+.\Release\initunlo.obj
+.\Release\ioctl.obj
+.\Release\log.obj
+.\Release\openclos.obj
+.\Release\pnp.obj
+.\Release\power.obj
+.\Release\qsfile.obj
+.\Release\registry.obj
+.\Release\utils.obj
+.\Release\wmi.obj
+.\Release\ik220.res
+]
+Erstellen der Befehlzeile "link.exe @C:\TEMP\RSP6A.tmp"
+<h3>Ausgabefenster</h3>
+Ressourcen werden kompiliert...
+Kompilierung läuft...
+initunlo.c
+ioctl.c
+log.c
+openclos.c
+pnp.c
+power.c
+qsfile.c
+registry.c
+utils.c
+wmi.c
+Generieren von Code...
+Linker-Vorgang läuft...
+
+
+
+<h3>Ergebnisse</h3>
+IK220Drv.sys - 0 Fehler, 0 Warnung(en)
+<h3>
+--------------------Konfiguration: ik220 - Win32 kernel driver (debug)--------------------
+</h3>
+<h3>Befehlszeilen</h3>
+Erstellen der temporären Datei  "C:\TEMP\RSP6C.bat" mit Inhalten
+[
+@echo off
+mc iklog.mc
+]
+Erstellen der Befehlzeile "C:\TEMP\RSP6C.bat"
+Creating command line "rc.exe /l 0x807 /x /fo"C:\my\mySoft\IK220_NT\Disk4\Debug/ik220.res" /i "Z:\MsvcJHCN\VC98\include" /i "C:\MsvcJHCN\VC98\include" /d "_DEBUG" "C:\my\mySoft\IK220_NT\Disk4\ik220.rc"" 
+Benutzerdefinierte Build-Stufe wird für .\iklog.mc ausgeführt
+MC: Compiling iklog.mc
+Erstellen der temporären Datei  "C:\TEMP\RSP6D.tmp" mit Inhalten
+[
+/nologo /G5 /Gz /MTd /W3 /Z7 /Od /Gy /X /I "Include" /I "c:\MsvcJHCN\ddk\inc" /I "c:\MsvcJHCN\ddk\inc\ddk" /I "c:\MsvcJHCN\VC98\include" /D "NT_DDK" /D BINARY_COMPATIBLE=0 /D "_DEBUG" /D "WIN32" /D "DBG" /D "RDRDBG" /D "SRVDBG" /D "_IDWBUILD" /D "CONDITION_HANDLING" /D "_X86_" /D "i386" /D "STD_CALL" /D "WIN32_LEAN_AND_MEAN" /D "NT_UP" /D "DEVL" /D "_DLL" /D "_UNICODE" /D NT_INST=0 /Fo"C:\my\mySoft\IK220_NT\Disk4\Debug/" /Fd"C:\my\mySoft\IK220_NT\Disk4\Debug/" /FD /QIfdiv- /QIf /QI0f /GF /c 
+"C:\my\mySoft\IK220_NT\Disk4\initunlo.c"
+"C:\my\mySoft\IK220_NT\Disk4\ioctl.c"
+"C:\my\mySoft\IK220_NT\Disk4\log.c"
+"C:\my\mySoft\IK220_NT\Disk4\openclos.c"
+"C:\my\mySoft\IK220_NT\Disk4\pnp.c"
+"C:\my\mySoft\IK220_NT\Disk4\power.c"
+"C:\my\mySoft\IK220_NT\Disk4\qsfile.c"
+"C:\my\mySoft\IK220_NT\Disk4\registry.c"
+"C:\my\mySoft\IK220_NT\Disk4\utils.c"
+"C:\my\mySoft\IK220_NT\Disk4\wmi.c"
+]
+Creating command line "cl.exe @C:\TEMP\RSP6D.tmp" 
+Erstellen der temporären Datei  "C:\TEMP\RSP6E.tmp" mit Inhalten
+[
+c:\MsvcJHCN\ddk\lib\checked\hal.lib c:\MsvcJHCN\ddk\lib\checked\ntoskrnl.lib c:\MsvcJHCN\ddk\lib\checked\wmilib.lib /nologo /base:"0x10000" /version:2.0 /stack:0x40000,0x1000 /entry:"DriverEntry@8" /incremental:no /pdb:"C:\my\mySoft\IK220_NT\Disk4\Debug/IK220Drv.pdb" /map:"C:\my\mySoft\IK220_NT\Disk4\Debug/IK220Drv.map" /debug /machine:I386 /nodefaultlib /out:"C:\my\mySoft\IK220_NT\Disk4\Debug\IK220Drv.sys" /debug:FULL /SUBSYSTEM:native /merge:_PAGE=PAGE /merge:_TEXT=.text /section:INIT,D /section:.text,EP /opt:REF /opt:ICF /driver /optidata /ignore:4078 
+.\Debug\initunlo.obj
+.\Debug\ioctl.obj
+.\Debug\log.obj
+.\Debug\openclos.obj
+.\Debug\pnp.obj
+.\Debug\power.obj
+.\Debug\qsfile.obj
+.\Debug\registry.obj
+.\Debug\utils.obj
+.\Debug\wmi.obj
+.\Debug\ik220.res
+]
+Erstellen der Befehlzeile "link.exe @C:\TEMP\RSP6E.tmp"
+<h3>Ausgabefenster</h3>
+Ressourcen werden kompiliert...
+Kompilierung läuft...
+initunlo.c
+ioctl.c
+log.c
+openclos.c
+pnp.c
+power.c
+qsfile.c
+registry.c
+utils.c
+wmi.c
+Generieren von Code...
+Linker-Vorgang läuft...
+
+
+
+<h3>Ergebnisse</h3>
+IK220Drv.sys - 0 Fehler, 0 Warnung(en)
+</pre>
+</body>
+</html>

@@ -1,0 +1,1 @@
+cmd_/root/ik220-driver/kdriver-clearsky/ik220.ko := ld -r -m elf_i386 -T /usr/src/linux-headers-2.6.32-5-common/scripts/module-common.lds --build-id -o /root/ik220-driver/kdriver-clearsky/ik220.ko /root/ik220-driver/kdriver-clearsky/ik220.o /root/ik220-driver/kdriver-clearsky/ik220.mod.o
