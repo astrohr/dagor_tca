@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 from flask import Flask
+from flask.ext.api import FlaskAPI
 import lights
 
-
-app = Flask(__name__)
+app = FlaskAPI(__name__)
 app.debug = True
 app.register_blueprint(lights.api, url_prefix=lights.DEFAULT_PREFIX)
 
