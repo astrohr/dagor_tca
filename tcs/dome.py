@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """Dagor dome rotation interface version 1.3.
 
 Usage:
