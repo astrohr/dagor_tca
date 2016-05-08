@@ -105,7 +105,7 @@ def resource():
         }, status.HTTP_200_OK
 
 
-@api.route('/state/', methods=['GET', 'PUT'])
+@api.route('/state/', methods=['GET', 'PUT', 'POST', ])
 @check_connectivity
 def state_resource():
     """
@@ -122,14 +122,14 @@ def state_resource():
 
     * [Up](..)
     """
-    if request.method in {'PUT', }:
+    if request.method in {'PUT', 'POST', }:
         n = request.data['n']
         dagor_lights.set_lights(n)
         return device_repr(), status.HTTP_202_ACCEPTED
     return device_repr()
 
 
-@api.route('/<regex("[0-9]+"):light_i>/', methods=['GET', 'POST', ])
+@api.route('/<regex("[0-9]+"):light_i>/', methods=['GET', 'PUT', 'POST', ])
 @set_renderers(BoolBrowsableAPIRenderer, BoolRenderer)
 @set_parsers(BoolParser)
 @check_connectivity
@@ -143,7 +143,7 @@ def light_resource(light_i):
      * [Up](..)
     """
     light_i = int(light_i)  # URL regex guarantees digits only
-    if request.method in {'POST', }:
+    if request.method in {'PUT', 'POST', }:
         # is body is empty, parsers never get called, so:
         if not request.content_length:
             raise ParseError('Empty request, use "true" or "false".')
