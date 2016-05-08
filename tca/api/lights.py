@@ -17,16 +17,18 @@ Options:
     --version      Show version.
 """
 
-import sys
 from functools import wraps
 from urlparse import parse_qs
 from docopt import docopt
 from flask import Blueprint, request, make_response
+from flask.ext.api.decorators import set_renderers, set_parsers
 from flask_api import FlaskAPI, status
 from flask_api.exceptions import ParseError
 from mock.mock import patch, MagicMock
 
 from tca import lights as dagor_lights
+from tca.api.utils import RegexConverter, BoolRenderer, BoolBrowsableAPIRenderer, \
+    BoolParser
 
 DEFAULT_PREFIX = '/lights'
 
@@ -37,7 +39,6 @@ api = Blueprint('lights', __name__)
 def fix_browsable_api_content(data):
     if "_content_type=" in data:
         query_params = parse_qs(data)
-        print(query_params)
         try:
             data = query_params['_content'][0]
         except IndexError:
@@ -124,7 +125,9 @@ def state_resource():
     return device_repr()
 
 
-@api.route('/<light_i>/', methods=['GET', 'POST', ])
+@api.route('/<regex("[0-9]+"):light_i>/', methods=['GET', 'POST', ])
+@set_renderers(BoolBrowsableAPIRenderer, BoolRenderer)
+@set_parsers(BoolParser)
 @check_connectivity
 def light_resource(light_i):
     """
@@ -136,13 +139,12 @@ def light_resource(light_i):
     """
     try:
         light_i = int(light_i)
+    except ValueError:
+        return {}, status.HTTP_404_NOT_FOUND
+    try:
         if request.method in {'POST', }:
-            data = request.get_data()
-            print(data)
-            data = fix_browsable_api_content(data)
-            print(data)
-            value = parse_light_repr(data)
-            dagor_lights.set_light(light_i, value)
+            data = request.data
+            dagor_lights.set_light(light_i, data)
         response = make_response(light_repr(light_i - 1))
         return response
     except ValueError as e:
@@ -151,6 +153,7 @@ def light_resource(light_i):
 
 def _run():
     app = FlaskAPI(__name__)
+    app.url_map.converters['regex'] = RegexConverter
     app.debug = True
     app.register_blueprint(api, url_prefix=DEFAULT_PREFIX)
     app.run("0.0.0.0")
@@ -165,10 +168,7 @@ def _run_mocked():
 
 
 if __name__ == '__main__':
-    args = docopt(__doc__, version=__doc__.split('\n'[0]))
-
-    if args['--version']:
-        sys.exit(0)
+    args = docopt(__doc__, version=__doc__.strip().split('\n')[0])
 
     if args['run']:
         if args['--mock']:
