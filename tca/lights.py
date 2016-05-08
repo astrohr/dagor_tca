@@ -21,6 +21,7 @@ from docopt import docopt
 import switches as dagor_switches
 
 
+
 def get_light(n):
     controller = dagor_switches.SwitchController()
     status = controller.status
@@ -28,7 +29,14 @@ def get_light(n):
 
 
 def get_lights():
-    return get_light(0) * 2 + get_light(1) * 1
+    controller = dagor_switches.SwitchController()
+    status = controller.status
+    return status[0] * 2 + status[1] * 1
+
+
+def set_light(light_i, state):
+    controller = dagor_switches.SwitchController()
+    controller.switch(light_i, state)
 
 
 def set_lights(n):

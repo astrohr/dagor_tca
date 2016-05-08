@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-from flask import Flask
-from flask.ext.api import FlaskAPI
+from flask_api import FlaskAPI
 import lights
 
 app = FlaskAPI(__name__)

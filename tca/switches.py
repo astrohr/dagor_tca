@@ -26,7 +26,8 @@ from time import sleep
 
 RESET_DISABLED = True
 SERIAL = {
-    'PORT' : '/dev/ttyUSB0',  # TCS
+    # 'PORT' : '/dev/ttyUSB0',  # TCS
+    'PORT' : '/dev/ttyUSB1',  # TCS
     #'PORT': '/dev/tty.usbserial-A703F1A5',
     'BAUDRATE': 9600,
     'TIMEOUT': 0.1,  # if no data available, block for max this many seconds
