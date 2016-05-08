@@ -26,9 +26,7 @@ from time import sleep
 
 RESET_DISABLED = True
 SERIAL = {
-    # 'PORT' : '/dev/ttyUSB0',  # TCS
-    'PORT' : '/dev/ttyUSB1',  # TCS
-    #'PORT': '/dev/tty.usbserial-A703F1A5',
+    'PORT': ['/dev/ttyUSB0', '/dev/ttyUSB1', ],
     'BAUDRATE': 9600,
     'TIMEOUT': 0.1,  # if no data available, block for max this many seconds
 }
@@ -74,7 +72,8 @@ class SwitchController(object):
         print('number of switches: {}'.format(self._n))
         for i in range(self._n):
             print(
-            "switch {}: {}".format(i + 1, "ON" if self._status[i] else "OFF"))
+                "switch {}: {}".format(i + 1,
+                                       "ON" if self._status[i] else "OFF"))
 
     def switch(self, n, state):
         if n == 'all':
@@ -94,10 +93,31 @@ class SwitchController(object):
             Throws CommunicationException.
         """
         self._serial = serial.Serial()
-        self._serial.port = self._SERIAL['PORT']
         self._serial.baudrate = self._SERIAL['BAUDRATE']
         self._serial.timeout = self._SERIAL['TIMEOUT']
-        self._serial.open()
+
+        def open_first_available_port():
+            """USB port (/dev/tty*) keeps changing, try multiple devices"""
+            devices = self._SERIAL['PORT'][:]
+            # but don't break if one port is specified (string, not a list):
+            if isinstance(devices, basestring):
+                devices = [devices, ]
+            # open first device that works:
+            while devices:
+                device = devices.pop()
+                self._serial.port = device
+                try:
+                    self._serial.open()
+                except serial.SerialException:
+                    # re-raise if this is last port:
+                    if not devices:
+                        raise
+                else:
+                    # successfully opened:
+                    return
+
+        open_first_available_port()
+
         while self._serial.read():
             pass
         if not self._RESET_DISABLED:
