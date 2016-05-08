@@ -32,6 +32,9 @@ SERIAL = {
 }
 
 
+class DeviceException(Exception):
+    pass
+
 class SwitchController(object):
     """ Controls one or more switches, responds to serial/USB communication.
 
@@ -115,8 +118,11 @@ class SwitchController(object):
                 else:
                     # successfully opened:
                     return
-
-        open_first_available_port()
+        try:
+            open_first_available_port()
+        except serial.SerialException as e:
+            raise CommunicationException(
+                'Cannot connect to Arduino: {}'.format(e))
 
         while self._serial.read():
             pass

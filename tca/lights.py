@@ -20,6 +20,7 @@ import sys
 from docopt import docopt
 import switches as dagor_switches
 
+CommunicationException = dagor_switches.CommunicationException
 
 
 def get_light(n):

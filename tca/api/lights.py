@@ -18,18 +18,15 @@ Options:
 """
 
 import sys
+from functools import wraps
 from urlparse import parse_qs
 from docopt import docopt
 from flask import Blueprint, request, make_response
 from flask_api import FlaskAPI, status
 from flask_api.exceptions import ParseError
-from flask_api.decorators import set_renderers
 from mock.mock import patch, MagicMock
 
-from renderers import TextRenderer, BrowsableAPITextRenderer
-
 from tca import lights as dagor_lights
-
 
 DEFAULT_PREFIX = '/lights'
 
@@ -55,21 +52,36 @@ def device_repr():
 
 
 def light_repr(n):
-    return "on" if dagor_lights.get_light(n) else "off"
+    return "true" if dagor_lights.get_light(n) else "false"
 
 
 def parse_light_repr(repr):
     try:
-        if repr.lower().strip() == "on":
+        if repr.lower().strip() == "true":
             return True
-        if repr.lower().strip() == "off":
+        if repr.lower().strip() == "false":
             return False
         raise ValueError
     except ValueError:
-        raise ParseError('invalid representation, use "on" or "off"')
+        raise ParseError('invalid representation, use "true" or "false"')
+
+
+def check_connectivity(func):
+    @wraps(func)
+    def func_wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except dagor_lights.CommunicationException as e:
+            return {
+                'ready': False,
+                'error': '{}'.format(e)
+            }, status.HTTP_503_SERVICE_UNAVAILABLE
+    return func_wrapper
+
 
 
 @api.route('/', methods=['GET', ])
+@check_connectivity
 def resource():
     """
     Hyperlinks:
@@ -78,10 +90,18 @@ def resource():
     * [Light 1](./1/)
     * [Light 2](./2/)
     """
-    return device_repr()
+    try:
+        dagor_lights.get_lights()
+    except:
+        raise
+    else:
+        return {
+            'ready': True,
+        }, status.HTTP_200_OK
 
 
 @api.route('/state/', methods=['GET', 'PUT'])
+@check_connectivity
 def state_resource():
     """
     State for all light (two of them).
@@ -105,7 +125,7 @@ def state_resource():
 
 
 @api.route('/<light_i>/', methods=['GET', 'POST', ])
-@set_renderers(BrowsableAPITextRenderer, TextRenderer)
+@check_connectivity
 def light_resource(light_i):
     """
     State for a single light. It is either ON or OFF (case insensitive).
