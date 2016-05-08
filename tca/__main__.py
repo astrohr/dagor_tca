@@ -239,6 +239,7 @@ def _main(args):
             dagor_position.set_internal(dagor_position.celest_to_internal(celest), args['blind'])
 
     if args['lights']:
+        n = None
         if args['0']:
             n = 0
         elif args['1']:
@@ -247,8 +248,10 @@ def _main(args):
             n = 2
         elif args['3']:
             n = 3
-        dagor_lights.set_lights(n)
-        
+        if n is None:
+            print dagor_lights.get_lights()
+        else:
+            dagor_lights.set_lights(n)
 
 
 def move_to_local(local=None, celest=None, chirality=None, quick=False, track=False):
