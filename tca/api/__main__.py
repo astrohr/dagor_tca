@@ -22,7 +22,7 @@ import lights
 from tca.api.utils import RegexConverter
 
 app = FlaskAPI(__name__)
-app.debug = True
+app.debug = False
 app.url_map.converters['regex'] = RegexConverter
 app.register_blueprint(lights.api, url_prefix=lights.DEFAULT_PREFIX)
 
@@ -37,9 +37,7 @@ def _run():
 
 
 if __name__ == '__main__':
-
     args = docopt(__doc__, version=__doc__.strip().split('\n')[0])
-
     if args['run']:
         _run()
 

@@ -1,5 +1,6 @@
 # coding=utf-8
-from flask.ext.api import renderers, parsers, exceptions
+from flask.ext.api import renderers, parsers, exceptions, status
+from flask.ext.api.decorators import set_renderers
 from werkzeug.routing import BaseConverter
 
 
@@ -47,3 +48,11 @@ class BoolParser(parsers.BaseParser):
         if data == "true":
             return True
         raise exceptions.ParseError('Invalid request, use "true" or "false"')
+
+
+@set_renderers(renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
+def render_error(message):
+    """ Render errors in JSON. Also make sure JSONRenderer is set."""
+    return {
+       'message': '{}'.format(message),
+    }, status.HTTP_400_BAD_REQUEST
