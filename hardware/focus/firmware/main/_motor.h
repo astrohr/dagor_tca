@@ -23,7 +23,7 @@ typedef struct {
 
 
 typedef struct {
-  int64_t move_by;
+  int32_t move_by;
   bool stop;
 } MotorSet;
 
@@ -32,8 +32,8 @@ class Motor : public Module
 {
 private:
   uint32_t last_millis;
-  int64_t current_position;
-  int64_t target_position;
+  int32_t current_position;
+  int32_t target_position;
   AccelStepper stepper;
 
 public:

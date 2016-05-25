@@ -45,8 +45,9 @@ void Motor::loop()
 
 
   // translate "move_by":
-  target_position = current_position + set.move_by;
-  set.move_by = 0;
+  if (set.move_by) {
+    target_position = current_position + set.move_by;
+  }
 
   // figure out where to stop if so commanded:
   bool flying = false;
@@ -59,9 +60,14 @@ void Motor::loop()
   if (target_position != current_position || flying) {
       stepper.enableOutputs();
       stepper.moveTo(target_position);
-
+      get.idle = false;
   } else {
       stepper.disableOutputs();  // TODO Maybe this is not needed at all? Will driver board keep colis energised anyway? Should it? Do we care? 42?
+      get.idle = true;
   }
+
+  // reset setters:
+  set.move_by = 0;
+  set.stop = false;
 
 }  // void Motor::loop()

@@ -20,6 +20,7 @@
 
 void setup()
 {
+  Serial.begin(9600);
   // Call setup() for every module:
   unsigned int i;
   for (i = 0; i < ModulesRegistry::count; i++) {

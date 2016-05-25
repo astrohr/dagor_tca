@@ -18,8 +18,10 @@
 
 #define STATUS_RAMP_MOVE_DISTANCE 300
 #define STATUS_MANUAL_MOVE_DISTANCE 100
-#define STATUS_LARGE_MOVE_DISTANCE 2000
+#define STATUS_LARGE_MOVE_DISTANCE 5000
 
+
+#define STATUS_INTERVAL 100
 
 typedef struct {
   int8_t buttons_direction;  // -1, 0, 1
@@ -40,6 +42,9 @@ private:
   bool moving_single_manual_move;
   bool flying_up;
   bool flying_dn;
+  bool moving_up;
+  bool moving_dn;
+  uint32_t last_millis;
 public:
   StatusGet get;
   StatusSet set;
@@ -50,6 +55,7 @@ public:
     moving_single_manual_move{false},
     flying_up{false},
     flying_dn{false},
+    last_millis{0},
     get{
       0,  // button_direction
       false,  // can_go_up
