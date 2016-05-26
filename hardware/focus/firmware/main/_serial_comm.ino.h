@@ -70,6 +70,8 @@ void SerialComm::loop()
     memcpy(protocol->set.command, data_received, PROTOCOL_COMMAND_LEN);
     // Set printer for reply:
     protocol->set.reply = &Serial;
+    Serial.println("Sent command:");
+    Serial.println(data_received);
 
     #else  // #ifdef PROTOCOL_H
     Serial.print(F("Got command:\n"));

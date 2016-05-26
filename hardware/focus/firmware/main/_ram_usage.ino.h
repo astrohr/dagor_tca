@@ -21,7 +21,6 @@
 // (copied from default BlinkWithoutDelay.ino example)
 void Ram::setup()
 {
-  Serial.begin(SERIAL_BAUD_RATE);
   for (step_i=0; step_i<RAM_MEASUREMENTS_N; step_i++) {
     measurements[step_i] = -1;
   }

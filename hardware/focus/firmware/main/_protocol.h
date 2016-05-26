@@ -11,6 +11,10 @@
 #define PROTOCOL_ORIGIN_RADIO 2
 
 
+#define PROTOCOL_REPLY_SET_POSITION 10
+#define PROTOCOL_REPLY_TEST 20
+
+
 typedef struct {
   bool busy;
 } ProtocolGet;
@@ -26,6 +30,7 @@ class Protocol : public Module
 {
 private:
   Print * reply_printer;
+  uint8_t reply_case;
 public:
   ProtocolGet get;
   ProtocolSet set;

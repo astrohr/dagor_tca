@@ -20,12 +20,15 @@
 typedef struct {
   bool idle;
   int direction;
+  uint32_t position;
 } MotorGet;
 
 
 typedef struct {
   int32_t move_by;
   bool stop;
+  bool position;
+  int32_t position_value;
 } MotorSet;
 
 
@@ -57,6 +60,8 @@ public:
     set{
       0,  // move_by
       false,  // stop
+      false,  // position
+      0,  // position_value
     }
   {
   };

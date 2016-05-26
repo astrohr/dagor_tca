@@ -43,6 +43,7 @@ void Motor::loop()
 
   uint32_t millis_now = millis();
   current_position = stepper.currentPosition();
+  get.position = current_position;
 
   // don't check position too often, we must give stepper a chanse to actually move:
   if (millis_now - last_millis < MOTOR_STEPPER_LOGIC_INTERVAL) {
@@ -50,6 +51,19 @@ void Motor::loop()
   }
   last_millis = millis_now;
 
+  if (set.position) {
+    if (get.idle) {
+      int32_t delta = set.position_value - current_position;
+      current_position += delta;
+      target_position += delta;
+      stepper.setCurrentPosition(current_position);
+      get.position = current_position;
+Serial.println(F("New position: "));
+Serial.println(current_position);
+    }
+    set.position = false;
+    set.position_value = 0;
+  }
 
   // check if need to stop hard (by a limit switch):
   bool flying_by = false;
