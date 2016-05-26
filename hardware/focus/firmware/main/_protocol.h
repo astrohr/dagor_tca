@@ -5,7 +5,7 @@
 #ifndef PROTOCOL_H
 #define PROTOCOL_H
 
-#define PROTOCOL_COMMAND_LEN 40  // TODO document this in wiki (or issue)
+#define PROTOCOL_COMMAND_LEN 40
 #define PROTOCOL_ORIGIN_NONE 0
 #define PROTOCOL_ORIGIN_SERIAL 1
 #define PROTOCOL_ORIGIN_RADIO 2

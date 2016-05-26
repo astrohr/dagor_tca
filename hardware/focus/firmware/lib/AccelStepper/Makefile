@@ -4,11 +4,11 @@
 #
 # Author: Mike McCauley (mikem@airspayce.com)
 # Copyright (C) 2010 Mike McCauley
-# $Id: Makefile,v 1.4 2013/03/21 21:48:27 mikem Exp mikem $
+# $Id: Makefile,v 1.6 2015/08/25 04:57:29 mikem Exp mikem $
 
 PROJNAME = AccelStepper
 VERSION_MAJOR = 1
-VERSION_MINOR = 45
+VERSION_MINOR = 51
 
 DISTFILE = $(PROJNAME)-$(VERSION_MAJOR).$(VERSION_MINOR).zip
 

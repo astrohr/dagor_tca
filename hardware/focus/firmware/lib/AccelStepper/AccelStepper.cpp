@@ -1,7 +1,7 @@
 // AccelStepper.cpp
 //
 // Copyright (C) 2009-2013 Mike McCauley
-// $Id: AccelStepper.cpp,v 1.19 2014/10/31 06:05:27 mikem Exp mikem $
+// $Id: AccelStepper.cpp,v 1.21 2015/08/25 04:57:29 mikem Exp mikem $
 
 #include "AccelStepper.h"
 
@@ -45,11 +45,10 @@ boolean AccelStepper::runSpeed()
 	return false;
 
     unsigned long time = micros();
-    // Gymnastics to detect wrapping of either the nextStepTime and/or the current time
     unsigned long nextStepTime = _lastStepTime + _stepInterval;
+    // Gymnastics to detect wrapping of either the nextStepTime and/or the current time
     if (   ((nextStepTime >= _lastStepTime) && ((time >= nextStepTime) || (time < _lastStepTime)))
 	|| ((nextStepTime < _lastStepTime) && ((time >= nextStepTime) && (time < _lastStepTime))))
-
     {
 	if (_direction == DIRECTION_CW)
 	{
@@ -94,6 +93,7 @@ void AccelStepper::setCurrentPosition(long position)
     _targetPos = _currentPos = position;
     _n = 0;
     _stepInterval = 0;
+    _speed = 0.0;
 }
 
 void AccelStepper::computeNewSpeed()
@@ -272,6 +272,11 @@ void AccelStepper::setMaxSpeed(float speed)
     }
 }
 
+float   AccelStepper::maxSpeed()
+{
+    return _maxSpeed;
+}
+
 void AccelStepper::setAcceleration(float acceleration)
 {
     if (acceleration == 0.0)
@@ -280,9 +285,8 @@ void AccelStepper::setAcceleration(float acceleration)
     {
 	// Recompute _n per Equation 17
 	_n = _n * (_acceleration / acceleration);
-	// New c0 per Equation 7
-//	_c0 = sqrt(2.0 / acceleration) * 1000000.0; // Accelerates at half the expected rate. Why?
-	_c0 = sqrt(1.0/acceleration) * 1000000.0;
+	// New c0 per Equation 7, with correction per Equation 15
+	_c0 = 0.676 * sqrt(2.0 / acceleration) * 1000000.0; // Equation 15
 	_acceleration = acceleration;
 	computeNewSpeed();
     }
@@ -537,7 +541,10 @@ void    AccelStepper::disableOutputs()
 
     setOutputPins(0); // Handles inversion automatically
     if (_enablePin != 0xff)
+    {
+        pinMode(_enablePin, OUTPUT);
         digitalWrite(_enablePin, LOW ^ _enableInverted);
+    }
 }
 
 void    AccelStepper::enableOutputs()
@@ -632,4 +639,9 @@ void AccelStepper::stop()
 	else
 	    move(-stepsToStop);
     }
+}
+
+bool AccelStepper::isRunning()
+{
+    return !(_speed == 0.0 && _targetPos == _currentPos);
 }

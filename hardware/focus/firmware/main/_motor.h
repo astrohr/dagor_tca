@@ -19,6 +19,7 @@
 
 typedef struct {
   bool idle;
+  int direction;
 } MotorGet;
 
 
@@ -34,6 +35,7 @@ private:
   uint32_t last_millis;
   int32_t current_position;
   int32_t target_position;
+  bool stopping_hard;
   AccelStepper stepper;
 
 public:
@@ -44,9 +46,13 @@ public:
 //initializers:
   Motor():
     last_millis{0},
+    current_position{0},
+    target_position{0},
+    stopping_hard{false},
     stepper(AccelStepper::HALF4WIRE, MOTOR_1_1, MOTOR_1_2, MOTOR_2_1, MOTOR_2_2, false),
     get{
       true,  // idle
+      0,  // direction
     },
     set{
       0,  // move_by

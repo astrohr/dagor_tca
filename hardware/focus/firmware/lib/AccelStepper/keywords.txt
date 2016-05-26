@@ -33,7 +33,7 @@ enableOutputs	KEYWORD2
 setMinPulseWidth	KEYWORD2
 setEnablePin	KEYWORD2
 setPinsInverted	KEYWORD2
-
+maxSpeed	KEYWORD2
 #######################################
 # Constants (LITERAL1)
 #######################################

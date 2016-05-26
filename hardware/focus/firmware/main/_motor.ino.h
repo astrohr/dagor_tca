@@ -10,7 +10,12 @@
 #define MOTOR_INO_H
 
 
-#define MOTOR_MAX_SPEED 1000
+#include "_status.h"
+
+
+#define MOTOR_MAX_SPEED 800
+#define MOTOR_FULL_SPEED 250
+#define MOTOR_ACC_MIN 150
 
 
 void Motor::setup()
@@ -20,10 +25,12 @@ void Motor::setup()
   pinMode(MOTOR_2_1, OUTPUT);
   pinMode(MOTOR_1_2, OUTPUT);
 
+
+  // TODO EEPROM this, and configure via serial
   int acc;
-  int speed = 500;
-  acc = (int) (500 - speed) * -3 + 500;
-  if (acc < 200) acc = 200;
+  int speed = MOTOR_FULL_SPEED;
+  acc = (int) 3 * speed - 1000;
+  if (acc < MOTOR_ACC_MIN) acc = MOTOR_ACC_MIN;
   stepper.setMaxSpeed(speed);
   stepper.setAcceleration(acc);
 }
@@ -44,30 +51,44 @@ void Motor::loop()
   last_millis = millis_now;
 
 
+  // check if need to stop hard (by a limit switch):
+  bool flying_by = false;
+  if (status->get.stopping_hard && ! stopping_hard) {
+    stopping_hard = true;
+    flying_by = true;
+    target_position = current_position;
+    // cancel any move_by that might be set:
+    set.move_by = 0;
+  }
+
   // translate "move_by":
   if (set.move_by) {
     target_position = current_position + set.move_by;
   }
 
-  // figure out where to stop if so commanded:
-  bool flying = false;
-  if (set.stop) {
-    flying = true;  // prevent abrupt stop, because target and current position match, but motor is possibly going fast
-    target_position = current_position;
-  }
 
   // do the actiual stepping if needed, or power down motor if not:
-  if (target_position != current_position || flying) {
+  if (target_position != current_position || flying_by) {
       stepper.enableOutputs();
       stepper.moveTo(target_position);
       get.idle = false;
   } else {
       stepper.disableOutputs();  // TODO Maybe this is not needed at all? Will driver board keep colis energised anyway? Should it? Do we care? 42?
       get.idle = true;
+      stopping_hard = false;
   }
 
   // reset setters:
   set.move_by = 0;
-  set.stop = false;
+
+  // set getters:
+  long distance_to_go = stepper.distanceToGo();
+  if (distance_to_go > 0) {
+    get.direction = 1;
+  } else if (distance_to_go < 0) {
+    get.direction = -1;
+  } else {
+    get.direction = 0;
+  }
 
 }  // void Motor::loop()

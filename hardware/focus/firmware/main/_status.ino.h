@@ -31,125 +31,150 @@ void Status::loop()
   }
   last_millis = millis_now;
 
-  // limit switches:
-  bool _limited_up = digitalRead(STATUS_LIMIT_UP);
-  bool _limited_dn = digitalRead(STATUS_LIMIT_DN);
-  get.can_go_up = ! _limited_up;
-  get.can_go_dn = ! _limited_dn;
+  //print(&Serial);
 
-  bool _future_flying_up = false;
-  bool _future_flying_dn = false;
+  // by default, do nothing:
+  int future_action = STATUS_COMMAND_NOOP;
+  int future_buttons_direction = STATUS_COMMAND_NOOP;
   // movement for motor:
   int32_t move_by = 0;
 
+  // don't bother with anyuthing else while stopping because of a limit switch:
+  if (get.stopping_hard) {
+    // ... only detect when stopping is finished:
+    if (motor->get.idle) {
+      get.stopping_hard = false;
+    }
+    return;
+  }
 
-  // by default, do nothing:
-  get.action = STATUS_COMMAND_NOOP;
+  // set motion flags:
+  if (motor->get.idle) {
+    get.stopping_hard = false;
+    get.stopping_soft = false;
+    get.moving_up = false;
+    get.moving_dn = false;
+    // also, we don't intend anything at this point:
+    get.intent_up = false;
+    get.intent_dn = false;
+    // and any action has been accomplished, so clear that as well:
+    get.action = STATUS_COMMAND_NOOP;
+    get.idle = true;
+
+  } else {
+    get.moving_up = motor->get.direction > 0;
+    get.moving_dn = motor->get.direction < 0;
+  }
+
+  // set limit switches:
+  get.can_go_up = ! digitalRead(STATUS_LIMIT_UP);
+  get.can_go_dn = ! digitalRead(STATUS_LIMIT_DN);
+
+
+  // handle hard stopping, i.e. limit switches:
+  if (!get.can_go_up && get.moving_up) {
+    get.stopping_hard = true;
+    return;
+  }
+  if (!get.can_go_dn && get.moving_dn) {
+    get.stopping_hard = true;
+    return;
+  }
+  // hard stop can also be triggerd by setter:
+  if (set.hard_stop) {
+    get.stopping_hard = true;
+    set.hard_stop = false;
+    return;
+  }
+
 
   // read command from buttons:
   #ifdef BUTTONS_H
   if (buttons->get.button_up && ! buttons->get.button_dn) {
-    get.buttons_direction = STATUS_COMMAND_UP;
+    future_buttons_direction = STATUS_COMMAND_UP;
   } else if (! buttons->get.button_up && buttons->get.button_dn) {
-    get.buttons_direction = STATUS_COMMAND_DN;
+    future_buttons_direction = STATUS_COMMAND_DN;
   } else {
     // both buttons or no buttons:
-    get.buttons_direction = STATUS_COMMAND_NOOP;
+    future_buttons_direction = STATUS_COMMAND_NOOP;
   }
 
-  // now figure out what action should be taken:
-  if (get.buttons_direction == STATUS_COMMAND_UP && get.can_go_up) {
-    get.action = STATUS_COMMAND_UP;
-
+  // set action from button command:
+  if (future_buttons_direction == STATUS_COMMAND_UP && get.can_go_up) {
+    future_action = STATUS_COMMAND_UP;
     if (buttons->get.button_up_holding) {
       move_by = STATUS_LARGE_MOVE_DISTANCE;
-      _future_flying_up = true;
-
     } else {  // single click:
-      _future_flying_up = false;
       move_by = STATUS_MANUAL_MOVE_DISTANCE;
     }
-
   // ... same for down:
-  } else if (get.buttons_direction == STATUS_COMMAND_DN && get.can_go_dn) {
-    get.action = STATUS_COMMAND_DN;
-
+  } else if (future_buttons_direction == STATUS_COMMAND_DN && get.can_go_dn) {
+    future_action = STATUS_COMMAND_DN;
     if (buttons->get.button_dn_holding) {
       move_by = -1 * STATUS_LARGE_MOVE_DISTANCE;
-      _future_flying_dn = true;
-
     } else {  // single click:
-      _future_flying_dn = false;
       move_by = -1 * STATUS_MANUAL_MOVE_DISTANCE;
     }
+  // clear buttons for future loop:
+  } else {
+      future_buttons_direction = STATUS_COMMAND_NOOP;
+  }
 
-
+  // if a button was just released, set quick stop:
+  if (!future_action && get.buttons_direction) {
+    move_by = STATUS_RAMP_MOVE_DISTANCE * get.buttons_direction;
+    future_action = get.buttons_direction;  // should be the same as get.action
   }
 
   #endif  // #ifdef BUTTONS_H
 
 
-  // action from serial:
-
-  if (get.action == STATUS_COMMAND_NOOP) {
-    // TOOD
-    // also set move_by!
-  }
-
-
-
-  // if flying just ended (e.g. a button is no longer held):
-  if (flying_up && !get.action) {
-    move_by = STATUS_RAMP_MOVE_DISTANCE;
-    get.action = STATUS_COMMAND_UP;
-  }
-  if (flying_dn && !get.action) {
-    move_by = -1 * STATUS_RAMP_MOVE_DISTANCE;
-    get.action = STATUS_COMMAND_DN;
-  }
-
-  // limit switch reached:
-
-  if (_limited_up) {
-    if (moving_up) {
-      get.action = STATUS_COMMAND_STOP;
-      move_by = 0;
-    } else if (get.action == STATUS_COMMAND_UP) {
-      get.action = STATUS_COMMAND_NOOP;
-      move_by = 0;
-    }
-  }
-  if (_limited_dn) {
-    if (moving_dn) {
-      get.action = STATUS_COMMAND_STOP;
-Serial.println("STOP");
-      move_by = 0;
-    } else if (get.action == STATUS_COMMAND_DN) {
-      get.action = STATUS_COMMAND_NOOP;
-      move_by = 0;
+  // action from setter (i.e. from protocol):
+  if (future_action == STATUS_COMMAND_NOOP) {
+    if (set.step_by) {
+      move_by = set.step_by;
+      future_action = (set.step_by > 0) ? STATUS_COMMAND_UP : STATUS_COMMAND_DN;
+      // clear setter:
+      set.step_by = 0;
     }
   }
 
-  // issue movement command to motor:
-  if (get.action) {
-    if (get.action == STATUS_COMMAND_STOP) {
-      motor->set.stop = true;
-      move_by = 0;
-    }
+  // write move_by to motor:
+  if (future_action) {
     motor->set.move_by = move_by;
   }
 
-  if (move_by != 0) {
-    moving_up = (bool) (move_by > 0);
-    moving_dn = (bool) (move_by < 0);
-  } else {
-    if (motor->get.idle) {
-      moving_up = false;
-      moving_dn = false;
-    }
+  // set flags for next loop:
+  get.buttons_direction = future_buttons_direction;
+  get.action = future_action;
+  if (future_action) {
+    get.intent_up = future_action > 0;
+    get.intent_dn = future_action < 0;
   }
 
-  flying_up = _future_flying_up;
-  flying_dn = _future_flying_dn;
+  #ifdef RAM_USAGE_H
+  ram->measure(2);
+  #endif
+}
 
+
+
+void Status::print(Print* printer)
+{
+  printer->print(F("idle: "));
+  printer->println(get.idle);
+  printer->print(F("stopping_hard: "));
+  printer->println(get.stopping_hard);
+  printer->print(F("moving_up: "));
+  printer->println(get.moving_up);
+  printer->print(F("moving_dn: "));
+  printer->println(get.moving_dn);
+  printer->print(F("intent_up: "));
+  printer->println(get.intent_up);
+  printer->print(F("intent_dn: "));
+  printer->println(get.intent_dn);
+  printer->print(F("can_go_up: "));
+  printer->println(get.can_go_up);
+  printer->print(F("can_go_dn: "));
+  printer->println(get.can_go_dn);
 }
