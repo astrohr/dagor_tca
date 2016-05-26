@@ -37,6 +37,8 @@ void Protocol::loop()
   #endif  // #ifdef MOTOR_H
 
   if (replied) {
+    // make a blank line:
+    reply_printer->print(F("\n"));
     // reset flags:
     get.busy = false;
     // also clear reference to the printer, for good measure:
@@ -77,7 +79,7 @@ void Protocol::loop()
   #ifdef STATUS_H
   } else if (command == "status") {
     // calculate how many lines are going to be in the reply:
-    int status_reply_count = 8;
+    int status_reply_count = 9;
     // first line of the reply, with the number of lines to follow:
     reply_printer->print(F("status "));
     reply_printer->print(status_reply_count);
@@ -85,14 +87,25 @@ void Protocol::loop()
     status->print(&Serial);  // TODO this is ok, but it's better to trigger prints via status->set.something
 
   } else if (command.substring(0, 8)  == "step by ") {
+    reply_printer->print(F("ok 0\n"));
     String data = command.substring(8);
     char buf[data.length() + 1];
     data.toCharArray(buf, data.length() + 1);
     int value = atoi(buf);
     status->set.step_by = value;
 
+  } else if (command.substring(0, 8)  == "step to ") {
+    reply_printer->print(F("ok 0\n"));
+    String data = command.substring(8);
+    char buf[data.length() + 1];
+    data.toCharArray(buf, data.length() + 1);
+    int value = atoi(buf);
+    status->set.step_by = value - motor->get.position;
+
   } else if (command == "stop") {
     status->set.hard_stop = true;
+    reply_printer->print(F("stopping 0\n"));
+
   #endif  //  #ifdef STATUS_H
 
   #ifdef MOTOR_H
@@ -112,15 +125,16 @@ void Protocol::loop()
   #endif  //  #ifdef MOTOR_H
 
   } else if (command == "" || command == "help") {
-    int help_reply_count = 5;
+    int help_reply_count = 6;
     reply_printer->print(F("help "));
     reply_printer->print(help_reply_count);
     reply_printer->print(F("\n"));
     reply_printer->print(F("available commands:\n"));
     reply_printer->print(F("status\n"));
-    reply_printer->print(F("step by <number_of_steps>\n"));
+    reply_printer->print(F("step by <N>\n"));
+    reply_printer->print(F("step to <N>\n"));
     reply_printer->print(F("position\n"));
-    reply_printer->print(F("position set <current_number_of_steps>\n"));
+    reply_printer->print(F("position set <N>\n"));
 
   } else {
     reply_printer->print(F("error 2\n"));
@@ -134,12 +148,14 @@ void Protocol::loop()
 
   // clear other flags if replied:
   if (!deferred_reply_case) {
+    // make a blank line:
+    reply_printer->print(F("\n"));
     // reset flags:
     get.busy = false;
     // also clear reference to the printer, for good measure:
     set.reply = NULL;
     reply_printer = NULL;
-  } 
+  }
 
   #ifdef RAM_USAGE_H
   ram->measure_now(4);

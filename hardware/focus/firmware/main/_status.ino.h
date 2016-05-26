@@ -165,9 +165,10 @@ void Status::loop()
 }
 
 
-
 void Status::print(Print* printer)
 {
+  printer->print(F("position: "));
+  printer->println(motor->get.position);
   printer->print(F("idle: "));
   printer->println(get.idle);
   printer->print(F("stopping_hard: "));
