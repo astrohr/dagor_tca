@@ -18,7 +18,7 @@
 
 void SerialComm::setup()
 {
-  //Serial.begin(SERIAL_BAUD_RATE);
+  Serial.begin(SERIAL_BAUD_RATE);
   //while (!Serial) ; // Wait for serial port to become available
 }
 
