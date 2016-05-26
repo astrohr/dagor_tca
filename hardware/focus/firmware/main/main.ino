@@ -8,7 +8,7 @@
 
 #define MODULE_MAX_N 10
 #include "modules.h"
-#include "_ram_usage.ino.h"
+//#include "_ram_usage.ino.h"
 
 #include "_blink.ino.h"
 #include "_protocol.ino.h"

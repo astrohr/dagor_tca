@@ -133,9 +133,16 @@ void Status::loop()
   if (future_action == STATUS_COMMAND_NOOP) {
     if (set.step_by) {
       move_by = set.step_by;
-      future_action = (set.step_by > 0) ? STATUS_COMMAND_UP : STATUS_COMMAND_DN;
       // clear setter:
       set.step_by = 0;
+      // decide future action:
+      if (move_by > 0 && ! get.can_go_up) {
+        move_by = 0;
+      } else if (move_by < 0 && ! get.can_go_dn) {
+        move_by = 0;
+      } else {
+        future_action = (set.step_by > 0) ? STATUS_COMMAND_UP : STATUS_COMMAND_DN;
+      }
     }
   }
 

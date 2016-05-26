@@ -53,36 +53,24 @@ void Protocol::loop()
     reply_printer->print(F("\n"));
     status->print(&Serial);  // TODO this is ok, but it's better to trigger prints via status->set.something
 
-  } else if (command.substring(0, 7)  == "step_by") {
-    String data = command.substring(7);
+  } else if (command.substring(0, 8)  == "step by ") {
+    String data = command.substring(8);
     char buf[data.length() + 1];
     data.toCharArray(buf, data.length() + 1);
-    int value = (int) atof(buf);  // TODO use atoi ?
+    int value = atoi(buf);
     status->set.step_by = value;
 
   } else if (command.substring(0, 7)  == "stop") {
     status->set.hard_stop = true;
 
   } else if (command == "" || command == "help") {
-    int help_reply_count = 2;
-    #ifdef CLOCK_H
-    help_reply_count += 2;
-    #endif
-    #ifdef SENSORS_H
-    help_reply_count += 1;
-    #endif
+    int help_reply_count = 3;
     reply_printer->print(F("help "));
     reply_printer->print(help_reply_count);
     reply_printer->print(F("\n"));
     reply_printer->print(F("available commands:\n"));
     reply_printer->print(F("status\n"));
-    #ifdef CLOCK_H
-    reply_printer->print(F("clock\n"));
-    reply_printer->print(F("clock set <unix_timestamp>\n"));
-    #endif
-    #ifdef SENSORS_H
-    reply_printer->print(F("data\n"));
-    #endif
+    reply_printer->print(F("step by <number_of_steps>\n"));
 
   } else {
     reply_printer->print(F("error 2\n"));
