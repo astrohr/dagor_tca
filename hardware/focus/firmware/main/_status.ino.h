@@ -102,7 +102,7 @@ void Status::loop()
   // set action from button command:
   if (future_buttons_direction == STATUS_COMMAND_UP && get.can_go_up) {
     future_action = STATUS_COMMAND_UP;
-    if (buttons->get.button_up_holding) {
+    if (buttons->get.button_up_hold) {
       move_by = STATUS_LARGE_MOVE_DISTANCE;
     } else {  // single click:
       move_by = STATUS_MANUAL_MOVE_DISTANCE;
@@ -110,7 +110,7 @@ void Status::loop()
   // ... same for down:
   } else if (future_buttons_direction == STATUS_COMMAND_DN && get.can_go_dn) {
     future_action = STATUS_COMMAND_DN;
-    if (buttons->get.button_dn_holding) {
+    if (buttons->get.button_dn_hold) {
       move_by = -1 * STATUS_LARGE_MOVE_DISTANCE;
     } else {  // single click:
       move_by = -1 * STATUS_MANUAL_MOVE_DISTANCE;
