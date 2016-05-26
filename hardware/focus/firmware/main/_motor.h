@@ -20,7 +20,7 @@
 typedef struct {
   bool idle;
   int direction;
-  uint32_t position;
+  int32_t position;
 } MotorGet;
 
 

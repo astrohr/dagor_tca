@@ -11,11 +11,11 @@
 //#include "_ram_usage.ino.h"
 
 #include "_blink.ino.h"
+#include "_buttons.ino.h"
+#include "_motor.ino.h"
+#include "_status.ino.h"
 #include "_protocol.ino.h"
 #include "_serial_comm.ino.h"
-//#include "_buttons.ino.h"
-//#include "_motor.ino.h"
-//#include "_status.ino.h"
 
 
 void setup()

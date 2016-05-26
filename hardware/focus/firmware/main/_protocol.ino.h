@@ -20,13 +20,9 @@ void Protocol::loop()
 
   // handle reply from previous loops:
   bool replied = false;
-  if (reply_case == PROTOCOL_REPLY_TEST) {
-    reply_printer->print(F("deferred reply\n"));
-    replied = true;
-  }
 
   #ifdef MOTOR_H
-  if (reply_case == PROTOCOL_REPLY_SET_POSITION) {
+  if (deferred_reply_case == PROTOCOL_REPLY_SET_POSITION) {
 
     if (motor->get.idle) {
       reply_printer->print(F("ok 1\n"));
@@ -41,15 +37,13 @@ void Protocol::loop()
   #endif  // #ifdef MOTOR_H
 
   if (replied) {
-    Serial.println("Clearing printer 1");
     // reset flags:
     get.busy = false;
     // also clear reference to the printer, for good measure:
-    //set.reply = NULL;
-    //reply_printer = NULL;
-    Serial.println("Cleared printer 1");
+    set.reply = NULL;
+    reply_printer = NULL;
     set.command[0] = '\0';
-    reply_case = 0;
+    deferred_reply_case = 0;
     return;
   }
 
@@ -77,13 +71,10 @@ void Protocol::loop()
   // BTW, that's not used yet
   get.busy = true;
 
-Serial.println(F("COMMAND:"));
-Serial.println(command);
-
   // status buffer:
   if (false){
 
-  #ifdef STATUS_G
+  #ifdef STATUS_H
   } else if (command == "status") {
     // calculate how many lines are going to be in the reply:
     int status_reply_count = 8;
@@ -102,7 +93,7 @@ Serial.println(command);
 
   } else if (command == "stop") {
     status->set.hard_stop = true;
-  #endif  //  #ifdef STATUS_G
+  #endif  //  #ifdef STATUS_H
 
   #ifdef MOTOR_H
   } else if (command == "position") {
@@ -117,7 +108,7 @@ Serial.println(command);
     int value = atoi(buf);
     motor->set.position_value = value;
     motor->set.position = true;
-    reply_case = PROTOCOL_REPLY_SET_POSITION;
+    deferred_reply_case = PROTOCOL_REPLY_SET_POSITION;
   #endif  //  #ifdef MOTOR_H
 
   } else if (command == "" || command == "help") {
@@ -131,12 +122,6 @@ Serial.println(command);
     reply_printer->print(F("position\n"));
     reply_printer->print(F("position set <current_number_of_steps>\n"));
 
-
-  } else if (command == "test") {
-      reply_printer->print(F("test 2 "));
-      reply_printer->print(F("initial reply\n"));
-      reply_case = PROTOCOL_REPLY_TEST;
-
   } else {
     reply_printer->print(F("error 2\n"));
     reply_printer->print(F("unknown command\n"));
@@ -148,15 +133,13 @@ Serial.println(command);
   set.command[0] = '\0';
 
   // clear other flags if replied:
-  if (!reply_case) {
+  if (!deferred_reply_case) {
     // reset flags:
     get.busy = false;
-
     // also clear reference to the printer, for good measure:
-    //set.reply = NULL;
-    //reply_printer = NULL;
-  } else {
-  }
+    set.reply = NULL;
+    reply_printer = NULL;
+  } 
 
   #ifdef RAM_USAGE_H
   ram->measure_now(4);

@@ -12,7 +12,6 @@
 
 
 #define PROTOCOL_REPLY_SET_POSITION 10
-#define PROTOCOL_REPLY_TEST 20
 
 
 typedef struct {
@@ -30,7 +29,7 @@ class Protocol : public Module
 {
 private:
   Print * reply_printer;
-  uint8_t reply_case;
+  uint8_t deferred_reply_case;
 public:
   ProtocolGet get;
   ProtocolSet set;
