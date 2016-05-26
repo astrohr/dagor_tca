@@ -35,12 +35,7 @@
 
 #elif HARDWARE == HARDWARE_NANO
 
-  // temp sensor
-  #define SENSOR_TEMP_PIN_PRESENCE 15
-  #define SENSOR_TEMP_PIN_DATA A0  // TODO WHAT this is supposed to be "A7"!?
-  // rain sensor
-  #define SENSOR_RAIN_PIN_PRESENCE 23
-  #define SENSOR_RAIN_PIN_DATA 22
+// TODO make use of
 
 #else  // #if HARDWARE == HARDWARE_<something>
 

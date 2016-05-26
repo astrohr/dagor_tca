@@ -25,10 +25,17 @@ void Buttons::loop()
   bool _button_dn = ! digitalRead(BUTTONS_DN);
   uint32_t millis_now = millis();
 
+  if (set.clear) {
+    get.button_up_click = false;
+    get.button_dn_click = false;
+    set.clear = false;
+  }
+
   if (millis_now - last_millis < BUTTONS_INTERVAL) {
     return;
   }
   last_millis = millis_now;
+
 
   // first, handle case when button not pressed (it's simpler):
   if (!_button_up) {

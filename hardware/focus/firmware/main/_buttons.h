@@ -24,7 +24,7 @@ typedef struct {
 
 
 typedef struct {
-  ; // nothing to set for buttons module
+  bool clear;
 } ButtonsSet;
 
 
@@ -59,6 +59,7 @@ public:
       false,
     },
     set{
+      false,
     }
   {
   };

@@ -104,16 +104,18 @@ void Status::loop()
     future_action = STATUS_COMMAND_UP;
     if (buttons->get.button_up_hold) {
       move_by = STATUS_LARGE_MOVE_DISTANCE;
-    } else {  // single click:
+    } else if (buttons->get.button_up_click) {
       move_by = STATUS_MANUAL_MOVE_DISTANCE;
+      buttons->set.clear = true;
     }
   // ... same for down:
   } else if (future_buttons_direction == STATUS_COMMAND_DN && get.can_go_dn) {
     future_action = STATUS_COMMAND_DN;
     if (buttons->get.button_dn_hold) {
       move_by = -1 * STATUS_LARGE_MOVE_DISTANCE;
-    } else {  // single click:
+    } else if (buttons->get.button_dn_click) {
       move_by = -1 * STATUS_MANUAL_MOVE_DISTANCE;
+      buttons->set.clear = true;
     }
   // clear buttons for future loop:
   } else {
