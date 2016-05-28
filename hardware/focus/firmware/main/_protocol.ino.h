@@ -157,6 +157,7 @@ void Protocol::loop()
     reply_printer = NULL;
   }
 
+
   #ifdef RAM_USAGE_H
   ram->measure_now(4);
   #endif

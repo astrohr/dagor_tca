@@ -21,14 +21,14 @@ typedef struct {
 
 typedef struct {
     char command[PROTOCOL_COMMAND_LEN];
-    Print * reply;
+    Print* reply;
 } ProtocolSet;
 
 
 class Protocol : public Module
 {
 private:
-  Print * reply_printer;
+  Print* reply_printer;
   uint8_t deferred_reply_case;
 public:
   ProtocolGet get;
