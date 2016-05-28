@@ -1,0 +1,158 @@
+//
+//  MODULE:   dllglob.h
+//
+//	Version 0.4:	23.03.1998
+//
+//  PURPOSE:
+//    Contains declarations for all globally scoped names in the DLL.
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#ifndef INC_DLLGLOB_H
+#define INC_DLLGLOB_H
+
+
+// Constant definitions
+#define DLLEXPORT __declspec(dllexport)
+
+
+// Exported function declarations
+
+DLLEXPORT BOOL WINAPI IK220Find			(ULONG* pBuffer16);
+DLLEXPORT BOOL WINAPI IK220Init			(USHORT Axis);
+DLLEXPORT BOOL WINAPI IK220Version		(USHORT Axis, char* pVersCard, char* pVersDrv, char* pVersDll);
+
+DLLEXPORT BOOL WINAPI IK220Reset		(USHORT Axis);
+DLLEXPORT BOOL WINAPI IK220Start		(USHORT Axis);
+DLLEXPORT BOOL WINAPI IK220Stop			(USHORT Axis);
+DLLEXPORT BOOL WINAPI IK220ClearErr		(USHORT Axis);
+DLLEXPORT BOOL WINAPI IK220Latch		(USHORT Axis, USHORT Latch);
+
+DLLEXPORT BOOL WINAPI IK220LatchInt		(USHORT Card);
+DLLEXPORT BOOL WINAPI IK220LatchExt		(USHORT Card);
+
+DLLEXPORT BOOL WINAPI IK220ResetREF		(USHORT Axis);
+DLLEXPORT BOOL WINAPI IK220StartREF		(USHORT Axis);
+DLLEXPORT BOOL WINAPI IK220StopREF		(USHORT Axis);
+DLLEXPORT BOOL WINAPI IK220LatchREF		(USHORT Axis);
+
+DLLEXPORT BOOL WINAPI IK220Latched		(USHORT Axis, USHORT Latch, BOOL* pStatus);
+DLLEXPORT BOOL WINAPI IK220WaitLatch	(USHORT Axis, USHORT Latch);
+
+DLLEXPORT BOOL WINAPI IK220Set			(USHORT Axis, double   SetVal);
+DLLEXPORT BOOL WINAPI IK220SetPreset	(USHORT Axis, double   PresVal);
+DLLEXPORT BOOL WINAPI IK220GetPreset	(USHORT Axis, double* pPresVal);
+
+DLLEXPORT BOOL WINAPI IK220Read32		(USHORT Axis, USHORT Latch, LONG*   pData);
+DLLEXPORT BOOL WINAPI IK220Read48		(USHORT Axis, USHORT Latch, double* pData);
+DLLEXPORT BOOL WINAPI IK220Get32		(USHORT Axis, USHORT Latch, LONG*   pData);
+DLLEXPORT BOOL WINAPI IK220Get48		(USHORT Axis, USHORT Latch, double* pData);
+DLLEXPORT BOOL WINAPI IK220CntStatus	(USHORT Axis, USHORT Latch,	USHORT* pRefSta, SHORT* pKorr00, SHORT* pKorr90, SHORT* pNKorr00, SHORT* pNKorr90, USHORT* pSamCnt);
+
+DLLEXPORT BOOL WINAPI IK220DoRef		(USHORT Axis);
+DLLEXPORT BOOL WINAPI IK220RefActive	(USHORT Axis, BOOL* pStatus);
+DLLEXPORT BOOL WINAPI IK220WaitRef		(USHORT Axis);
+DLLEXPORT BOOL WINAPI IK220CancelRef	(USHORT Axis);
+
+DLLEXPORT BOOL WINAPI IK220PositionRef  (USHORT Axis, double* pData,  LONG* pPeriod,  USHORT* pIntpol);
+DLLEXPORT BOOL WINAPI IK220PositionRef2 (USHORT Axis, double* pData1, LONG* pPeriod1, USHORT* pIntpol1, double* pData2, LONG* pPeriod2, USHORT* pIntpol2);
+
+
+DLLEXPORT BOOL WINAPI IK220Status		(USHORT Axis, ULONG* pStatus);
+DLLEXPORT BOOL WINAPI IK220DllStatus	(ULONG* pStatus, ULONG* pInfo);
+DLLEXPORT BOOL WINAPI IK220RefStatus	(USHORT Axis, LONG* pRef1, LONG* pRef2, LONG* pDiff, LONG* pCode, USHORT* pFlag);
+DLLEXPORT BOOL WINAPI IK220SignalStatus	(USHORT Axis, USHORT* pFreq, USHORT* pAmin, USHORT* pAact, USHORT* pAmax);
+
+DLLEXPORT BOOL WINAPI IK220GetCorrA		(USHORT Axis, SHORT* pOfs0, SHORT* pOfs90, SHORT* pPha0, SHORT* pPha90, SHORT* pSym0, SHORT* pSym90, USHORT* pFlag1, USHORT* pFlag2);
+DLLEXPORT BOOL WINAPI IK220GetCorrB		(USHORT Axis, SHORT* pOfs0, SHORT* pOfs90, SHORT* pPha0, SHORT* pPha90, SHORT* pSym0, SHORT* pSym90, USHORT* pFlag1, USHORT* pFlag2);
+DLLEXPORT BOOL WINAPI IK220LoadCorrA	(USHORT Axis, SHORT   Ofs0, SHORT   Ofs90, SHORT   Pha0, SHORT   Pha90, SHORT   Sym0, SHORT   Sym90);
+
+DLLEXPORT BOOL WINAPI IK220OctStatus	(USHORT Axis, USHORT* pOct0, USHORT* pOct1, USHORT* pOct2, USHORT* pOct3, USHORT* pOct4, USHORT* pOct5, USHORT* pOct6, USHORT* pOct7, USHORT* pSamCnt);
+
+DLLEXPORT BOOL WINAPI IK220ChkSumPar	(USHORT Axis, USHORT* pChkSum);
+DLLEXPORT BOOL WINAPI IK220ChkSumPrg	(USHORT Axis, USHORT* pChkSum1, USHORT* pChkSum2);
+
+DLLEXPORT BOOL WINAPI IK220WritePar		(USHORT Axis, USHORT ParNum, ULONG   ParVal);
+DLLEXPORT BOOL WINAPI IK220ReadPar		(USHORT Axis, USHORT ParNum, ULONG* pParVal);
+
+DLLEXPORT BOOL WINAPI IK220ResetEn		(USHORT Axis, USHORT* pStatus);
+DLLEXPORT BOOL WINAPI IK220ConfigEn		(USHORT Axis, USHORT* pStatus, USHORT* pType, ULONG* pPeriod, ULONG* pStep, USHORT* pTurns, USHORT* pRefDist, USHORT* pCntDir);
+DLLEXPORT BOOL WINAPI IK220ReadEn		(USHORT Axis, USHORT* pStatus, double* pData, USHORT* pAlarm);
+DLLEXPORT BOOL WINAPI IK220ReadEnInc	(USHORT Axis, USHORT Latch, USHORT* pStatus, double* pDataEn, USHORT* pAlarm, double* pDataInc);
+
+DLLEXPORT BOOL WINAPI IK220ModeEnCont    (USHORT Axis, USHORT Latch, USHORT Mode, USHORT* pStatus);
+DLLEXPORT BOOL WINAPI IK220ReadEnIncCont (USHORT Axis, USHORT* pStatus, double* pDataEn, USHORT* pAlarm, double* pDataInc, USHORT* pSigSta);
+
+DLLEXPORT BOOL WINAPI IK220AlarmEn		(USHORT Axis, USHORT* pStatus, USHORT* pAlarm);
+DLLEXPORT BOOL WINAPI IK220WarnEn		(USHORT Axis, USHORT* pStatus, USHORT* pWarn);
+DLLEXPORT BOOL WINAPI IK220ReadMemEn	(USHORT Axis, USHORT Range, USHORT MemAdr, USHORT* pMemData, USHORT* pStatus);
+DLLEXPORT BOOL WINAPI IK220WriteMemEn	(USHORT Axis, USHORT Range, USHORT MemAdr, USHORT   MemData, USHORT* pStatus);
+
+DLLEXPORT BOOL WINAPI IK220ReadSSI		(USHORT Axis, USHORT* pStatus, double* pData);
+DLLEXPORT BOOL WINAPI IK220ReadSsiInc	(USHORT Axis, USHORT Latch, USHORT* pStatus, double* pDataSsi, double* pDataInc);
+
+DLLEXPORT BOOL WINAPI IK220SetTimer		(USHORT Axis, ULONG SetVal, ULONG* pTimVal);
+DLLEXPORT BOOL WINAPI IK220ModeTimer	(USHORT Axis, USHORT Mode);
+DLLEXPORT BOOL WINAPI IK220ModeRam		(USHORT Axis, USHORT Mode);
+DLLEXPORT BOOL WINAPI IK220ResetRam		(USHORT Axis);
+DLLEXPORT BOOL WINAPI IK220GetRam		(USHORT Axis, double* pData, USHORT* pRead, USHORT* pWrite, USHORT* pStatus);
+DLLEXPORT BOOL WINAPI IK220GetSig		(USHORT Axis, USHORT* pPeriod, SHORT* pAmp0, SHORT* pAmp90, USHORT* pRead, USHORT* pWrite, USHORT* pStatus);
+DLLEXPORT BOOL WINAPI IK220BurstRam		(USHORT Axis, USHORT maxCount, double* pData, USHORT* pCount, USHORT* pStatus);
+DLLEXPORT BOOL WINAPI IK220BurstSig		(USHORT Axis, USHORT maxCount, USHORT* pPeriod, SHORT* pAmp0, SHORT* pAmp90, USHORT* pCount, USHORT* pStatus);
+
+DLLEXPORT BOOL WINAPI IK220Led			(USHORT Axis, USHORT Mode);
+DLLEXPORT BOOL WINAPI IK220SysLed		(USHORT Card, USHORT Mode);
+DLLEXPORT BOOL WINAPI IK220GetPort		(USHORT Axis, USHORT* pPortInfo, USHORT* pRising, USHORT* pFalling);
+
+DLLEXPORT BOOL WINAPI IK220InputW		(USHORT Axis, USHORT Adr, USHORT* pData);
+DLLEXPORT BOOL WINAPI IK220InputL		(USHORT Axis, USHORT Adr, ULONG*  pData);
+DLLEXPORT BOOL WINAPI IK220Output		(USHORT Axis, USHORT Adr, USHORT   Data);
+
+DLLEXPORT BOOL WINAPI IK220RamRead		(USHORT Axis, USHORT Adr, USHORT* pData);
+DLLEXPORT BOOL WINAPI IK220RamWrite		(USHORT Axis, USHORT Adr, USHORT   Data);
+
+DLLEXPORT BOOL WINAPI IK220DownLoad		(USHORT Axis, USHORT* pPgmData, ULONG PgmSize);
+
+DLLEXPORT BOOL WINAPI IK220SetEnClock	(USHORT Axis, BOOL  State, USHORT* pStatus);
+DLLEXPORT BOOL WINAPI IK220SetEnData	(USHORT Axis, BOOL  State, USHORT* pStatus);
+DLLEXPORT BOOL WINAPI IK220ReadEnData	(USHORT Axis, BOOL* State);
+
+DLLEXPORT BOOL WINAPI IK220SetTimeOut	(ULONG TimeOut);
+
+DLLEXPORT BOOL WINAPI IK220RefEval		(USHORT Axis, USHORT Mode);
+
+
+// Global variables
+
+#ifdef _Windows95
+
+#else
+	extern HANDLE m_hIK220Drv;
+#endif
+
+
+
+//-------------------------------------------------------------------------
+// Product identifier string defines
+
+#define SZAPPNAME     "IK220Dll"
+#define SZDESCRIPTION "Win32 DLL for IK220"
+#define SZVERSION     "Version 4.0"
+
+
+
+
+//-------------------------------------------------------------------------
+// Version string definitions
+
+#define SZRCOMPANYNAME "Dr. Johannes Heidenhain GmbH"
+#define SZRDESCRIPTION "FileDescription"
+#define SZRVERSION     "FileVersion"
+#define SZRAPPNAME     "InternalName"
+#define SZRCOPYRIGHT   "LegalCopyright"
+#define SZRTRADEMARK   "LegalTrademarks"
+#define SZRPRODNAME    "ProductName"
+#define SZRPRODVER     "ProuctVersion"
+
+
+#endif // INC_DLLGLOB_H

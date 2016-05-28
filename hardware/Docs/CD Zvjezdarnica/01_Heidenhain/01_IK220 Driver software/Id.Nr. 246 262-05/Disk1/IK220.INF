@@ -1,0 +1,115 @@
+; IK220_NT.inf
+;
+; Installation file (.inf) for the IK220 counter card.
+; (c) Copyright 2000 DR. JOHANNES HEIDENHAIN GmbH 
+;-----------------------------------------------------
+
+[Version]
+Signature="$Chicago$"
+Provider=%JH%
+ClassGUID={7ADADF43-06E0-11d4-A652-0000C0C218D3}
+Class="Counter Card"
+DriverVer=%DrvDate%, %DrvVersion%
+
+		      
+[ClassInstall32] 
+AddReg=CounterClass
+ 
+[CounterClass]
+HKR,,,,"Counter Card"
+
+
+		      
+; Source file information Windows 95/98
+; -------------------------------------
+		      
+[SourceDisksNames]
+1 = "%DiskId1%",,,""
+
+[SourceDisksFiles]
+ik220vxd.vxd = 1,"IK220Vxd",
+ik220dll.dll = 1,"IK220Dll\Releas~1",
+
+
+; Source file information Windows 2000/XP
+; ---------------------------------------
+
+[SourceDisksNames.x86]
+1 = %DiskId1%,,,""
+2 = %DiskId1%,,,""
+
+[SourceDisksFiles.x86]
+IK220Dll.dll = 1,"IK220Dll\Release",
+IK220Drv.sys = 2,"IK220Drv\Release",
+	    
+	    
+; Destination information
+; -----------------------
+
+[DestinationDirs]
+DefaultDestDir   = 11       	;\Windows\System
+DrvCopy.ntx86    = 12           ;\Winnt\System32\Drivers
+DllCopy.ntx86    = 11           ;\Winnt\System32
+
+
+; Driver information
+; ------------------
+
+[Manufacturer]
+%JH%   = JH.Mfg
+
+[JH.Mfg]
+%JH.DeviceDesc0% = IK220Drv,       PCI\VEN_10b5&DEV_9050&SUBSYS_117210b5
+%JH.DeviceDesc0% = IK220Drv.ntx86, PCI\VEN_10b5&DEV_9050&SUBSYS_117210b5
+    
+		    
+; Installation section for Windows 95/98
+;---------------------------------------
+		    
+[IK220Drv]
+DriverVer = %DrvDate%, %DrvVersion%
+CopyFiles = DllCopy, DrvCopy
+
+[DllCopy]
+ik220dll.dll
+
+[DrvCopy]
+ik220vxd.vxd
+
+ 
+; Installation section for Windows 2000
+; -------------------------------------
+
+[IK220Drv.ntx86]
+CopyFiles = DllCopy.ntx86, DrvCopy.ntx86
+	
+	
+[DllCopy.ntx86]
+ik220dll.dll
+
+[DrvCopy.ntx86]
+ik220drv.sys
+
+
+; Service Installation for Windows 2000
+; -------------------------------------
+
+[IK220Drv.ntx86.Services]
+AddService = IK220Drv, 0x00000002 , IK220Drv_Service_Inst
+
+[IK220Drv_Service_Inst]
+DisplayName    = %IK220Drv.SvcDesc%
+ServiceType    = 1                  ; SERVICE_KERNEL_DRIVER
+StartType      = 1                  ; SERVICE_SYSTEM_START
+ErrorControl   = 0x1                ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\IK220Drv.sys
+
+ 
+[Strings]
+JH.DeviceDesc0   = "IK 220 (Version  5.0.0.0)"
+DiskId1          = "IK 220 Driver Software 1/1"
+JH               = "DR. JOHANNES HEIDENHAIN GmbH"
+IK220Drv.SvcDesc = "IK220Drv"
+
+DrvDate          = "04/09/2005"
+DrvVersion       = "5.0.0.0"

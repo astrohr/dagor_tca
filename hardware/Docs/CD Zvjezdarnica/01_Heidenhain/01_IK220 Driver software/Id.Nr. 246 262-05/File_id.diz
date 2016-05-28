@@ -1,0 +1,19 @@
+IK220 Software/Driver - 246262 05
+
+Software/Driver for PC Counter/Interface Card (PCI)
+for HEIDENHAIN encoders.
+
+Disk1 - Install, Device Driver for MS Windows 9x/NT Source/DLL
+Disk2 - MS Visual C++/Basic Source/Example
+Disk3 - Borland Delphi Source/Example
+Disk4 - Install, Device Driver (WDM) for MS Windows W2K/XP Source/DLL
+Disk5 - LabViev Driver
+Disk6 - Linux Driver (Kernel 2.4)
+
+Software: 24626205
+System requirements: MS Windows 9x/NT4/W2k/XP
+Date: 18.04.05 
+
+Please extract all files from the archive into the
+same folder, include the original path (if any),
+then start the installation.

@@ -1,0 +1,109 @@
+EXPORTS	IK220Find
+		IK220Init
+		IK220Version
+		
+		IK220Reset
+		IK220Start
+		IK220Stop
+		IK220ClearErr
+		IK220Latch
+
+		IK220LatchInt
+		IK220LatchExt
+		
+		IK220ResetRef
+		IK220StopRef
+		IK220StartRef
+		IK220LatchRef
+		
+		IK220Latched
+		IK220WaitLatch
+
+		IK220SetTimeOut
+
+		IK220Set
+		IK220SetPreset
+		IK220GetPreset
+
+		IK220Read32
+		IK220Read48
+		IK220Get32
+		IK220Get48
+		IK220CntStatus
+
+		IK220DoRef
+		IK220CancelRef
+		IK220RefActive
+		IK220WaitRef
+
+		IK220PositionRef
+		IK220PositionRef2
+		
+		IK220Status
+		IK220DllStatus
+		IK220RefStatus
+		IK220SignalStatus
+		
+		IK220GetCorrA
+		IK220GetCorrB
+		IK220LoadCorrA
+
+		IK220OctStatus
+		
+		IK220ChkSumPar
+		IK220ChkSumPrg
+
+		IK220WritePar
+		IK220ReadPar
+		
+		IK220ResetEn
+		IK220ConfigEn
+		IK220ReadEn
+		IK220ReadEnInc
+
+		IK220ModeEnCont
+		IK220ReadEnIncCont
+
+		IK220AlarmEn
+		IK220WarnEn
+	   
+	   	IK220ReadMemEn
+		IK220WriteMemEn
+
+		IK220ReadSSI
+		IK220ReadSsiInc
+
+		IK220SetTimer
+    	IK220ModeTimer
+	   
+	   	IK220ModeRam
+		IK220ResetRam
+		IK220GetRam
+		IK220BurstRam
+		IK220GetSig
+		IK220BurstSig
+		
+		IK220Led
+		IK220SysLed
+		IK220GetPort
+
+		IK220InputW
+		IK220InputL
+		IK220Output
+		
+		IK220RamRead
+		IK220RamWrite
+
+		IK220DownLoad
+
+		IK220SetEnClock
+		IK220SetEnData
+		IK220ReadEnData
+
+		IK220RefEval
+		IK220SetBw
+		IK220SetTrm
+
+		IK220SetOpMode
+		IK220GetOpMode
+		

@@ -1,0 +1,147 @@
+[Version]
+Version=1.0.0.0
+
+[VB5DE.DLL <0007>]
+Register=
+Dest=$(WinSysPath)
+Date=2/26/1997
+Time=0:00:00
+Version=5.0.37.24
+CABFilename=VB5DE.cab
+CABDefaultURL=http://activex.microsoft.com/controls/vb5
+CABINFFile=VB5DE.inf
+CABRunFile=
+Uses1=
+
+[MSVBVM50.DLL <0007>]
+Register=$(DLLSelfRegister)
+Dest=$(WinSysPathSysFile)
+Date=1/24/1997
+Time=0:00:00
+Version=5.0.37.24
+CABFilename=MSVBVM50.cab
+CABDefaultURL=http://activex.microsoft.com/controls/vb5
+CABINFFile=MSVBVM50.inf
+CABRunFile=
+Uses1=
+
+[STDOLE2.TLB <0007>]
+Register=$(TLBRegister)
+Dest=$(WinSysPathSysFile)
+Date=1/15/1997
+Time=0:00:00
+Version=2.20.4054.1
+CABFilename=
+CABDefaultURL=
+CABINFFile=
+CABRunFile=
+Uses1=OleAut32.dll
+Uses2=OlePro32.dll
+Uses3=AsycFilt.dll
+Uses4=
+
+[OLEAUT32.DLL <0007>]
+Register=$(DLLSelfRegister)
+Dest=$(WinSysPathSysFile)
+Date=1/15/1997
+Time=0:00:00
+Version=2.20.4054.1
+CABFilename=
+CABDefaultURL=
+CABINFFile=
+CABRunFile=
+Uses1=
+
+[OLEPRO32.DLL <0007>]
+Register=$(DLLSelfRegister)
+Dest=$(WinSysPathSysFile)
+Date=1/15/1997
+Time=0:00:00
+Version=5.0.4055.1
+CABFilename=
+CABDefaultURL=
+CABINFFile=
+CABRunFile=
+Uses1=
+
+[ASYCFILT.DLL <0007>]
+Register=
+Dest=$(WinSysPathSysFile)
+Date=1/15/1997
+Time=0:00:00
+Version=2.20.4056.1
+CABFilename=AsycFilt.cab
+CABDefaultURL=http://activex.microsoft.com/controls/vb5
+CABINFFile=AsycFilt.inf
+CABRunFile=
+Uses1=
+
+[CTL3D32.DLL <0007>]
+Register=
+Dest=$(WinSysPathSysFile)
+Date=8/21/1996
+Time=0:00:00
+Version=2.31.0.0
+CABFilename=
+CABDefaultURL=
+CABINFFile=
+CABRunFile=
+Uses1=
+
+[COMCAT.DLL <0007>]
+Register=$(DLLSelfRegister)
+Dest=$(WinSysPathSysFile)
+Date=10/31/1996
+Time=0:00:00
+Version=4.71.1441.1
+CABFilename=
+CABDefaultURL=
+CABINFFile=
+CABRunFile=
+Uses1=
+
+[IK220DLL.DLL <0007>]
+Register=
+Dest=$(WinSysPath)
+Date=12/18/1997
+Time=8:28:00
+Version=
+CABFilename=
+CABDefaultURL=
+CABINFFile=
+CABRunFile=
+Uses1=
+
+[IK220APP.EXE <0007>]
+Register=
+Dest=$(AppPath)
+Date=12/18/1997
+Time=15:29:02
+Version=1.0.0.0
+CABFilename= ; Wenn Sie diese Datei in eine CAB-Datei komprimieren, sollten Sie den Namen dieser Datei hier angeben.
+CABDefaultURL= ; Wenn Sie einen Namen für eine CAB-Datei angegeben haben, können Sie hier einen URL angeben, über den Internet-Benutzer Ihre CAB-Datei herunterladen können.
+CABINFFile= ; Wenn Sie einen Namen für eine CAB-Datei angegeben haben, die eine INF-Datei verarbeitet, sollten Sie den Namen der in dieser CAB-Datei enthaltenen INF-Datei hier angeben. Dies wird ignoriert, wenn die Einstellung Run= Schlüssel ebenfalls vorhanden ist.
+CABRunFile= ; Wenn Sie einen Namen für eine CAB-Datei angegeben haben, die eine EXE-Datei verarbeitet, sollten Sie den Namen der in dieser CAB-Datei enthaltenen EXE-Datei hier angeben. Dadurch wird die Einstellung InfFile= Schlüssel außer Kraft gesetzt.
+Uses1=VB5DE.dll
+Uses2=MSVBVM50.dll
+Uses3=StdOle2.tlb
+Uses4=OleAut32.dll
+Uses5=OlePro32.dll
+Uses6=AsycFilt.dll
+Uses7=Ctl3d32.dll
+Uses8=ComCat.dll
+Uses9=IK220DLL.DLL
+Uses10=IK220App.DEP
+Uses11=
+
+[IK220APP.DEP <0007>]
+Register=
+Dest=$(AppPath)
+Date=12/19/1997
+Time=7:59:06
+Version=1.0.0.0
+CABFilename=
+CABDefaultURL=
+CABINFFile=
+CABRunFile=
+Uses1=

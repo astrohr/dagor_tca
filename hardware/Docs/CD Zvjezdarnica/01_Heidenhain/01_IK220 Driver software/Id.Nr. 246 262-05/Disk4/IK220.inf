@@ -1,0 +1,162 @@
+; ik220.inf
+;
+; Installation file (.inf) for the ik220 device.
+;
+; (c) Copyright 2002 Heidenhain Numerik AG 
+;
+
+[Version]
+Signature="$Windows NT$"
+Provider=%HNG%
+ClassGUID={7ADADF43-06E0-11d4-A652-0000C0C218D3}
+Class="Counter Card"
+DriverVer=%DrvDate%, %DrvVersion%
+
+;;ClassGUID={4d36e97d-e325-11ce-bfc1-08002be10318}
+;;Class=System
+;;CatalogFile=ik220.cat
+;;DriverVer=06/04/2003
+
+
+[ClassInstall32] 
+AddReg=CounterClass
+ 
+[CounterClass]
+HKR,,,,"Counter Card"
+
+
+;;[DestinationDirs]
+;;DefaultDestDir   = 12
+
+; Source file information Windows 2000/XP
+; ---------------------------------------
+
+[SourceDisksNames.x86]
+1 = %DiskId1%,,,""
+2 = %DiskId4%,,,""
+
+[SourceDisksFiles.x86]
+IK220Dll.dll = 2,"Release",
+IK220Drv.sys = 2,"Release",
+	    
+	    
+; Destination information
+; -----------------------
+
+[DestinationDirs]
+DefaultDestDir  = 11       ;\Windows\System
+IK220.CopyFiles = 12       ;\Winnt\System32\Drivers
+DllCopy         = 11       ;\Winnt\System32
+
+
+
+;
+; Driver information
+;
+
+[Manufacturer]
+%HNG%   = HNG.Mfg
+
+[HNG.Mfg]
+%HNG.DeviceDesc0% = IK220, PCI\VEN_10b5&DEV_9050&SUBSYS_117210b5
+
+
+;
+; General installation section
+;
+
+[IK220]
+; Copy the driver over
+DriverVer = %DrvDate%, %DrvVersion%
+CopyFiles=DllCopy, IK220.CopyFiles
+
+;
+; File sections
+;              
+
+[DllCopy]
+IK220Dll.dll
+
+[IK220.CopyFiles]
+IK220Drv.sys
+
+
+;
+; Service Installation
+;
+
+[ik220.Services]
+AddService = ik220, 0x00000002 , ik220_Service_Inst, ik220_EventLog_Inst
+
+[ik220_Service_Inst]
+ServiceType    = 1                  ; SERVICE_KERNEL_DRIVER
+StartType      = 3                  ; SERVICE_DEMAND_START
+ErrorControl   = 0                  ; SERVICE_ERROR_IGNORE
+LoadOrderGroup = Pointer Port
+ServiceBinary  = %12%\IK220Drv.sys
+
+
+[ik220_EventLog_Inst]
+AddReg = ik220_EventLog_AddReg
+
+[ik220_EventLog_AddReg]
+HKR,,EventMessageFile,0x00020000,"%SystemRoot%\System32\IoLogMsg.dll;%SystemRoot%\System32\drivers\IK220Dr.sys"
+HKR,,TypesSupported,0x00010001,7
+
+
+
+
+;
+; AddInterface Section
+;
+[ik220.Interfaces]
+AddInterface={20B8602B-20B8-44dc-AE0A-484BCBDD49B5},	ik, Interface_ik0
+
+; AddInterface for interfaces
+[Interface_ik0]
+AddReg=Interface_ik0.AddReg
+
+
+; Registry for interfaces
+[Interface_ik0.AddReg]
+
+
+
+
+;
+; Source file information
+;
+
+[SourceDisksNames.x86]
+1 = %DiskId1%,,,""
+
+[SourceDisksFiles]
+; Files for disk IK220 Installation Disk #4 (System)
+Release\IK220Drv.sys = 1,,
+
+
+[Strings]
+
+;
+; Non-Localizable Strings
+;
+
+REG_SZ         = 0x00000000
+REG_MULTI_SZ   = 0x00010000
+REG_EXPAND_SZ  = 0x00020000
+REG_BINARY     = 0x00000001
+REG_DWORD      = 0x00010001
+SERVICEROOT    = "System\CurrentControlSet\Services"
+
+;
+; Localizable Strings
+;
+
+HNG.DeviceDesc0 = "IK 220 (Version 55.0.0.0)"
+DiskId1 = "IK220 Installation Disk #1 (System)"
+DiskId4 = "IK220 Installation Disk #4 (System)"
+HNG = "Heidenhain Numerik AG"
+ 
+DrvDate          = "04/11/2005"
+DrvVersion       = "55.0.0.0"
+ 

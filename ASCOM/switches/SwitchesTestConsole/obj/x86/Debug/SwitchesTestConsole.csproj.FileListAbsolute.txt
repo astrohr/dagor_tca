@@ -1,0 +1,5 @@
+\\psf\Host\Volumes\CaseSensitive\projects\dagor\ASCOM\switches\SwitchesTestConsole\bin\Debug\ASCOM.DAGOR.Test.exe.config
+\\psf\Host\Volumes\CaseSensitive\projects\dagor\ASCOM\switches\SwitchesTestConsole\bin\Debug\ASCOM.DAGOR.Test.exe
+\\psf\Host\Volumes\CaseSensitive\projects\dagor\ASCOM\switches\SwitchesTestConsole\bin\Debug\ASCOM.DAGOR.Test.pdb
+\\psf\Host\Volumes\CaseSensitive\projects\dagor\ASCOM\switches\SwitchesTestConsole\obj\x86\Debug\ASCOM.DAGOR.Test.exe
+\\psf\Host\Volumes\CaseSensitive\projects\dagor\ASCOM\switches\SwitchesTestConsole\obj\x86\Debug\ASCOM.DAGOR.Test.pdb
