@@ -64,6 +64,7 @@ void SerialComm::loop()
     #ifdef PROTOCOL_H
     // Send command to protocol module:
     memcpy(protocol->set.command, data_received, PROTOCOL_COMMAND_LEN);
+
     // Set printer for reply:
     Serial.flush();
     protocol->set.reply = &Serial;

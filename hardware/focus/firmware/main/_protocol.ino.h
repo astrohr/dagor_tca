@@ -59,7 +59,8 @@ void Protocol::loop()
   if (!set.reply) {
     // reply printer must also be set
     // TODO use Serial only in DEBUG mode!
-    Serial.print(F("Got a command but no printer!\n"));
+    Serial.print(F("Got a command but no printer, discarding!\n"));
+    set.command[0] = '\0';
     return;
   }
   // store reply_printer locally to avoid accidental overwrite by other modules:
@@ -72,6 +73,7 @@ void Protocol::loop()
   // set busy flag (just in case we have to handle this command over multiple cycles):
   // BTW, that's not used yet
   get.busy = true;
+  deferred_reply_case = false;
 
   // status buffer:
   if (false){
@@ -84,7 +86,7 @@ void Protocol::loop()
     reply_printer->print(F("status "));
     reply_printer->print(status_reply_count);
     reply_printer->print(F("\n"));
-    status->print(&Serial);  // TODO this is ok, but it's better to trigger prints via status->set.something
+    status->print(reply_printer);
 
   } else if (command.substring(0, 8)  == "step by ") {
     reply_printer->print(F("ok 0\n"));
