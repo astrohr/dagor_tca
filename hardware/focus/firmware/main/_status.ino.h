@@ -64,6 +64,7 @@ void Status::loop()
   } else {
     get.moving_up = motor->get.direction > 0;
     get.moving_dn = motor->get.direction < 0;
+    get.idle = false;
   }
 
   // set limit switches:
