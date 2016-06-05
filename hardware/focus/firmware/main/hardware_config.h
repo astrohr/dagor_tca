@@ -24,6 +24,7 @@
 #if HARDWARE == HARDWARE_MEGA
 
   #error Not implemented
+  #define RESET_PIN 50  // MISO
 
 #elif HARDWARE == HARDWARE_PRO_MINI
 

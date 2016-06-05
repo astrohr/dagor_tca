@@ -126,6 +126,13 @@ void Protocol::loop()
     deferred_reply_case = PROTOCOL_REPLY_SET_POSITION;
   #endif  //  #ifdef MOTOR_H
 
+  #ifdef RESET_H
+  } else if (command == "reset") {
+    reply_printer->print(F("reset 0\n\n"));
+    delay(100);
+    reset->trigger = true;
+  #endif  // #ifdef RESET_H
+
   } else if (command == "" || command == "help") {
     int help_reply_count = 6;
     reply_printer->print(F("help "));
