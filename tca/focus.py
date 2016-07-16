@@ -26,6 +26,10 @@ import serial
 import sys
 
 from _utils import str_bool
+from logging_conf import get_logger
+from tca.common import exit_
+
+logger = get_logger(__file__)
 
 
 RESET_DISABLED = False
@@ -208,6 +212,7 @@ if __name__ == '__main__':
 
     try:
         _main(args)
-    except:
-        raise
-        #exit_('ERROR')
+    except Exception as e:
+        logger.warning(e, exc_info=True)
+        # raise
+        exit_('ERROR')
