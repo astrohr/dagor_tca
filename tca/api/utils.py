@@ -42,12 +42,46 @@ class BoolParser(parsers.BaseParser):
 
     def parse(self, stream, media_type, **options):
         data = stream.read().decode('utf-8').lower()
-        print("parsing: {}".format(data))
         if data == "false":
             return False
         if data == "true":
             return True
         raise exceptions.ParseError('Invalid request, use "true" or "false"')
+
+
+class IntRenderer(renderers.JSONRenderer):
+    """JSON renderer that only supports integer"""
+    media_type = 'application/json'
+
+    def render(self, data, media_type, **options):
+        try:
+            return '{}'.format(int(data))
+        except:
+            print(type(data))
+            print(data)
+            return super(IntRenderer, self).render(data, media_type, **options)
+
+
+class IntBrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
+    media_type = 'text/html'
+
+    def render(self, data, media_type, **options):
+        if not type(data) == dict:
+            data = '{}'.format(data)
+        return super(IntBrowsableAPIRenderer, self).render(data, media_type, **options)
+
+
+class IntParser(parsers.BaseParser):
+    """Parser for JSON int values"""
+    media_type = 'application/json'
+
+    def parse(self, stream, media_type, **options):
+        data = stream.read().decode('utf-8').lower()
+        try:
+            data = int(data)
+        except ValueError:
+            raise exceptions.ParseError('Invalid request, expected integer')
+        return data
 
 
 @set_renderers(renderers.BrowsableAPIRenderer, renderers.JSONRenderer)

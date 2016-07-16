@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-"""Dagor lights API 0.2.
+"""Dagor focuser API 0.1.
 
 Usage:
-    lights.py run [-m]
-    lights.py -h | --help
-    lights.py --version
+    focus.py run [-m]
+    focus.py -h | --help
+    focus.py --version
 
 Commands:
     run            Start the API server.
@@ -27,35 +27,33 @@ from flask.ext.api.decorators import set_renderers, set_parsers
 from flask_api import FlaskAPI, status as http_status
 from flask_api.exceptions import ParseError
 
-from tca import lights as dagor_lights
-from tca.api.utils import RegexConverter, BoolRenderer, BoolBrowsableAPIRenderer, \
-    BoolParser, render_error
+from tca import focus as dagor_focus
+from tca.api.utils import RegexConverter, render_error, IntBrowsableAPIRenderer, IntRenderer, IntParser
 
-DEFAULT_PREFIX = '/lights'
+DEFAULT_PREFIX = '/focus'
 
-api = Blueprint('lights', __name__)
+api = Blueprint('focus', __name__)
 
 
-# Mock dagor_lights early:
+# Mock dagor_focus early:
 if __name__ == '__main__':
     args = docopt(__doc__, version=__doc__.strip().split('\n')[0])
     if args['run']:
         if args['--mock']:
             print("*** MOCK MODE ***")
-            dagor_lights = MagicMock(**{
-                'get_lights.return_value': 2,
-                'get_light.side_effect': lambda n: n == 1,
+            dagor_focus = MagicMock(**{
+                'get_focus.return_value': 321,
+                'get_focus.side_effect': lambda n: n == 1,
             })
 
 
 def device_repr():
-    return {
-        'n': dagor_lights.get_lights(),
-    }
+    status = dagor_focus.get_status()
+    return status
 
 
-def light_repr(n):
-    return "true" if dagor_lights.get_light(n) else "false"
+def position_repr():
+    return dagor_focus.get_position()
 
 
 # decorators:
@@ -66,7 +64,7 @@ def check_connectivity(func):
     def func_wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except dagor_lights.CommunicationException as e:
+        except Exception as e:
             return {
                 'ready': False,
                 'message': '{}'.format(e),
@@ -84,7 +82,6 @@ def handle_request_errors(func):
     return func_wrapper
 
 
-
 @api.route('/', methods=['GET', ])
 @check_connectivity
 def resource():
@@ -92,16 +89,15 @@ def resource():
     Hyperlinks:
 
     * [Device state](./state/)
-    * [Light 1](./1/)
-    * [Light 2](./2/)
+    * [Position](./position/)
     """
     try:
-        dagor_lights.get_lights()
+        status = dagor_focus.get_status()
     except:
         raise
     else:
         return {
-            'ready': True,
+            'ready': status['idle'],
         }, http_status.HTTP_200_OK
 
 
@@ -109,48 +105,65 @@ def resource():
 @check_connectivity
 def state_resource():
     """
-    State for all light (two of them).
+    Focuser device status.
 
-    * 0: all OFF
-    * 1: light 1 ON, light 2 OFF
-    * 2: light 1 OFF, light 2 ON
-    * 3: all ON
+    Writable: `position`
+    Read-only: all other fields
 
-    It's binary...
+    **PUT** to move focuser position.
+
+    **POST** to set focuser position without moving.
 
     Hyperlinks:
 
     * [Up](..)
     """
     if request.method in {'PUT', 'POST', }:
-        n = request.data['n']
-        dagor_lights.set_lights(n)
-        return device_repr(), http_status.HTTP_202_ACCEPTED
+        posted = request.method == 'POST'
+        n = request.data['position']
+        if posted:
+            dagor_focus.set_position(n)
+        else:
+            dagor_focus.goto(n)
+        return (
+            device_repr(),
+            http_status.HTTP_200_OK if posted else http_status.HTTP_202_ACCEPTED
+        )
     return device_repr()
 
 
-@api.route('/<regex("[0-9]+"):light_i>/', methods=['GET', 'PUT', 'POST', ])
-@set_renderers(BoolBrowsableAPIRenderer, BoolRenderer)
-@set_parsers(BoolParser)
+@api.route('/position/', methods=['GET', 'PUT', 'POST', ])
 @check_connectivity
+@set_renderers(IntBrowsableAPIRenderer, IntRenderer)
+@set_parsers(IntParser)
 @handle_request_errors
-def light_resource(light_i):
+def position_resource():
     """
-    State for a single light. It is either ON or OFF (case insensitive).
+    Simple resource that only handles position.
+
+    **PUT** to move focuser position.
+
+    **POST** to set focuser position without moving.
 
     Hyperlinks:
 
      * [Up](..)
     """
-    light_i = int(light_i)  # URL regex guarantees digits only
+    putted = request.method == 'PUT'
     if request.method in {'PUT', 'POST', }:
         # is body is empty, parsers never get called, so:
         if not request.content_length:
-            raise ParseError('Empty request, use "true" or "false".')
+            raise ParseError('Empty request, integer required')
         # get data, via parser:
-        data = request.data
-        dagor_lights.set_light(light_i, data)
-    response = make_response(light_repr(light_i - 1))
+        n = request.data
+        if putted:
+            dagor_focus.goto(n)
+        else:
+            dagor_focus.set_position(n)
+    n = dagor_focus.get_position()
+    response = make_response(
+        str(n),
+        http_status.HTTP_202_ACCEPTED if putted else http_status.HTTP_200_OK)
     return response
 
 
@@ -171,7 +184,7 @@ def _run_mocked():
     @app.after_request
     def print_mock(response):
         # noinspection PyProtectedMember
-        pprint(dagor_lights._mock_mock_calls, indent=4)
+        pprint(dagor_focus._mock_mock_calls, indent=4)
         return response
 
     app.run("0.0.0.0")
