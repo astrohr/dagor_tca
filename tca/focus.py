@@ -22,7 +22,7 @@ Options:
     --version       Show version.
 """
 from __future__ import print_function, division, absolute_import
-from common import fix_path, EnterAbort, _wait_for_time
+from common import fix_path, EnterAbort, _wait_for_time, print_
 
 fix_path(__name__)
 
@@ -107,8 +107,7 @@ class FocuserController(object):
                 raise CommunicationException('Failed "step to" after {} retries'
                                              .format(RETRIES))
             on_target = False
-            print("positioning.", end='')
-            sys.stdout.flush()
+            print_("positioning.", end='')
             while not on_target:
                 _wait_for_time(INTERVAL, dots=True,
                                enter_abort=True,
@@ -121,11 +120,9 @@ class FocuserController(object):
             print('position: {}'.format(self._status['position']))
         except (KeyboardInterrupt, EnterAbort):
             self.stop()
-            sys.stdout.flush()
 
     def stop(self):
-        print('stopping.', end='')
-        sys.stdout.flush()
+        print_('stopping.', end='')
         self._stop()
         self._refresh_status()
         idle = self._status['idle']

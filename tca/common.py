@@ -1,3 +1,5 @@
+from __future__ import print_function, division, absolute_import
+
 from datetime import datetime, timedelta
 import sys
 from time import sleep
@@ -35,8 +37,8 @@ def fix_path(name):
 verbose = True
 
 
-def print_(msg):
-    sys.stdout.write("%s\n" % msg)
+def print_(msg, **kwargs):
+    print(msg, **kwargs)
     sys.stdout.flush()
 
 
