@@ -5,6 +5,7 @@ Usage:
     focus.py status
     focus.py step to <N>
     focus.py step by <N>
+    focus.py stop
     focus.py set <N>
     focus.py -h | --help
     focus.py --version
@@ -13,6 +14,7 @@ Commands:
     status          Display status
     step to         Move to specified position
     step by         Move by specified number of steps
+    stop            Stop the motor
     set             Set current position
 
 Options:
@@ -20,14 +22,14 @@ Options:
     --version       Show version.
 """
 from __future__ import print_function, division, absolute_import
-from common import fix_path
-fix_path(__name__)
+from common import fix_path, EnterAbort, _wait_for_time
 
-from pprint import pprint
+fix_path(__name__)
 
 from docopt import docopt
 import serial
 import sys
+import time
 
 from _utils import str_bool
 from logging_conf import get_logger
@@ -44,6 +46,9 @@ SERIAL = {
     'BAUDRATE': 115200,
     'TIMEOUT': 0.1,  # if no data available, block for max this many seconds
 }
+
+RETRIES = 5
+INTERVAL = 1  # seconds
 
 
 class FocuserController(object):
@@ -85,12 +90,55 @@ class FocuserController(object):
         for key, val in self._status.iteritems():
             print('{}: {}'.format(key, val))
 
-    def switch(self, n, state):
-        if n == 'all':
-            for i in range(0, self._n):
-                self._switch(i + 1, state)
-        else:
-            self._switch(int(n), state)
+    def step_to(self, n):
+        try:
+            retry = RETRIES
+            while retry:
+                retry -= 1
+                try:
+                    self._step_to(n)
+                except StateException:
+                    logger.info("not idle, stopping")
+                    self._stop()
+                    time.sleep(1)  # seconds
+                else:
+                    break  # from while
+            if retry == 0:
+                raise CommunicationException('Failed "step to" after {} retries'
+                                             .format(RETRIES))
+            on_target = False
+            print("positioning.", end='')
+            sys.stdout.flush()
+            while not on_target:
+                _wait_for_time(INTERVAL, dots=True,
+                               enter_abort=True,
+                               interval=INTERVAL / 10,
+                               dot_skip=10,
+                               end='')
+                self._refresh_status()
+                on_target = self._status['idle']
+            print()
+            print('position: {}'.format(self._status['position']))
+        except (KeyboardInterrupt, EnterAbort):
+            self.stop()
+            sys.stdout.flush()
+
+    def stop(self):
+        print('stopping.', end='')
+        sys.stdout.flush()
+        self._stop()
+        self._refresh_status()
+        idle = self._status['idle']
+        while not idle:
+            _wait_for_time(INTERVAL, dots=True,
+                           enter_abort=False,
+                           interval=INTERVAL / 10,
+                           dot_skip=10,
+                           end='')
+            self._refresh_status()
+            idle = self._status['idle']
+        print()
+        print('stopped at: {}'.format(self._status['position']))
 
     # private members
 
@@ -150,10 +198,9 @@ class FocuserController(object):
         if not response:  # blank line
             response = self._serial.readline().strip()
         if not response.startswith('status '):
-            raise CommunicationException('Controller doesnt acknowledge status command, instead got: {}'.format(response))
+            raise CommunicationException('Controller doesnt acknowledge "status" command, instead got: {}'.format(response))
         # parse N (number of lines that follow):
         try:
-            logger.debug("response: {}".format(response))
             self._n = int(response[len('status '):])
         except ValueError:
             raise CommunicationException('Expected int, got: {}'.format(response))
@@ -177,6 +224,31 @@ class FocuserController(object):
 
         self._status = new_status
 
+    def _step_to(self, n):
+        self._refresh_status()
+        if not self._status['idle']:
+            logger.debug("not idle")
+            raise StateException('Motor not idle')
+        # send command:
+        self._serial.write('step to {}\n'.format(n))
+        # read first response line:
+        response = self._serial.readline().strip()  # expect: "ok 0\n"
+        if not response:  # blank line
+            response = self._serial.readline().strip()
+        if not response.startswith('ok 0'):
+            raise CommunicationException('Controller doesnt acknowledge "step to" command, instead got: {}'.format(response))
+
+    def _stop(self):
+        logger.debug("stop")
+        # send command:
+        self._serial.write('stop\n')
+        # read first response line:
+        response = self._serial.readline().strip()  # expect: "stopping 0\n"
+        if not response:  # blank line
+            response = self._serial.readline().strip()
+        if not response.startswith('stopping 0'):
+            raise CommunicationException('Controller doesnt acknowledge "stop" command, instead got: {}'.format(response))
+
     def _switch(self, n, state):
         on_off = 'on' if state else 'off'
         self._serial.write('switch {} {}\n'.format(n, on_off))
@@ -194,14 +266,21 @@ class CommunicationException(Exception):
     pass
 
 
+class StateException(Exception):
+    """ Cannot complete the request at this time """
+    pass
+
+
 def _main(args):
     controller = FocuserController(SERIAL, RESET_DISABLED)
 
     if args['status']:
-        controller.pretty_status()        
-    elif args['switch']:
-        state = (args['on'] == True)
-        controller.switch(args['<N>'], state)
+        controller.pretty_status()
+    if args['stop']:
+        controller.stop()
+    elif args['step'] and args['to']:
+        n = int(args['<N>'])
+        controller.step_to(n)
         
     exit(0)
 
