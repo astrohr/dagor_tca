@@ -195,7 +195,6 @@ class CommunicationException(Exception):
 
 
 def _main(args):
-
     controller = FocuserController(SERIAL, RESET_DISABLED)
 
     if args['status']:

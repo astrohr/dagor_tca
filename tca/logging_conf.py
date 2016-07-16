@@ -43,7 +43,7 @@ class ColoredLogger(logging.Logger):
     FORMAT = "%(levelname)s\t%(asctime)s\t$BOLD%(name)s$RESET\t($BOLD%(filename)s$RESET:%(lineno)d)\t%(message)s"
     COLOR_FORMAT = formatter_message(FORMAT, True)
     def __init__(self, name):
-        logging.Logger.__init__(self, name, logging.DEBUG)
+        logging.Logger.__init__(self, name, logging.DEBUG if os.environ.get('DAGOR_DEBUG') else logging.INFO)
 
         color_formatter = ColoredFormatter(self.COLOR_FORMAT)
 
