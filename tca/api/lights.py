@@ -93,6 +93,7 @@ def resource():
     """
     Hyperlinks:
 
+    * [Up](..)
     * [Device state](./state/)
     * [Light 1](./1/)
     * [Light 2](./2/)

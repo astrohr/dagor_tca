@@ -88,8 +88,12 @@ def handle_request_errors(func):
 @check_connectivity
 def resource():
     """
-    Hyperlinks:
 
+    Focuser device
+
+    ### Hyperlinks
+
+    * [Up](..)
     * [Device state](./state/)
     * [Position](./position/)
     """
@@ -109,14 +113,17 @@ def state_resource():
     """
     Focuser device status.
 
-    Writable: `position`
+    ###Fields
+
+    Writable: `position`<br />
     Read-only: all other fields
 
-    **PUT** to move focuser position.
+    ### Methods
 
-    **POST** to set focuser position without moving.
+    **PUT**: move focuser position.<br />
+    **POST**: set focuser position without moving.
 
-    Hyperlinks:
+    ### Hyperlinks
 
     * [Up](..)
     """
@@ -143,11 +150,11 @@ def position_resource():
     """
     Simple resource that only handles position.
 
-    **PUT** to move focuser position.
+    ### Methods
+    PUT: move focuser position.<br />
+    POST: set focuser position without moving.
 
-    **POST** to set focuser position without moving.
-
-    Hyperlinks:
+    ### Hyperlinks
 
      * [Up](..)
     """
