@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-"""Dagor API 0.1.
+"""Dagor API {VERSION}
 
 Usage:
     api run
@@ -16,20 +16,26 @@ Options:
     -h --help      Show this screen or description of specific command.
     --version      Show version.
 """
+from tca.api import version
+__doc__ = __doc__.format(VERSION=version)
+
 from docopt import docopt
 from flask_api import FlaskAPI
 import lights
+import focus
 from tca.api.utils import RegexConverter
 
 app = FlaskAPI(__name__)
 app.debug = False
 app.url_map.converters['regex'] = RegexConverter
-app.register_blueprint(lights.api, url_prefix=lights.DEFAULT_PREFIX)
+
+for module in (lights, focus, ):
+    app.register_blueprint(module.api, url_prefix=module.DEFAULT_PREFIX)
 
 
 @app.route('/')
 def hello_world():
-    return 'Hello World!'
+    return 'Dagor API {}'.format(version)
 
 
 def _run():

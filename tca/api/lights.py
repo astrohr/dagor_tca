@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-"""Dagor lights API 0.2.
+"""Dagor lights API {VERSION}
 
 Usage:
     lights.py run [-m]
@@ -20,6 +20,8 @@ Options:
 from functools import wraps
 from mock.mock import MagicMock
 from pprint import pprint
+from tca.api import version
+__doc__ = __doc__.format(VERSION=version)
 
 from docopt import docopt
 from flask import Blueprint, request, make_response
