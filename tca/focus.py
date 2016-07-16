@@ -25,7 +25,6 @@ Options:
 """
 from __future__ import print_function, division, absolute_import
 from common import fix_path, EnterAbort, _wait_for_time, print_
-
 fix_path(__name__)
 
 from docopt import docopt
@@ -35,7 +34,7 @@ import time
 
 from _utils import str_bool
 from logging_conf import get_logger
-from tca.common import exit_
+from .common import exit_
 
 logger = get_logger(__file__)
 
