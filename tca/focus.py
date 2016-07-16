@@ -7,6 +7,7 @@ Usage:
     focus.py step by <N>
     focus.py stop
     focus.py set <N>
+    focus.py get
     focus.py -h | --help
     focus.py --version
 
@@ -16,6 +17,7 @@ Commands:
     step by         Move by specified number of steps
     stop            Stop the motor
     set             Set current position
+    get             Get current position, to stdout
 
 Options:
     -h --help       Show this screen or description of specific command.
@@ -165,6 +167,9 @@ class FocuserController(object):
     def set(self, n):
         self._set(n)
 
+    def get(self):
+        print(self._get())
+
     # private members
 
     _status = None
@@ -301,6 +306,26 @@ class FocuserController(object):
         if not response.startswith('{}'.format(n)):
             raise CommunicationException('Controller acknowledges "set" command, but returned wrong position: {}'.format(response))
 
+    def _get(self):
+        # send command:
+        self._serial.write('position\n'.format())
+        # read first response line:
+        response = self._serial.readline().strip()  # expect: "position 1\n"
+        if not response:  # blank line
+            response = self._serial.readline().strip()
+        if not response.startswith('position 1'):
+            raise CommunicationException(
+                'Controller doesnt acknowledge "get" command, instead got: {}'.format(
+                    response))
+        response = self._serial.readline().strip()  # expect: position number
+        try:
+            n = int(response)
+        except ValueError:
+            raise CommunicationException(
+                'Controller acknowledges "get" command, but returned something strange: {}'.format(
+                    response))
+        return n
+
 
 class CommunicationException(Exception):
     """ There was an error communicating with Arduino controller """
@@ -328,7 +353,9 @@ def _main(args):
     elif args['set']:
         n = int(args['<N>'])
         controller.set(n)
-        
+    elif args['get']:
+        controller.get()
+
     exit(0)
 
 
