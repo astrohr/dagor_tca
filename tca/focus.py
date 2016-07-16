@@ -79,7 +79,6 @@ class FocuserController(object):
         self._SERIAL = SERIAL
         self._RESET_DISABLED = RESET_DISABLED
         self._open_serial()
-        self._refresh_status()
 
     def pretty_status(self):
         self._refresh_status()
