@@ -19,6 +19,7 @@ Options:
     -h --help       Show this screen or description of specific command.
     --version       Show version.
 """
+from __future__ import print_function, division, absolute_import
 from common import fix_path
 fix_path(__name__)
 
@@ -82,7 +83,8 @@ class FocuserController(object):
 
     def pretty_status(self):
         self._refresh_status()
-        pprint(self._status)
+        for key, val in self._status.iteritems():
+            print('{}: {}'.format(key, val))
 
     def switch(self, n, state):
         if n == 'all':
@@ -133,7 +135,7 @@ class FocuserController(object):
         if not self._RESET_DISABLED:
             for i in range(60):  # TODO magic magic magic!
                 line = self._serial.readline().strip()
-                print("line: {}".format(line))
+                logger.debug("line: {}".format(line))
                 if line and line == 'ready':
                     pass
                     #return  # TODO maybe wait for next readline to timeout, so we are sure this is the last data in serial pipe?
@@ -148,12 +150,11 @@ class FocuserController(object):
         response = self._serial.readline().strip()  # expect: "status 9\n"
         if not response:  # blank line
             response = self._serial.readline().strip()
-        if response.startswith('status '):
+        if not response.startswith('status '):
             raise CommunicationException('Controller doesnt acknowledge status command, instead got: {}'.format(response))
         # parse N (number of lines that follow):
         try:
-            print("response:")
-            print(response)
+            logger.debug("response: {}".format(response))
             self._n = int(response[len('status '):])
         except ValueError:
             raise CommunicationException('Expected int, got: {}'.format(response))
@@ -210,7 +211,7 @@ def _main(args):
 if __name__ == '__main__':
     args = docopt(__doc__, version=__doc__.split('\n'[0]), options_first=True)
     if len(sys.argv) == 1:
-        print __doc__.strip()
+        print(__doc__.strip())
         exit(0)
 
     try:
