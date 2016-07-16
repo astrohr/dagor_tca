@@ -11,7 +11,7 @@ Usage:
   motors.py [ha | de] enable
   motors.py [ha | de] disable
   motors.py (ha | de) move by <angle> [pulse] [speed <S>]
-  motors.py [ha |de] configure
+  motors.py [ha | de] configure
   motors.py [-h | --help | help]
   motors.py --version
 
@@ -60,7 +60,7 @@ SPEED_LIMIT = 3000
 MAX_SPEED_DE = 1.456  # deg/sec
 MAX_SPEED_HA = 3.075e-2  # h/sec
 ACC_RAMP = 7000
-EMER_RAMP = 1000
+EMER_RAMP = 3000  # milliseconds at full speed
 TRACKING_SPEED = -27
 
 OP_MODE_MANUAL = 0
