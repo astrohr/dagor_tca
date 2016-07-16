@@ -24,7 +24,7 @@ Options:
     --version       Show version.
 """
 from __future__ import print_function, division, absolute_import
-from common import fix_path, EnterAbort, _wait_for_time, print_
+from common import fix_path, EnterAbort, _wait_for_time, print_, exit_
 fix_path(__name__)
 
 from docopt import docopt
@@ -34,7 +34,6 @@ import time
 
 from _utils import str_bool
 from logging_conf import get_logger
-from .common import exit_
 
 logger = get_logger(__file__)
 
@@ -63,6 +62,15 @@ class FocuserController(object):
      .. Protocol:
          TODO describe protocol
     """
+
+    instance = None
+
+    @classmethod
+    def get_instance(cls):
+        if cls.instance is None:
+            cls.instance = cls()
+        return cls.instance
+
 
     # public API
     @property
@@ -336,8 +344,30 @@ class StateException(Exception):
     pass
 
 
+def get_controller():
+    return FocuserController.get_instance()
+
+
+def get_status():
+    return get_controller().status
+
+
+def get_position():
+    return get_controller().get()
+
+
+def set_position(n):
+    n = int('{}'.format(n))
+    return get_controller().set(n)
+
+
+def goto(n):
+    n = int('{}'.format(n))
+    return get_controller().step_to(n)
+
+
 def _main(args):
-    controller = FocuserController(SERIAL, RESET_DISABLED)
+    controller = get_controller()
 
     if args['status']:
         controller.pretty_status()
