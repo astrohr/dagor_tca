@@ -121,6 +121,37 @@ class FocuserController(object):
         except (KeyboardInterrupt, EnterAbort):
             self.stop()
 
+    def step_by(self, n):
+        try:
+            retry = RETRIES
+            while retry:
+                retry -= 1
+                try:
+                    self._step_by(n)
+                except StateException:
+                    logger.info("not idle, stopping")
+                    self._stop()
+                    time.sleep(1)  # seconds
+                else:
+                    break  # from while
+            if retry == 0:
+                raise CommunicationException('Failed "step by" after {} retries'
+                                             .format(RETRIES))
+            on_target = False
+            print_("positioning.", end='')
+            while not on_target:
+                _wait_for_time(INTERVAL, dots=True,
+                               enter_abort=True,
+                               interval=INTERVAL / 10,
+                               dot_skip=10,
+                               end='')
+                self._refresh_status()
+                on_target = self._status['idle']
+            print()
+            print('position: {}'.format(self._status['position']))
+        except (KeyboardInterrupt, EnterAbort):
+            self.stop()
+
     def stop(self):
         print_('stopping.', end='')
         self._stop()
@@ -235,6 +266,20 @@ class FocuserController(object):
         if not response.startswith('ok 0'):
             raise CommunicationException('Controller doesnt acknowledge "step to" command, instead got: {}'.format(response))
 
+    def _step_by(self, n):
+        self._refresh_status()
+        if not self._status['idle']:
+            logger.debug("not idle")
+            raise StateException('Motor not idle')
+        # send command:
+        self._serial.write('step by {}\n'.format(n))
+        # read first response line:
+        response = self._serial.readline().strip()  # expect: "ok 0\n"
+        if not response:  # blank line
+            response = self._serial.readline().strip()
+        if not response.startswith('ok 0'):
+            raise CommunicationException('Controller doesnt acknowledge "step by" command, instead got: {}'.format(response))
+
     def _stop(self):
         logger.debug("stop")
         # send command:
@@ -278,6 +323,9 @@ def _main(args):
     elif args['step'] and args['to']:
         n = int(args['<N>'])
         controller.step_to(n)
+    elif args['step'] and args['by']:
+        n = int(args['<N>'])
+        controller.step_by(n)
         
     exit(0)
 
