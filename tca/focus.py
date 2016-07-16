@@ -19,6 +19,9 @@ Options:
     -h --help       Show this screen or description of specific command.
     --version       Show version.
 """
+from common import fix_path
+fix_path(__name__)
+
 from pprint import pprint
 
 from docopt import docopt
@@ -32,11 +35,11 @@ from tca.common import exit_
 logger = get_logger(__file__)
 
 
-RESET_DISABLED = False
+RESET_DISABLED = True
 
 SERIAL = {
-    # 'PORT': '/dev/tty.usbserial-A703F1A4',  # Not!
-    'PORT': '/dev/cu.wchusbserialfa130',  # Mac
+    'PORT': '/dev/ttyUSB0',  # TCS
+    # 'PORT': '/dev/cu.wchusbserialfa130',  # Mac
     'BAUDRATE': 115200,
     'TIMEOUT': 0.1,  # if no data available, block for max this many seconds
 }
