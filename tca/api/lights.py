@@ -20,6 +20,8 @@ Options:
 from functools import wraps
 from mock.mock import MagicMock
 from pprint import pprint
+
+from tca.logging_conf import get_logger
 from tca.api import version
 __doc__ = __doc__.format(VERSION=version)
 
@@ -37,13 +39,15 @@ DEFAULT_PREFIX = '/lights'
 
 api = Blueprint('lights', __name__)
 
+logger = get_logger('api.lights')
+
 
 # Mock dagor_lights early:
 if __name__ == '__main__':
     args = docopt(__doc__, version=__doc__.strip().split('\n')[0])
     if args['run']:
         if args['--mock']:
-            print("*** MOCK MODE ***")
+            logger.warning("*** MOCK MODE ***")
             dagor_lights = MagicMock(**{
                 'get_lights.return_value': 2,
                 'get_light.side_effect': lambda n: n == 1,

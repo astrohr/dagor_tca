@@ -20,6 +20,8 @@ Options:
 from functools import wraps
 from mock.mock import MagicMock
 from pprint import pprint
+
+from tca.logging_conf import get_logger
 from tca.api import version
 __doc__ = __doc__.format(VERSION=version)
 
@@ -36,16 +38,28 @@ DEFAULT_PREFIX = '/focus'
 
 api = Blueprint('focus', __name__)
 
+logger = get_logger('api.focus')
 
 # Mock dagor_focus early:
 if __name__ == '__main__':
     args = docopt(__doc__, version=__doc__.strip().split('\n')[0])
     if args['run']:
         if args['--mock']:
-            print("*** MOCK MODE ***")
+            logger.warning("*** MOCK MODE ***")
             dagor_focus = MagicMock(**{
-                'get_focus.return_value': 321,
-                'get_focus.side_effect': lambda n: n == 1,
+                'get_status.return_value': {
+                    "can_go_up": True,
+                    "stopping_hard": False,
+                    "can_go_dn": True,
+                    "idle": True,
+                    "intent_up": False,
+                    "moving_up": False,
+                    "position": 400,
+                    "moving_dn": False,
+                    "intent_dn": False
+                },
+                'get_position.return_value': 400,
+                'set_position.return_value': 123,
             })
 
 
