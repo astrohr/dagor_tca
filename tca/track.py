@@ -267,7 +267,7 @@ def speed_tracking(manual_internal=None):
     on_target_since = None
     try:
         while True:
-            _wait_for_time(dagor_motors._TRACKING_CHECK_INTERVAL, dots=True, enter_abort=True, interval=dagor_motors._TRACKING_CHECK_INTERVAL / 10, dot_skip=10)
+            _wait_for_time(dagor_motors._TRACKING_CHECK_INTERVAL, dots=True, enter_abort=True, interval=dagor_motors._TRACKING_CHECK_INTERVAL / 10)
 
             # Getting target coords, "internal" system.
             # Target priorities:

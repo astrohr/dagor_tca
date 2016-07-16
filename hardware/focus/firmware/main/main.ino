@@ -11,6 +11,7 @@
 //#include "_ram_usage.ino.h"
 
 #include "_blink.ino.h"
+#include "_reset.ino.h"
 #include "_buttons.ino.h"
 #include "_motor.ino.h"
 #include "_status.ino.h"
@@ -25,6 +26,7 @@ void setup()
   for (i = 0; i < ModulesRegistry::count; i++) {
     ModulesRegistry::modules[i]->setup();
   }
+  Serial.print("\nready\n");
 }
 
 

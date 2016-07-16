@@ -21,6 +21,9 @@ Usage:
   tca set star <NAME> [blind]
   tca set cat <NAME> [(from <CATALOG>)] [blind]
   tca lights [0 | 1 | 2 | 3]
+  tca focus get
+  tca focus set <N>
+  tca focus goto <N>
   tca [-h | --help | help]
   tca --version
 
@@ -47,6 +50,9 @@ Options:
 """
 
 from __future__ import division
+from os import sys, path
+sys.path.append(path.dirname(path.abspath(__file__)))
+
 from time import sleep
 from docopt import docopt
 import ephem
@@ -58,6 +64,7 @@ import cat as dagor_catalog
 import motors as dagor_motors
 import track as dagor_track
 import path as dagor_path
+import focus as dagor_focus
 import lights as dagor_lights
 import sys
 #from common import exit_
@@ -83,7 +90,7 @@ def _main(args):
         dagor_motors._de.configure_flash()  # order is important when writing to flash (not eeprom)
         dagor_motors._ha.configure_flash()
 
-    if args['get']:
+    if args['get'] and (args['celest'] or args['local'] or args['altaz'] or args['chirality']):
         values = {}
         template = ''
         if args['celest']:
@@ -237,6 +244,16 @@ def _main(args):
         elif args['cat']:
             celest = dagor_catalog.get_celest(args['<NAME>'], args['<CATALOG>'])
             dagor_position.set_internal(dagor_position.celest_to_internal(celest), args['blind'])
+
+    if args['focus']:
+        # TODO: Nope, these methods don't blong to a controller!
+        controller = dagor_focus.FocuserController()
+        if args['get']:
+            controller.get()
+        elif args['set']:
+            controller.set(args['<N>'])
+        elif args['goto']:
+            controller.step_to(args['<N>'])
 
     if args['lights']:
         n = None
