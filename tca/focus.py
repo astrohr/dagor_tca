@@ -168,6 +168,9 @@ class FocuserController(object):
         print()
         print('stopped at: {}'.format(self._status['position']))
 
+    def set(self, n):
+        self._set(n)
+
     # private members
 
     _status = None
@@ -291,16 +294,18 @@ class FocuserController(object):
         if not response.startswith('stopping 0'):
             raise CommunicationException('Controller doesnt acknowledge "stop" command, instead got: {}'.format(response))
 
-    def _switch(self, n, state):
-        on_off = 'on' if state else 'off'
-        self._serial.write('switch {} {}\n'.format(n, on_off))
-        response = self._serial.readline().strip()
-        if response != 'switch {}'.format(n):
-            raise CommunicationException('Controller doesnt acknowlege switch command, instead got: {}'.format(response))
-        response = self._serial.readline().strip()
-        if response not in ('ON', 'OFF'):
-            raise CommunicationException('Expected "ON" or "OFF", got: {}'.format(response))
-        self._status[n - 1] = True if response == 'ON' else False
+    def _set(self, n):
+        # send command:
+        self._serial.write('position set {}\n'.format(n))
+        # read first response line:
+        response = self._serial.readline().strip()  # expect: "ok 1\n"
+        if not response:  # blank line
+            response = self._serial.readline().strip()
+        if not response.startswith('ok 1'):
+            raise CommunicationException('Controller doesnt acknowledge "set" command, instead got: {}'.format(response))
+        response = self._serial.readline().strip()  # expect: new position number
+        if not response.startswith('{}'.format(n)):
+            raise CommunicationException('Controller acknowledges "set" command, but returned wrong position: {}'.format(response))
 
 
 class CommunicationException(Exception):
@@ -326,6 +331,9 @@ def _main(args):
     elif args['step'] and args['by']:
         n = int(args['<N>'])
         controller.step_by(n)
+    elif args['set']:
+        n = int(args['<N>'])
+        controller.set(n)
         
     exit(0)
 
