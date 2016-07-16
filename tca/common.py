@@ -28,12 +28,6 @@ def exit_(status):
     exit(RESPONSES[status])
 
 
-def fix_path(name):
-    if name == '__main__' and __package__ is None:
-        from os import sys, path
-        sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-
-
 verbose = True
 
 

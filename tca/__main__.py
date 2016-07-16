@@ -246,14 +246,12 @@ def _main(args):
             dagor_position.set_internal(dagor_position.celest_to_internal(celest), args['blind'])
 
     if args['focus']:
-        # TODO: Nope, these methods don't blong to a controller!
-        controller = dagor_focus.FocuserController()
         if args['get']:
-            controller.get()
+            print(dagor_focus.get_position())
         elif args['set']:
-            controller.set(args['<N>'])
+            dagor_focus.set_position(args['<N>'])
         elif args['goto']:
-            controller.step_to(args['<N>'])
+            dagor_focus.goto(args['<N>'])
 
     if args['lights']:
         n = None

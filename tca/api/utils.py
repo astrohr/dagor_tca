@@ -1,7 +1,13 @@
 # coding=utf-8
 from flask.ext.api import renderers, parsers, exceptions, status
 from flask.ext.api.decorators import set_renderers
+from flask.ext.api.renderers import BrowsableAPIRenderer, dedent, html_escape
 from werkzeug.routing import BaseConverter
+
+from flask import request, render_template, current_app
+from flask.globals import _request_ctx_stack
+from flask_api.mediatypes import MediaType
+from flask_api.compat import apply_markdown
 
 
 class RegexConverter(BaseConverter):
@@ -18,6 +24,60 @@ class RegexConverter(BaseConverter):
     def __init__(self, url_map, *items):
         super(RegexConverter, self).__init__(url_map)
         self.regex = items[0]
+
+
+
+class BrowsableAPITitleRenderer(BrowsableAPIRenderer):
+    media_type = 'text/html'
+    handles_empty_responses = True
+    template = 'base.html'
+
+    def render(self, data, media_type, **options):
+        """ Just... Don't calitalize view_name! """
+
+        available_renderers = [
+            renderer for renderer in request.renderer_classes
+            if not issubclass(renderer, BrowsableAPIRenderer)
+        ]
+        assert available_renderers, 'BrowsableAPIRenderer cannot be the only renderer'
+        mock_renderer = available_renderers[0]()
+        mock_media_type = MediaType(mock_renderer.media_type)
+        if data == '' and not mock_renderer.handles_empty_responses:
+            mock_content = None
+        else:
+            mock_content = mock_renderer.render(data, mock_media_type, indent=4)
+
+        # Determine the allowed methods on this view.
+        adapter = _request_ctx_stack.top.url_adapter
+        allowed_methods = adapter.allowed_methods()
+
+        endpoint = request.url_rule.endpoint
+        view_name = str(endpoint)
+        view_description = current_app.view_functions[endpoint].__doc__
+        if view_description is not None:
+            view_description = dedent(view_description)
+        mock_content = html_escape(mock_content)
+
+        if view_description and apply_markdown:
+            view_description = apply_markdown(view_description)
+
+        status = options['status']
+        headers = options['headers']
+        headers['Content-Type'] = str(mock_media_type)
+
+        from flask_api import __version__
+
+        context = {
+            'status': status,
+            'headers': headers,
+            'content': mock_content,
+            'allowed_methods': allowed_methods,
+            'view_name': view_name,
+            'view_description': view_description,
+            'version': __version__
+        }
+        return render_template(self.template, **context)
+
 
 
 class BoolRenderer(renderers.BaseRenderer):
@@ -42,12 +102,44 @@ class BoolParser(parsers.BaseParser):
 
     def parse(self, stream, media_type, **options):
         data = stream.read().decode('utf-8').lower()
-        print("parsing: {}".format(data))
         if data == "false":
             return False
         if data == "true":
             return True
         raise exceptions.ParseError('Invalid request, use "true" or "false"')
+
+
+class IntRenderer(renderers.JSONRenderer):
+    """JSON renderer that only supports integer"""
+    media_type = 'application/json'
+
+    def render(self, data, media_type, **options):
+        try:
+            return '{}'.format(int(data))
+        except:
+            return super(IntRenderer, self).render(data, media_type, **options)
+
+
+class IntBrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
+    media_type = 'text/html'
+
+    def render(self, data, media_type, **options):
+        if not type(data) == dict:
+            data = '{}'.format(data)
+        return super(IntBrowsableAPIRenderer, self).render(data, media_type, **options)
+
+
+class IntParser(parsers.BaseParser):
+    """Parser for JSON int values"""
+    media_type = 'application/json'
+
+    def parse(self, stream, media_type, **options):
+        data = stream.read().decode('utf-8').lower()
+        try:
+            data = int(data)
+        except ValueError:
+            raise exceptions.ParseError('Invalid request, expected integer')
+        return data
 
 
 @set_renderers(renderers.BrowsableAPIRenderer, renderers.JSONRenderer)
