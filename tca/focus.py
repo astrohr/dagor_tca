@@ -111,8 +111,6 @@ class FocuserController(object):
             while not on_target:
                 _wait_for_time(INTERVAL, dots=True,
                                enter_abort=True,
-                               interval=INTERVAL / 10,
-                               dot_skip=10,
                                end='')
                 self._refresh_status()
                 on_target = self._status['idle']
@@ -142,8 +140,6 @@ class FocuserController(object):
             while not on_target:
                 _wait_for_time(INTERVAL, dots=True,
                                enter_abort=True,
-                               interval=INTERVAL / 10,
-                               dot_skip=10,
                                end='')
                 self._refresh_status()
                 on_target = self._status['idle']
@@ -160,8 +156,6 @@ class FocuserController(object):
         while not idle:
             _wait_for_time(INTERVAL, dots=True,
                            enter_abort=False,
-                           interval=INTERVAL / 10,
-                           dot_skip=10,
                            end='')
             self._refresh_status()
             idle = self._status['idle']
