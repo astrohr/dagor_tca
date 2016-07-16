@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-"""Dagor API 0.1.
+"""Dagor API {VERSION}
 
 Usage:
     api run
@@ -16,20 +16,59 @@ Options:
     -h --help      Show this screen or description of specific command.
     --version      Show version.
 """
+from collections import OrderedDict
+
+from flask.ext.api.decorators import set_renderers
+from flask.ext.api.renderers import JSONRenderer
+
+from tca.api import version
+__doc__ = __doc__.format(VERSION=version)
+
 from docopt import docopt
 from flask_api import FlaskAPI
-import lights
-from tca.api.utils import RegexConverter
+from tca.api.utils import RegexConverter, BrowsableAPITitleRenderer
+
+from tca.api import MODULES
+
 
 app = FlaskAPI(__name__)
 app.debug = False
 app.url_map.converters['regex'] = RegexConverter
-app.register_blueprint(lights.api, url_prefix=lights.DEFAULT_PREFIX)
+
+for module in MODULES:
+    app.register_blueprint(module.api, url_prefix=module.DEFAULT_PREFIX)
 
 
-@app.route('/')
-def hello_world():
-    return 'Hello World!'
+@set_renderers(BrowsableAPITitleRenderer, JSONRenderer)
+def dagor_api():
+    """
+    API root
+
+    version: {VERSION}
+
+    ### Hyperlinks
+
+    {modules}
+
+    """
+    value = OrderedDict()
+    value['version'] = version
+    return value
+
+modules = []
+for module in MODULES:
+    modules.append(
+        ' * [{name}]({url}/)'.format(
+            name=module.api.name,
+            url=module.DEFAULT_PREFIX,
+        )
+    )
+dagor_api.__doc__ = dagor_api.__doc__.format(
+    VERSION=version,
+    modules='\n    '.join(modules)
+)
+dagor_api.__name__ = "Dagor API"
+app.route('/')(dagor_api)
 
 
 def _run():

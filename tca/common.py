@@ -1,3 +1,5 @@
+from __future__ import print_function, division, absolute_import
+
 from datetime import datetime, timedelta
 import sys
 from time import sleep
@@ -26,12 +28,11 @@ def exit_(status):
     exit(RESPONSES[status])
 
 
-
 verbose = True
 
 
-def print_(msg):
-    sys.stdout.write("%s\n" % msg)
+def print_(msg, **kwargs):
+    print(msg, **kwargs)
     sys.stdout.flush()
 
 
@@ -90,7 +91,7 @@ def _wait_for_speed(motor, min=0, max=3000, dots=False, after=0.1, interval=0.1,
     sys.stdout.flush()
 
 
-def _wait_for_time(seconds=1, dots=False, interval=0.1, dot_skip=0, enter_abort=False, end="\n"):
+def _wait_for_time(seconds=1, dots=False, interval=0.1, dot_skip=10, enter_abort=False, end="\n"):
     i = 0
     start_time = datetime.now()
     end_time = start_time + timedelta(seconds=seconds)
