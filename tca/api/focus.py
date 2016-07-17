@@ -19,7 +19,6 @@ Options:
 
 from functools import wraps
 from mock.mock import MagicMock
-from pprint import pprint
 
 from tca.logging_conf import get_logger
 from tca.api import version
@@ -40,27 +39,33 @@ api = Blueprint('focus', __name__)
 
 logger = get_logger('api.focus')
 
+
 # Mock dagor_focus early:
+
+def mock():
+    logger.warning("*** MOCK MODE ***")
+    dagor_focus = MagicMock(**{
+        'get_status.return_value': {
+            "can_go_up": True,
+            "stopping_hard": False,
+            "can_go_dn": True,
+            "idle": True,
+            "intent_up": False,
+            "moving_up": False,
+            "position": 400,
+            "moving_dn": False,
+            "intent_dn": False
+        },
+        'get_position.return_value': 400,
+        'set_position.return_value': 123,
+    })
+    return dagor_focus
+
 if __name__ == '__main__':
     args = docopt(__doc__, version=__doc__.strip().split('\n')[0])
     if args['run']:
         if args['--mock']:
-            logger.warning("*** MOCK MODE ***")
-            dagor_focus = MagicMock(**{
-                'get_status.return_value': {
-                    "can_go_up": True,
-                    "stopping_hard": False,
-                    "can_go_dn": True,
-                    "idle": True,
-                    "intent_up": False,
-                    "moving_up": False,
-                    "position": 400,
-                    "moving_dn": False,
-                    "intent_dn": False
-                },
-                'get_position.return_value': 400,
-                'set_position.return_value': 123,
-            })
+            dagor_focus = mock()
 
 
 def device_repr():
@@ -207,7 +212,8 @@ def _run_mocked():
     @app.after_request
     def print_mock(response):
         # noinspection PyProtectedMember
-        pprint(dagor_focus._mock_mock_calls, indent=4)
+        from pprint import pformat
+        logger.debug(pformat(dagor_focus.mock_calls, indent=4))
         return response
 
     app.run("0.0.0.0")
