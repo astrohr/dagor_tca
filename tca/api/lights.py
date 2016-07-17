@@ -30,7 +30,7 @@ from tca.api import version
 from tca.api.utils import (
     RegexConverter, BoolRenderer, BoolBrowsableAPIRenderer,
     BoolParser, render_error,
-)
+    set_mock_var, read_mock_var)
 from tca.logging_conf import get_logger
 
 # noinspection PyUnboundLocalVariable
@@ -59,7 +59,10 @@ if __name__ == '__main__':
     args = docopt(__doc__, version=__doc__.strip().split('\n')[0])
     if args['run']:
         if args['--mock']:
-            dagor_lights = mock()
+            set_mock_var()
+
+if read_mock_var():
+    dagor_lights = mock()
 
 
 def device_repr():

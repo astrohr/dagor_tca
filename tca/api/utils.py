@@ -1,4 +1,6 @@
 # coding=utf-8
+import os
+
 from flask.ext.api import renderers, parsers, exceptions, status as status_http
 from flask.ext.api.decorators import set_renderers
 from flask.ext.api.renderers import BrowsableAPIRenderer, dedent, html_escape
@@ -151,3 +153,11 @@ def render_error(message):
     return {
        'message': '{}'.format(message),
     }, status_http.HTTP_400_BAD_REQUEST
+
+
+def set_mock_var():
+    os.environ['DAGOR_API_MOCK'] = '1'
+
+
+def read_mock_var():
+    return os.environ.get('DAGOR_API_MOCK')
