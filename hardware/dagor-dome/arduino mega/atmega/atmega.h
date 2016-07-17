@@ -42,9 +42,9 @@ const int do_close_pin = 47;
 const int is_open_pin = 51; // unused
 const int is_closed_pin = 53; // unused
 
-const int switch_one = A4; // 1st mehanical switch
-const int switch_two = A5; // 2nd mehanical switch
-const int switch_three = A6; // 3rd mehanical switch
+const int switch_one = A8; // 1st mehanical switch
+const int switch_two = A9; // 2nd mehanical switch
+const int switch_three = A10; // 3rd mehanical switch
 
 const int led = 13;
 
