@@ -43,15 +43,21 @@ logger = get_logger('api.lights')
 
 
 # Mock dagor_lights early:
+
+
+def mock():
+    logger.warning("*** MOCK MODE ***")
+    dagor_lights = MagicMock(**{
+        'get_lights.return_value': 2,
+        'get_light.side_effect': lambda n: n == 1,
+    })
+    return dagor_lights
+
 if __name__ == '__main__':
     args = docopt(__doc__, version=__doc__.strip().split('\n')[0])
     if args['run']:
         if args['--mock']:
-            logger.warning("*** MOCK MODE ***")
-            dagor_lights = MagicMock(**{
-                'get_lights.return_value': 2,
-                'get_light.side_effect': lambda n: n == 1,
-            })
+            dagor_lights = mock()
 
 
 def device_repr():
@@ -95,7 +101,9 @@ def handle_request_errors(func):
 @check_connectivity
 def resource():
     """
-    Hyperlinks:
+    Control for the two reflector lights in the dome.
+
+    ### Hyperlinks:
 
     * [Up](..)
     * [Device state](./state/)
@@ -118,6 +126,8 @@ def state_resource():
     """
     State for all light (two of them).
 
+    ### Values
+
     * 0: all OFF
     * 1: light 1 ON, light 2 OFF
     * 2: light 1 OFF, light 2 ON
@@ -125,7 +135,7 @@ def state_resource():
 
     It's binary...
 
-    Hyperlinks:
+    ### Hyperlinks:
 
     * [Up](..)
     """
@@ -145,7 +155,7 @@ def light_resource(light_i):
     """
     State for a single light. It is either ON or OFF (case insensitive).
 
-    Hyperlinks:
+    ### Hyperlinks:
 
      * [Up](..)
     """
@@ -177,8 +187,9 @@ def _run_mocked():
 
     @app.after_request
     def print_mock(response):
-        # noinspection PyProtectedMember
-        pprint(dagor_lights._mock_mock_calls, indent=4)
+        from pprint import pformat
+        # noinspection PyUnresolvedReferences
+        logger.debug(pformat(dagor_lights.mock_calls, indent=4))
         return response
 
     app.run("0.0.0.0")

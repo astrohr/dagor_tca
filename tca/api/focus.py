@@ -211,8 +211,8 @@ def _run_mocked():
 
     @app.after_request
     def print_mock(response):
-        # noinspection PyProtectedMember
         from pprint import pformat
+        # noinspection PyUnresolvedReferences
         logger.debug(pformat(dagor_focus.mock_calls, indent=4))
         return response
 
