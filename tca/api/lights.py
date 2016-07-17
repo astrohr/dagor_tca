@@ -112,7 +112,7 @@ def resource():
         }, http_status.HTTP_200_OK
 
 
-@api.route('/state/', methods=['GET', 'PUT', 'POST', ])
+@api.route('/state/', methods=['GET', 'PUT', ])
 @check_connectivity
 def state_resource():
     """
@@ -136,7 +136,7 @@ def state_resource():
     return device_repr()
 
 
-@api.route('/<regex("[0-9]+"):light_i>/', methods=['GET', 'PUT', 'POST', ])
+@api.route('/<regex("[0-9]+"):light_i>/', methods=['GET', 'PUT', ])
 @set_renderers(BoolBrowsableAPIRenderer, BoolRenderer)
 @set_parsers(BoolParser)
 @check_connectivity
