@@ -9,26 +9,24 @@ Usage:
     api --version
 
 Commands:
-    run            Start the API server.
+    run          Start the API server.
 
 Options:
-    -m --mock      Mock any hardware devices, useful for testing and development.
-    -h --help      Show this screen or description of specific command.
-    --version      Show version.
+    -m --mock    Mock any hardware devices, useful for testing and development.
+    -h --help    Show this screen or description of specific command.
+    --version    Show version.
 """
 from collections import OrderedDict
-
+from docopt import docopt
 from flask.ext.api.decorators import set_renderers
 from flask.ext.api.renderers import JSONRenderer
-
-from tca.api import version
-__doc__ = __doc__.format(VERSION=version)
-
-from docopt import docopt
 from flask_api import FlaskAPI
+
+from tca.api import version, MODULES
 from tca.api.utils import RegexConverter, BrowsableAPITitleRenderer
 
-from tca.api import MODULES
+# noinspection PyUnboundLocalVariable
+__doc__ = __doc__.format(VERSION=version)
 
 
 app = FlaskAPI(__name__)
@@ -79,4 +77,3 @@ if __name__ == '__main__':
     args = docopt(__doc__, version=__doc__.strip().split('\n')[0])
     if args['run']:
         _run()
-

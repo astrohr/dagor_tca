@@ -1,13 +1,13 @@
 # coding=utf-8
-from flask.ext.api import renderers, parsers, exceptions, status
+from flask.ext.api import renderers, parsers, exceptions, status as status_http
 from flask.ext.api.decorators import set_renderers
 from flask.ext.api.renderers import BrowsableAPIRenderer, dedent, html_escape
-from werkzeug.routing import BaseConverter
-
-from flask import request, render_template, current_app
-from flask.globals import _request_ctx_stack
 from flask_api.mediatypes import MediaType
 from flask_api.compat import apply_markdown
+from flask import request, render_template, current_app
+# noinspection PyProtectedMember
+from flask.globals import _request_ctx_stack
+from werkzeug.routing import BaseConverter
 
 
 class RegexConverter(BaseConverter):
@@ -26,20 +26,21 @@ class RegexConverter(BaseConverter):
         self.regex = items[0]
 
 
-
 class BrowsableAPITitleRenderer(BrowsableAPIRenderer):
     media_type = 'text/html'
     handles_empty_responses = True
     template = 'base.html'
 
     def render(self, data, media_type, **options):
-        """ Just... Don't calitalize view_name! """
+        """ Just... Don't capitalize view_name! """
 
+        # noinspection PyUnresolvedReferences
         available_renderers = [
             renderer for renderer in request.renderer_classes
             if not issubclass(renderer, BrowsableAPIRenderer)
         ]
-        assert available_renderers, 'BrowsableAPIRenderer cannot be the only renderer'
+        assert available_renderers, \
+            'BrowsableAPIRenderer cannot be the only renderer'
         mock_renderer = available_renderers[0]()
         mock_media_type = MediaType(mock_renderer.media_type)
         if data == '' and not mock_renderer.handles_empty_responses:
@@ -79,7 +80,6 @@ class BrowsableAPITitleRenderer(BrowsableAPIRenderer):
         return render_template(self.template, **context)
 
 
-
 class BoolRenderer(renderers.BaseRenderer):
     """JSON renderer that only supports "true" and "false" values"""
     media_type = 'application/json'
@@ -93,7 +93,8 @@ class BoolBrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
 
     def render(self, data, media_type, **options):
         data = "true" if data == "true" else "false"
-        return super(BoolBrowsableAPIRenderer, self).render(data, media_type, **options)
+        return super(BoolBrowsableAPIRenderer, self).render(
+            data, media_type, **options)
 
 
 class BoolParser(parsers.BaseParser):
@@ -114,6 +115,7 @@ class IntRenderer(renderers.JSONRenderer):
     media_type = 'application/json'
 
     def render(self, data, media_type, **options):
+        # noinspection PyBroadException
         try:
             return '{}'.format(int(data))
         except:
@@ -126,7 +128,8 @@ class IntBrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
     def render(self, data, media_type, **options):
         if not type(data) == dict:
             data = '{}'.format(data)
-        return super(IntBrowsableAPIRenderer, self).render(data, media_type, **options)
+        return super(IntBrowsableAPIRenderer, self).render(
+            data, media_type, **options)
 
 
 class IntParser(parsers.BaseParser):
@@ -147,4 +150,4 @@ def render_error(message):
     """ Render errors in JSON. Also make sure JSONRenderer is set."""
     return {
        'message': '{}'.format(message),
-    }, status.HTTP_400_BAD_REQUEST
+    }, status_http.HTTP_400_BAD_REQUEST
