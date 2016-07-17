@@ -9,22 +9,16 @@ Usage:
     focus.py --version
 
 Commands:
-    run            Start the API server.
+    run          Start the API server.
 
 Options:
-    -m --mock      Mock any hardware devices, useful for testing and development.
-    -h --help      Show this screen or description of specific command.
-    --version      Show version.
+    -m --mock    Mock any hardware devices, useful for testing and development.
+    -h --help    Show this screen or description of specific command.
+    --version    Show version.
 """
 
 from functools import wraps
 from mock.mock import MagicMock
-from pprint import pprint
-
-from tca.logging_conf import get_logger
-from tca.api import version
-__doc__ = __doc__.format(VERSION=version)
-
 from docopt import docopt
 from flask import Blueprint, request, make_response
 from flask.ext.api.decorators import set_renderers, set_parsers
@@ -32,7 +26,16 @@ from flask_api import FlaskAPI, status as http_status
 from flask_api.exceptions import ParseError
 
 from tca import focus as dagor_focus
-from tca.api.utils import RegexConverter, render_error, IntBrowsableAPIRenderer, IntRenderer, IntParser
+from tca.api import version
+from tca.api.utils import (
+    RegexConverter, render_error, IntBrowsableAPIRenderer,
+    IntRenderer, IntParser,
+    set_mock_var, read_mock_var)
+from tca.logging_conf import get_logger
+
+# noinspection PyUnboundLocalVariable
+__doc__ = __doc__.format(VERSION=version)
+
 
 DEFAULT_PREFIX = '/focus'
 
@@ -40,27 +43,36 @@ api = Blueprint('focus', __name__)
 
 logger = get_logger('api.focus')
 
+
 # Mock dagor_focus early:
+
+def mock():
+    logger.warning("*** MOCK MODE ***")
+    dagor_focus_mocked = MagicMock(**{
+        'get_status.return_value': {
+            "can_go_up": True,
+            "stopping_hard": False,
+            "can_go_dn": True,
+            "idle": True,
+            "intent_up": False,
+            "moving_up": False,
+            "position": 400,
+            "moving_dn": False,
+            "intent_dn": False
+        },
+        'get_position.return_value': 400,
+        'set_position.return_value': 123,
+    })
+    return dagor_focus_mocked
+
 if __name__ == '__main__':
     args = docopt(__doc__, version=__doc__.strip().split('\n')[0])
     if args['run']:
         if args['--mock']:
-            logger.warning("*** MOCK MODE ***")
-            dagor_focus = MagicMock(**{
-                'get_status.return_value': {
-                    "can_go_up": True,
-                    "stopping_hard": False,
-                    "can_go_dn": True,
-                    "idle": True,
-                    "intent_up": False,
-                    "moving_up": False,
-                    "position": 400,
-                    "moving_dn": False,
-                    "intent_dn": False
-                },
-                'get_position.return_value': 400,
-                'set_position.return_value': 123,
-            })
+            set_mock_var()
+
+if read_mock_var():
+    dagor_focus = mock()
 
 
 def device_repr():
@@ -77,9 +89,9 @@ def position_repr():
 
 def check_connectivity(func):
     @wraps(func)
-    def func_wrapper(*args, **kwargs):
+    def func_wrapper(*args_, **kwargs_):
         try:
-            return func(*args, **kwargs)
+            return func(*args_, **kwargs_)
         except Exception as e:
             return {
                 'ready': False,
@@ -90,9 +102,9 @@ def check_connectivity(func):
 
 def handle_request_errors(func):
     @wraps(func)
-    def func_wrapper(*args, **kwargs):
+    def func_wrapper(*args_, **kwargs_):
         try:
-            return func(*args, **kwargs)
+            return func(*args_, **kwargs_)
         except ParseError as e:
             return render_error(e)
     return func_wrapper
@@ -206,8 +218,9 @@ def _run_mocked():
 
     @app.after_request
     def print_mock(response):
-        # noinspection PyProtectedMember
-        pprint(dagor_focus._mock_mock_calls, indent=4)
+        from pprint import pformat
+        # noinspection PyUnresolvedReferences
+        logger.debug(pformat(dagor_focus.mock_calls, indent=4))
         return response
 
     app.run("0.0.0.0")
@@ -220,4 +233,3 @@ if __name__ == '__main__':
             _run_mocked()
         else:
             _run()
-
