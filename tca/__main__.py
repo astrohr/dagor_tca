@@ -247,7 +247,7 @@ def _main(args):
 
     if args['focus']:
         if args['get']:
-            print(dagor_focus.get_position())
+            dagor_focus.get_position()
         elif args['set']:
             dagor_focus.set_position(args['<N>'])
         elif args['goto']:
