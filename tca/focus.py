@@ -352,17 +352,17 @@ def get_status():
 
 
 def get_position():
-    return get_controller()._get()
+    return get_controller().get()
 
 
 def set_position(n):
     n = int('{}'.format(n))
-    return get_controller()._set(n)
+    return get_controller().set(n)
 
 
 def goto(n):
     n = int('{}'.format(n))
-    return get_controller()._step_to(n)
+    return get_controller().step_to(n)
 
 
 def _main(args):
