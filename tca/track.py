@@ -22,6 +22,8 @@ Options:
 """
 from __future__ import division
 from collections import OrderedDict
+
+from datetime import datetime
 from docopt import docopt
 from time import time, sleep
 import os
@@ -234,6 +236,7 @@ def speed_tracking(manual_internal=None):
     def console_header():
         print_("\x1b[2J\x1b[0;0H")
         print_('DYNAMIC TRACKING')
+        print_(datetime.now())
         print_('----------------')
         print_("Press Enter to stop at any time")
         print_("")
