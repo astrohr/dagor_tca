@@ -24,7 +24,7 @@ def parse_hours(value):
     h = 0
     m = 0
     s = 0
-    value = value.strip()
+    value = '{}'.format(value).strip()
     sign = -1 if value[0] == '-' else 1
     form1_1 = re.compile(r'^-?(([0-9]{1,2})(\.[0-9]*)?)h?$')
     form1_2 = re.compile(r'^-?([0-9]{1,2})h((([0-9]{1,2})(\.[0-9]*)?)m?)$')
@@ -56,7 +56,7 @@ def parse_degrees(value):
     d = 0
     m = 0
     s = 0
-    value = value.strip()
+    value = '{}'.format(value).strip()
     sign = -1 if value[0] == '-' else 1
     form1_1 = re.compile(ur'^-?(([0-9]{1,3})(\.[0-9]*)?):?$')
     form1_2 = re.compile(ur'^-?([0-9]{1,3}):((([0-9]{1,2})(\.[0-9]*)?):?)$')
