@@ -39,11 +39,17 @@ from docopt import docopt
 import serial
 import sys
 from os import system
-import dome_config
+import local.dome_config
 from flask import Flask
 from flask import request
 
 app = Flask(__name__)
+
+
+PORT = local.dome_config.PORT
+BAUDRATE = 9600
+TIMEOUT = 2
+
 
 def read_serial(ser):
     """ Read data from serial port. Raise exception if error code is returned.
@@ -106,9 +112,9 @@ def execute_serial(operation):
     """
 
     ser = serial.Serial()
-    ser.port = dome_config.PORT
-    ser.baudrate = dome_config.BAUDRATE
-    ser.timeout = dome_config.TIMEOUT
+    ser.port = PORT
+    ser.baudrate = BAUDRATE
+    ser.timeout = TIMEOUT
 
     ser.open()
     

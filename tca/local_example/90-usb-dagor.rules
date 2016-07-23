@@ -1,0 +1,21 @@
+# This is a "udev rules file".
+# It prevents problems that happen when USB device names keep changing
+# (e.g. dome controller might be on `/dev/ttyACM0` before a reboot, and change to
+#  `/dev/ttyACM1` after a reboot). With these runes configured correctly, it will
+# always be `/dev/dagor_dome`.
+
+
+# Official docs: https://wiki.debian.org/udev
+# A nice summary: http://unix.stackexchange.com/a/183492/50005
+
+
+# In short:
+#  - Copy this file to `/etc/udev/rules.d/` (symlinks don't work, AFAICS)
+#  - Update `idVendor`, `idProduct` and `serial` values to match your device IDs
+#  - reboot or run `sudo udevadm trigger`
+#  - check that device symlinks are made: `ls -l /dev/dagor*` should show three devices
+
+
+SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", ATTRS{serial}=="A703F1A5", SYMLINK+="dagor_lights"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", ATTRS{serial}=="A703F1A4", SYMLINK+="dagor_focus"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="0042", ATTRS{serial}=="853323433323516040B0", SYMLINK+="dagor_dome"
