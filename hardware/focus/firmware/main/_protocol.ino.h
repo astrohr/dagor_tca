@@ -124,6 +124,24 @@ void Protocol::loop()
     motor->set.position_value = value;
     motor->set.position = true;
     deferred_reply_case = PROTOCOL_REPLY_SET_POSITION;
+
+  } else if (command == "speed") {
+    reply_printer->print(F("speed 1\n"));
+    reply_printer->print(motor->get.max_speed);
+
+  } else if (command.substring(0, 10)  == "speed set ") {
+    String data = command.substring(10);
+    char buf[data.length() + 1];
+    data.toCharArray(buf, data.length() + 1);
+    int value = atoi(buf);
+    if (! motor->get.idle) {
+      reply_printer->print(F("error 1"));
+      reply_printer->print(F("motor not idle"));
+    } else {
+      motor->set.max_speed = value;
+      reply_printer->print(F("ok 0"));
+    }
+
   #endif  //  #ifdef MOTOR_H
 
   #ifdef RESET_H
@@ -134,7 +152,7 @@ void Protocol::loop()
   #endif  // #ifdef RESET_H
 
   } else if (command == "" || command == "help") {
-    int help_reply_count = 6;
+    int help_reply_count = 8;
     reply_printer->print(F("help "));
     reply_printer->print(help_reply_count);
     reply_printer->print(F("\n"));
@@ -144,6 +162,8 @@ void Protocol::loop()
     reply_printer->print(F("step to <N>\n"));
     reply_printer->print(F("position\n"));
     reply_printer->print(F("position set <N>\n"));
+    reply_printer->print(F("slow on\n"));
+    reply_printer->print(F("slow off\n"));
 
   } else {
     reply_printer->print(F("error 2\n"));

@@ -16,11 +16,14 @@
 #define MOTOR_2_1 11
 #define MOTOR_2_2 8
 
+#define UNDEFINED -1
+
 
 typedef struct {
   bool idle;
   int direction;
   int32_t position;
+  int32_t max_speed;
 } MotorGet;
 
 
@@ -29,6 +32,7 @@ typedef struct {
   bool stop;
   bool position;
   int32_t position_value;
+  int32_t max_speed;
 } MotorSet;
 
 
@@ -40,6 +44,8 @@ private:
   int32_t target_position;
   bool stopping_hard;
   AccelStepper stepper;
+  int32_t last_max_speed;
+
 
 public:
   MotorGet get;
@@ -53,15 +59,18 @@ public:
     target_position{0},
     stopping_hard{false},
     stepper(AccelStepper::HALF4WIRE, MOTOR_1_1, MOTOR_1_2, MOTOR_2_1, MOTOR_2_2, false),
+    last_max_speed{UNDEFINED},
     get{
       true,  // idle
       0,  // direction
+      UNDEFINED,  // max_speed
     },
     set{
       0,  // move_by
       false,  // stop
       false,  // position
       0,  // position_value
+      UNDEFINED,  // max_speed
     }
   {
   };

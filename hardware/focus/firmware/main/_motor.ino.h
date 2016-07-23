@@ -13,9 +13,10 @@
 #include "_status.h"
 
 
-#define MOTOR_MAX_SPEED 800
-#define MOTOR_FULL_SPEED 250
-#define MOTOR_ACC_MIN 150
+#define MOTOR_SPEED 250
+#define MOTOR_SPEED_SLOW 50
+
+#define MOTOR_ACC 150
 
 
 void Motor::setup()
@@ -25,14 +26,9 @@ void Motor::setup()
   pinMode(MOTOR_2_1, OUTPUT);
   pinMode(MOTOR_1_2, OUTPUT);
 
-
-  // TODO EEPROM this, and configure via serial
-  int acc;
-  int speed = MOTOR_FULL_SPEED;
-  acc = (int) 3 * speed - 1000;
-  if (acc < MOTOR_ACC_MIN) acc = MOTOR_ACC_MIN;
-  stepper.setMaxSpeed(speed);
-  stepper.setAcceleration(acc);
+  get.max_speed = MOTOR_SPEED;
+  stepper.setMaxSpeed(get.max_speed);
+  stepper.setAcceleration(MOTOR_ACC);
 }
 
 
@@ -55,6 +51,21 @@ void Motor::loop()
     }
     set.position = false;
     set.position_value = 0;
+  }
+
+  // reject speed change while moving:
+  if (!get.idle) {
+    set.max_speed == UNDEFINED;
+  }
+  // set max_speed:
+  if (set.max_speed != UNDEFINED) {
+    get.max_speed = set.max_speed;
+    // only set stepper speed if needed:
+    if (last_max_speed != get.max_speed) {
+      stepper.setMaxSpeed(get.max_speed);
+      last_max_speed = get.max_speed;
+    }
+
   }
 
   // don't check position too often, we must give stepper a chanse to actually move:
@@ -93,6 +104,7 @@ void Motor::loop()
 
   // reset setters:
   set.move_by = 0;
+  set.max_speed = UNDEFINED;
 
   // set getters:
   long distance_to_go = stepper.distanceToGo();
