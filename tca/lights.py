@@ -15,33 +15,43 @@ Options:
     -h --help      Show this screen or description of specific command.
     --version      Show version.
 """
+from __future__ import print_function, division, absolute_import
 
 import sys
 from docopt import docopt
-import switches as dagor_switches
+import tca.switches as dagor_switches
+from tca.local import lights_config
 
 CommunicationException = dagor_switches.CommunicationException
 
 
+class LightsController(dagor_switches.SwitchController):
+    PORT = lights_config.PORT
+    RESET_DISABLED = True
+
+    def __init__(self):
+        super(LightsController, self).__init__()  # Just keeping PEP8 happy...
+
+
 def get_light(n):
-    controller = dagor_switches.SwitchController()
+    controller = LightsController()
     status = controller.status
     return int(status[n])
 
 
 def get_lights():
-    controller = dagor_switches.SwitchController()
+    controller = LightsController()
     status = controller.status
     return status[0] * 2 + status[1] * 1
 
 
 def set_light(light_i, state):
-    controller = dagor_switches.SwitchController()
+    controller = LightsController()
     controller.switch(light_i, state)
 
 
 def set_lights(n):
-    controller = dagor_switches.SwitchController()
+    controller = LightsController()
     if n == 0:
         controller.switch(1, False)
         controller.switch(2, False)
@@ -68,20 +78,19 @@ def _main(args):
             n = 2
         elif args['3']:
             n = 3
-        print set_lights(n)
+        print(set_lights(n))
 
     elif args['status']:
         status = get_lights()
         print(status)
 
-
-
     exit(0)
+
 
 if __name__ == '__main__':
     args = docopt(__doc__, version=__doc__.split('\n'[0]), options_first=True)
     if len(sys.argv) == 1:
-        print __doc__.strip()
+        print(__doc__.strip())
         exit(0)
 
     try:
