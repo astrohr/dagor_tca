@@ -26,7 +26,7 @@ from time import sleep
 
 RESET_DISABLED = True
 SERIAL = {
-    'PORT': ['/dev/ttyUSB0', '/dev/ttyUSB1', ],
+    'PORT': ['/dev/dagor_lights', ],
     'BAUDRATE': 9600,
     'TIMEOUT': 0.1,  # if no data available, block for max this many seconds
 }

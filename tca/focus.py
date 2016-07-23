@@ -40,7 +40,7 @@ logger = get_logger(__file__)
 RESET_DISABLED = True
 
 SERIAL = {
-    'PORT': '/dev/ttyUSB0',  # TCS
+    'PORT': '/dev/dagor_focus',  # TCS
     # 'PORT': '/dev/cu.wchusbserialfa130',  # Mac
     'BAUDRATE': 115200,
     'TIMEOUT': 0.1,  # if no data available, block for max this many seconds
