@@ -33,6 +33,7 @@ import time
 
 from tca._utils import str_bool
 from tca.logging_conf import get_logger
+from tca.local import focus_config
 
 logger = get_logger(__file__)
 
@@ -40,7 +41,7 @@ logger = get_logger(__file__)
 RESET_DISABLED = True
 
 SERIAL = {
-    'PORT': '/dev/dagor_focus',  # TCS
+    'PORT': focus_config.PORT,
     # 'PORT': '/dev/cu.wchusbserialfa130',  # Mac
     'BAUDRATE': 115200,
     'TIMEOUT': 0.1,  # if no data available, block for max this many seconds

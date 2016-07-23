@@ -1,39 +1,13 @@
 #!/usr/bin/env python
-"""Dagor switches interface version 0.8.
+# -*- coding: UTF-8 -*-
 
-Usage:
-    switches.py status
-    switches.py switch <N> (on|off)
-    switches.py switch all (on|off)
-    switches.py reset
-    switches.py -h | --help
-    switches.py --version
 
-Commands:
-    status         Display status of switches
-    switch         Switch a particular switch on or off. Sepcify "all" to affect all available switches. (NOT IMPLEMENTED9
-    reset          Reset Arduino. (NOT IMPLEMENTED)
-
-Options:
-    -h --help      Show this screen or description of specific command.
-    --version      Show version.
-"""
-
-from docopt import docopt
 import serial
-import sys
-from time import sleep
-
-RESET_DISABLED = True
-SERIAL = {
-    'PORT': ['/dev/dagor_lights', ],
-    'BAUDRATE': 9600,
-    'TIMEOUT': 0.1,  # if no data available, block for max this many seconds
-}
 
 
 class DeviceException(Exception):
     pass
+
 
 class SwitchController(object):
     """ Controls one or more switches, responds to serial/USB communication.
@@ -53,6 +27,13 @@ class SwitchController(object):
              * reset
     """
 
+    # TODO: This should be base class for all other controllers
+
+    PORT = None
+    BAUDRATE = 9600
+    TIMEOUT = 0.1  # seconds
+    RESET_DISABLED = True
+
     # public API
     @property
     def n(self):
@@ -63,10 +44,23 @@ class SwitchController(object):
         self._refresh_status()
         return self._status
 
-    def __init__(self, SERIAL=SERIAL, RESET_DISABLED=RESET_DISABLED):
+    def __init__(self):
         """ Open and confirm communication, request current status """
-        self._SERIAL = SERIAL
-        self._RESET_DISABLED = RESET_DISABLED
+        if self.PORT is None:
+            raise ValueError(
+                "PORT not provided. Subclass SwitchController and "
+                "specify PORT and RESET_DISABLED")
+        if self.RESET_DISABLED is None:
+            raise ValueError(
+                "RESET_DISABLED not provided. Subclass SwitchController and "
+                "specify PORT and RESET_DISABLED")
+
+        self._SERIAL = {
+            'PORT': self.PORT,
+            'BAUDRATE': self.BAUDRATE,
+            # if no data available, block for max this many seconds:
+            'TIMEOUT': self.TIMEOUT,
+        }
         self._open_serial()
         self._refresh_status()
 
@@ -85,7 +79,7 @@ class SwitchController(object):
         else:
             self._switch(int(n), state)
 
-    # peivate members
+    # private members
 
     _n = 0  # number of swiotches available to this controller
     _status = []  # state of each switch: True for ON, False for OFF 
@@ -126,7 +120,7 @@ class SwitchController(object):
 
         while self._serial.read():
             pass
-        if not self._RESET_DISABLED:
+        if not self.RESET_DISABLED:
             for i in range(6):
                 line = self._serial.readline().strip()
                 if line and line == 'ready':
@@ -164,7 +158,7 @@ class SwitchController(object):
         response = self._serial.readline().strip()
         if response != 'switch {}'.format(n):
             raise CommunicationException(
-                'Controller doesnt acknowlege switch command, instead got: {}'.format(
+                'Controller doesnt acknowledge switch command, instead got: {}'.format(
                     response))
         response = self._serial.readline().strip()
         if response not in ('ON', 'OFF'):
@@ -176,28 +170,3 @@ class SwitchController(object):
 class CommunicationException(Exception):
     """ There was an error communicating with Arduino controller """
     pass
-
-
-def _main(args):
-    controller = SwitchController(SERIAL, RESET_DISABLED)
-
-    if args['status']:
-        controller.pretty_status()
-    elif args['switch']:
-        state = (args['on'] == True)
-        controller.switch(args['<N>'], state)
-
-    exit(0)
-
-
-if __name__ == '__main__':
-    args = docopt(__doc__, version=__doc__.split('\n'[0]), options_first=True)
-    if len(sys.argv) == 1:
-        print __doc__.strip()
-        exit(0)
-
-    try:
-        _main(args)
-    except:
-        raise
-        # exit_('ERROR')
