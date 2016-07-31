@@ -4,7 +4,7 @@
 Usage:
   track.py start
   track.py speed
-  track.py sp
+  track.py sync_console
   track.py sync
   motors.py [-h | --help | help]
   motors.py --version
@@ -12,6 +12,7 @@ Usage:
 Commands:
   start             Start dynamic tracking.
   speed             Set approximate tracking speed.
+  sync_console      Position sync console, for fine position adjust using arrow keys.
   sync              Start interactive mode - allows to adjust position and sync celest coordinates
 
 Options:
@@ -116,7 +117,7 @@ def adjust_speed(ha_err, de_err, max_ha, max_de):
 def sync_console():
     with NonBlockingConsole() as nbc:
         print "\x1b[2J"
-        print "\x1b[0;0HThis is tracking sync console"
+        print "\x1b[0;0HTracking sync console"
         print "\n\n"
         #reset_correction_file()
         manual_corrections = read_corrections_file()
@@ -380,7 +381,7 @@ def _main(args):
         dagor_motors.init()
         dagor_motors.set_speed(dagor_motors._ha, dagor_motors.TRACKING_SPEED)
 
-    if args['sp']:
+    if args['sync_console']:
         sync_console()
 
 
