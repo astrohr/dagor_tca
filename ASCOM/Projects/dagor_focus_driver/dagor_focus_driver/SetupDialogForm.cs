@@ -24,7 +24,7 @@ namespace ASCOM.DagorFocus
         {
             // Place any validation constraint checks here
             // Update the state variables with results from the dialogue
-            Focuser.comPort = (string)comboBoxComPort.SelectedItem;
+            Focuser.protocol = (string)comboBoxProtocol.SelectedItem;
             Focuser.tl.Enabled = chkTrace.Checked;
         }
 
@@ -54,12 +54,15 @@ namespace ASCOM.DagorFocus
         {
             chkTrace.Checked = Focuser.tl.Enabled;
             // set the list of com ports to those that are currently available
-            comboBoxComPort.Items.Clear();
-            comboBoxComPort.Items.AddRange(System.IO.Ports.SerialPort.GetPortNames());      // use System.IO because it's static
-            // select the current port if possible
-            if (comboBoxComPort.Items.Contains(Focuser.comPort))
+            comboBoxProtocol.Items.Clear();
+            for (int i=0; i < Focuser.protocolOptions.Count; i++)
             {
-                comboBoxComPort.SelectedItem = Focuser.comPort;
+                comboBoxProtocol.Items.Insert(i, Focuser.protocolOptions[i]);
+            }
+            // select the current port if possible
+            if (comboBoxProtocol.Items.Contains(Focuser.protocol))
+            {
+                comboBoxProtocol.SelectedItem = Focuser.protocol;
             }
         }
     }

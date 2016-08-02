@@ -77,12 +77,13 @@ namespace ASCOM.DagorFocus
         /// </summary>
         private static string driverDescription = "ASCOM Focuser Driver for DagorFocus.";
 
-        internal static string comPortProfileName = "COM Port"; // Constants used for Profile persistence
-        internal static string comPortDefault = "COM1";
+        internal static string protocolProfileName = "Proto";
+        internal static List<string> protocolOptions = new List<string>(new string[] { "http", "https" });
+        internal static string protocolDefault = protocolOptions[0];
         internal static string traceStateProfileName = "Trace Level";
         internal static string traceStateDefault = "false";
 
-        internal static string comPort; // Variables to hold the currrent device configuration
+        internal static string protocol; // Variables to hold the currrent device configuration
 
         /// <summary>
         /// Private variable to hold the connected state
@@ -235,7 +236,7 @@ namespace ASCOM.DagorFocus
                 if (value)
                 {
                     connectedState = true;
-                    LogMessage("Connected Set", "Connecting to port {0}", comPort);
+                    LogMessage("Connected Set", "Connecting to URL {0}", protocol);
                     if (!client.IsReady)
                     {
                         throw new NotConnectedException();
@@ -246,7 +247,7 @@ namespace ASCOM.DagorFocus
                 else
                 {
                     connectedState = false;
-                    LogMessage("Connected Set", "Disconnecting from port {0}", comPort);
+                    LogMessage("Connected Set", "Disconnecting from URL {0}", protocol);
                     // have nothing to do when disconnecting
                 }
             }
@@ -546,7 +547,7 @@ namespace ASCOM.DagorFocus
             {
                 driverProfile.DeviceType = "Focuser";
                 tl.Enabled = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, traceStateDefault));
-                comPort = driverProfile.GetValue(driverID, comPortProfileName, string.Empty, comPortDefault);
+                protocol = driverProfile.GetValue(driverID, protocolProfileName, string.Empty, protocolDefault);
             }
         }
 
@@ -559,7 +560,7 @@ namespace ASCOM.DagorFocus
             {
                 driverProfile.DeviceType = "Focuser";
                 driverProfile.WriteValue(driverID, traceStateProfileName, tl.Enabled.ToString());
-                driverProfile.WriteValue(driverID, comPortProfileName, comPort.ToString());
+                driverProfile.WriteValue(driverID, protocolProfileName, protocol.ToString());
             }
         }
 
