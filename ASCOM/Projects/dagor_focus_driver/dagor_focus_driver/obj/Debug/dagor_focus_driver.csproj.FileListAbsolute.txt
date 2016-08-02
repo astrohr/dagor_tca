@@ -1,0 +1,58 @@
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.DagorFocus.Focuser.dll.config
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.DagorFocus.Focuser.dll
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.DagorFocus.Focuser.pdb
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.DagorFocus.Focuser.tlb
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.Astrometry.dll
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.Attributes.dll
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.Controls.dll
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.DeviceInterfaces.dll
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.Exceptions.dll
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.SettingsProvider.dll
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.Utilities.dll
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.Utilities.Video.dll
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.Internal.Extensions.dll
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.Astrometry.xml
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.Attributes.xml
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.Controls.xml
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.DeviceInterfaces.xml
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.Exceptions.xml
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.SettingsProvider.xml
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.Utilities.xml
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.Internal.Extensions.xml
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_driver\obj\Debug\ASCOM.DagorFocus.Properties.Resources.resources
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_driver\obj\Debug\ASCOM.DagorFocus.SetupDialogForm.resources
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_driver\obj\Debug\dagor_focus_driver.csproj.GenerateResource.Cache
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_driver\obj\Debug\ASCOM.DagorFocus.Focuser.dll
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_driver\obj\Debug\ASCOM.DagorFocus.Focuser.pdb
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_driver\bin\Debug\Newtonsoft.Json.dll
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_driver\bin\Debug\Newtonsoft.Json.xml
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_driver\obj\Debug\dagor_focus_driver.csprojResolveAssemblyReference.cache
+\\Mac\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.DagorFocus.Focuser.dll.config
+\\Mac\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.DagorFocus.Focuser.dll
+\\Mac\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.DagorFocus.Focuser.pdb
+\\Mac\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.DagorFocus.Focuser.tlb
+\\Mac\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.Astrometry.dll
+\\Mac\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.Attributes.dll
+\\Mac\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.Controls.dll
+\\Mac\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.DeviceInterfaces.dll
+\\Mac\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.Exceptions.dll
+\\Mac\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.SettingsProvider.dll
+\\Mac\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.Utilities.dll
+\\Mac\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.Utilities.Video.dll
+\\Mac\dagor_focus_driver\dagor_focus_driver\bin\Debug\Newtonsoft.Json.dll
+\\Mac\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.Internal.Extensions.dll
+\\Mac\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.Astrometry.xml
+\\Mac\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.Attributes.xml
+\\Mac\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.Controls.xml
+\\Mac\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.DeviceInterfaces.xml
+\\Mac\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.Exceptions.xml
+\\Mac\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.SettingsProvider.xml
+\\Mac\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.Utilities.xml
+\\Mac\dagor_focus_driver\dagor_focus_driver\bin\Debug\Newtonsoft.Json.xml
+\\Mac\dagor_focus_driver\dagor_focus_driver\bin\Debug\ASCOM.Internal.Extensions.xml
+\\Mac\dagor_focus_driver\dagor_focus_driver\obj\Debug\dagor_focus_driver.csprojResolveAssemblyReference.cache
+\\Mac\dagor_focus_driver\dagor_focus_driver\obj\Debug\ASCOM.DagorFocus.Properties.Resources.resources
+\\Mac\dagor_focus_driver\dagor_focus_driver\obj\Debug\ASCOM.DagorFocus.SetupDialogForm.resources
+\\Mac\dagor_focus_driver\dagor_focus_driver\obj\Debug\dagor_focus_driver.csproj.GenerateResource.Cache
+\\Mac\dagor_focus_driver\dagor_focus_driver\obj\Debug\ASCOM.DagorFocus.Focuser.dll
+\\Mac\dagor_focus_driver\dagor_focus_driver\obj\Debug\ASCOM.DagorFocus.Focuser.pdb

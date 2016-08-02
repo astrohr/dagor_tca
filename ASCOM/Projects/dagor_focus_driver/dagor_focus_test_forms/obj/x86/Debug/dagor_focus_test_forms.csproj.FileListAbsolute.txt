@@ -1,0 +1,46 @@
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_test_forms\obj\x86\Debug\dagor_focus_test_forms.csprojResolveAssemblyReference.cache
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_test_forms\obj\x86\Debug\ASCOM.DagorFocus.Form1.resources
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_test_forms\obj\x86\Debug\ASCOM.DagorFocus.Properties.Resources.resources
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_test_forms\obj\x86\Debug\dagor_focus_test_forms.csproj.GenerateResource.Cache
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.DagorFocus.Test.exe.config
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.DagorFocus.Test.exe
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.DagorFocus.Test.pdb
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.DagorFocus.Focuser.dll
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.DeviceInterfaces.dll
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.DriverAccess.dll
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.Utilities.dll
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.Astrometry.dll
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.Exceptions.dll
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.DagorFocus.Focuser.pdb
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.DeviceInterfaces.xml
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.DriverAccess.xml
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.Utilities.xml
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.Astrometry.xml
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.Exceptions.xml
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_test_forms\obj\x86\Debug\ASCOM.DagorFocus.Test.exe
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_test_forms\obj\x86\Debug\ASCOM.DagorFocus.Test.pdb
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\Newtonsoft.Json.dll
+c:\users\ieuser\documents\visual studio 2015\Projects\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\Newtonsoft.Json.xml
+\\Mac\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.DagorFocus.Test.exe.config
+\\Mac\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.DagorFocus.Test.exe
+\\Mac\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.DagorFocus.Test.pdb
+\\Mac\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.DagorFocus.Focuser.dll
+\\Mac\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.DeviceInterfaces.dll
+\\Mac\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.DriverAccess.dll
+\\Mac\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.Utilities.dll
+\\Mac\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.Astrometry.dll
+\\Mac\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.Exceptions.dll
+\\Mac\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\Newtonsoft.Json.dll
+\\Mac\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.DagorFocus.Focuser.pdb
+\\Mac\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.DeviceInterfaces.xml
+\\Mac\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.DriverAccess.xml
+\\Mac\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.Utilities.xml
+\\Mac\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.Astrometry.xml
+\\Mac\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\ASCOM.Exceptions.xml
+\\Mac\dagor_focus_driver\dagor_focus_test_forms\bin\Debug\Newtonsoft.Json.xml
+\\Mac\dagor_focus_driver\dagor_focus_test_forms\obj\x86\Debug\dagor_focus_test_forms.csprojResolveAssemblyReference.cache
+\\Mac\dagor_focus_driver\dagor_focus_test_forms\obj\x86\Debug\ASCOM.DagorFocus.Form1.resources
+\\Mac\dagor_focus_driver\dagor_focus_test_forms\obj\x86\Debug\ASCOM.DagorFocus.Properties.Resources.resources
+\\Mac\dagor_focus_driver\dagor_focus_test_forms\obj\x86\Debug\dagor_focus_test_forms.csproj.GenerateResource.Cache
+\\Mac\dagor_focus_driver\dagor_focus_test_forms\obj\x86\Debug\ASCOM.DagorFocus.Test.exe
+\\Mac\dagor_focus_driver\dagor_focus_test_forms\obj\x86\Debug\ASCOM.DagorFocus.Test.pdb
