@@ -15,6 +15,7 @@ Usage:
   tca track to star <NAME> [ce | cw]
   tca track to cat <NAME> [(from <CATALOG>)] [ce | cw]
   tca track start
+  tca sync console
   tca stop
   tca manual
   tca set celest <RA> <DE> [blind]
@@ -35,6 +36,7 @@ Commands:
                     altaz: alt-az coordinates
   move to           move to coordinates precisely
   set               Sync current position with provided coordinates
+  sync console      Position sync console, for fine position adjust using arrow keys.
 
 Parameters:
   <HA>              Hour angle, 0 - 24
@@ -224,6 +226,9 @@ def _main(args):
                 _wait_for_stop(dagor_motors._de, dots=True, skip_dots=3)
         elif args['start']:
             dagor_track.speed_tracking()
+
+    if args['sync'] and args['console']:
+        dagor_track.sync_console()
 
     if args['stop']:
         dagor_motors.init()
