@@ -175,7 +175,7 @@ class FocuserController(object):
         self._set(n)
 
     def get(self):
-        print(self._get())
+        return self._get()
 
     # private members
 
@@ -383,7 +383,7 @@ def _main(args):
         n = int(args['<N>'])
         controller.set(n)
     elif args['get']:
-        controller.get()
+        print(controller.get())
 
     exit(0)
 
