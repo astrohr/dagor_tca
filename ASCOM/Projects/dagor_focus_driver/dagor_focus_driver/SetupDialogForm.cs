@@ -25,6 +25,8 @@ namespace ASCOM.DagorFocus
             // Place any validation constraint checks here
             // Update the state variables with results from the dialogue
             Focuser.protocol = (string)comboBoxProtocol.SelectedItem;
+            Focuser.server = (string)textBoxServer.Text;
+            Focuser.port = int.Parse(textBoxPort.Text);
             Focuser.tl.Enabled = chkTrace.Checked;
         }
 
@@ -59,11 +61,15 @@ namespace ASCOM.DagorFocus
             {
                 comboBoxProtocol.Items.Insert(i, Focuser.protocolOptions[i]);
             }
-            // select the current port if possible
+            // select the current protocol if possible
             if (comboBoxProtocol.Items.Contains(Focuser.protocol))
             {
                 comboBoxProtocol.SelectedItem = Focuser.protocol;
             }
+            // set current server:
+            textBoxServer.Text = Focuser.server;
+            // set current port:
+            textBoxPort.Text = Focuser.port.ToString();
         }
     }
 }

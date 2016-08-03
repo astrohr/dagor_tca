@@ -35,6 +35,10 @@ namespace ASCOM.DagorFocus
             this.label2 = new System.Windows.Forms.Label();
             this.chkTrace = new System.Windows.Forms.CheckBox();
             this.comboBoxProtocol = new System.Windows.Forms.ComboBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.textBoxServer = new System.Windows.Forms.TextBox();
+            this.textBoxPort = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.SuspendLayout();
             // 
@@ -87,7 +91,7 @@ namespace ASCOM.DagorFocus
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(13, 90);
+            this.label2.Location = new System.Drawing.Point(13, 64);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(46, 13);
             this.label2.TabIndex = 5;
@@ -96,7 +100,7 @@ namespace ASCOM.DagorFocus
             // chkTrace
             // 
             this.chkTrace.AutoSize = true;
-            this.chkTrace.Location = new System.Drawing.Point(77, 118);
+            this.chkTrace.Location = new System.Drawing.Point(77, 141);
             this.chkTrace.Name = "chkTrace";
             this.chkTrace.Size = new System.Drawing.Size(69, 17);
             this.chkTrace.TabIndex = 6;
@@ -106,16 +110,52 @@ namespace ASCOM.DagorFocus
             // comboBoxProtocol
             // 
             this.comboBoxProtocol.FormattingEnabled = true;
-            this.comboBoxProtocol.Location = new System.Drawing.Point(77, 87);
+            this.comboBoxProtocol.Location = new System.Drawing.Point(77, 61);
             this.comboBoxProtocol.Name = "comboBoxProtocol";
-            this.comboBoxProtocol.Size = new System.Drawing.Size(90, 21);
+            this.comboBoxProtocol.Size = new System.Drawing.Size(100, 21);
             this.comboBoxProtocol.TabIndex = 7;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(13, 92);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(38, 13);
+            this.label3.TabIndex = 8;
+            this.label3.Text = "Server";
+            // 
+            // textBoxServer
+            // 
+            this.textBoxServer.Location = new System.Drawing.Point(77, 89);
+            this.textBoxServer.Name = "textBoxServer";
+            this.textBoxServer.Size = new System.Drawing.Size(100, 20);
+            this.textBoxServer.TabIndex = 9;
+            // 
+            // textBoxPort
+            // 
+            this.textBoxPort.Location = new System.Drawing.Point(77, 115);
+            this.textBoxPort.Name = "textBoxPort";
+            this.textBoxPort.Size = new System.Drawing.Size(100, 20);
+            this.textBoxPort.TabIndex = 11;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(13, 118);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(26, 13);
+            this.label4.TabIndex = 10;
+            this.label4.Text = "Port";
             // 
             // SetupDialogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(350, 175);
+            this.Controls.Add(this.textBoxPort);
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.textBoxServer);
+            this.Controls.Add(this.label3);
             this.Controls.Add(this.comboBoxProtocol);
             this.Controls.Add(this.chkTrace);
             this.Controls.Add(this.label2);
@@ -145,5 +185,9 @@ namespace ASCOM.DagorFocus
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.CheckBox chkTrace;
         private System.Windows.Forms.ComboBox comboBoxProtocol;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox textBoxServer;
+        private System.Windows.Forms.TextBox textBoxPort;
+        private System.Windows.Forms.Label label4;
     }
 }
