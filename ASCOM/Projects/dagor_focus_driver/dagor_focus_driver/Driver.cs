@@ -389,14 +389,14 @@ namespace ASCOM.DagorFocus
         public void Move(int Position)
         {
             LogMessage("Move", Position.ToString());
-            focuserPosition = Position; // Set the focuser position
+            client.Position = Position; // Set the focuser position
         }
 
         public int Position
         {
             get
             {
-                return focuserPosition; // Return the focuser position
+                return client.Position; // Return the focuser position
             }
         }
 
@@ -404,8 +404,7 @@ namespace ASCOM.DagorFocus
         {
             get
             {
-                LogMessage("StepSize Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("StepSize", false);
+                return 1;
             }
         }
 

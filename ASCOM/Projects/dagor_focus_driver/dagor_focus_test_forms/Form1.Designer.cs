@@ -31,6 +31,7 @@
             this.buttonChoose = new System.Windows.Forms.Button();
             this.buttonConnect = new System.Windows.Forms.Button();
             this.labelDriverId = new System.Windows.Forms.Label();
+            this.buttonUp = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // buttonChoose
@@ -64,11 +65,22 @@
             this.labelDriverId.Text = global::ASCOM.DagorFocus.Properties.Settings.Default.DriverId;
             this.labelDriverId.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
+            // buttonUp
+            // 
+            this.buttonUp.Location = new System.Drawing.Point(132, 118);
+            this.buttonUp.Name = "buttonUp";
+            this.buttonUp.Size = new System.Drawing.Size(75, 23);
+            this.buttonUp.TabIndex = 3;
+            this.buttonUp.Text = "+100";
+            this.buttonUp.UseVisualStyleBackColor = true;
+            this.buttonUp.Click += new System.EventHandler(this.buttonUp_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(409, 262);
+            this.Controls.Add(this.buttonUp);
             this.Controls.Add(this.labelDriverId);
             this.Controls.Add(this.buttonConnect);
             this.Controls.Add(this.buttonChoose);
@@ -84,6 +96,7 @@
         private System.Windows.Forms.Button buttonChoose;
         private System.Windows.Forms.Button buttonConnect;
         private System.Windows.Forms.Label labelDriverId;
+        private System.Windows.Forms.Button buttonUp;
     }
 }
 

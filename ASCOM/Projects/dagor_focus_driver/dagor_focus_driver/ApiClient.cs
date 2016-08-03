@@ -80,7 +80,7 @@ namespace ASCOM.DagorApiClient
 
 
         public int Retries {
-            get { return 5; }
+            get { return 50; }
             set { throw new NotImplementedException(); }
         }
 
@@ -114,15 +114,11 @@ namespace ASCOM.DagorApiClient
         protected ResponseRepr ExecuteGET<ResponseRepr>(string url)
         {
             int retries = Retries;
-
-            if (!string.IsNullOrEmpty(url) && url.EndsWith("/"))
+            if (!string.IsNullOrEmpty(url) && !url.EndsWith("/"))
                 url += "/";
-
             while (retries-- > 0)
             {
-                // List data response.
                 HttpResponseMessage response = client.GetAsync(url).Result;  // Blocking call!
-
                 if (response.IsSuccessStatusCode)
                 {
                     // Parse the response body. Blocking!
@@ -131,11 +127,35 @@ namespace ASCOM.DagorApiClient
                     var state = JsonConvert.DeserializeObject<ResponseRepr>(content);
                     return state;
                 }
+                System.Threading.Thread.Sleep(1000);
             }
-
             throw new CommError("Retries exhausted");
-
         }
+
+
+        protected ResponseRepr ExecutePUT<ResponseRepr, RequestRepr>(string url, RequestRepr request_repr)
+        {
+            string content = JsonConvert.SerializeObject(request_repr);
+            int retries = Retries;
+            if (!string.IsNullOrEmpty(url) && !url.EndsWith("/"))
+                url += "/";
+            while (retries-- > 0)
+            {
+                StringContent request_content = new StringContent(content, Encoding.UTF8, "application/json");
+                HttpResponseMessage response = client.PutAsync(url, request_content).Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    // Parse the response body. Blocking!
+                    var response_content = response.Content.ReadAsStringAsync().Result;
+                    Debug.WriteLine(response_content);
+                    var response_repr = JsonConvert.DeserializeObject<ResponseRepr>(content);
+                    return response_repr;
+                }
+                System.Threading.Thread.Sleep(1000);
+            }
+            throw new CommError("Retries exhausted");
+        }
+
 
     }
 

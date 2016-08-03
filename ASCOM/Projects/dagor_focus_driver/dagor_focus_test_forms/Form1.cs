@@ -56,5 +56,10 @@ namespace ASCOM.DagorFocus
                 return ((this.driver != null) && (driver.Connected == true));
             }
         }
+
+        private void buttonUp_Click(object sender, EventArgs e)
+        {
+            driver.Move(driver.Position + 100);
+        }
     }
 }

@@ -10,7 +10,6 @@ using ASCOM.DagorApiClient;
 namespace ASCOM.DagorFocus
 {
 
-
     public class ReprState : IRepr
     {
         public bool can_go_up { get; set; }
@@ -41,7 +40,33 @@ namespace ASCOM.DagorFocus
             }
         }
 
-
-
+        public int Position
+        {
+            get
+            {
+                try
+                {
+                    Int16 repr_position = ExecuteGET<Int16>("position");
+                    return (int)repr_position;
+                }
+                catch (Exception ex)
+                {
+                    // TODO log excaption
+                    throw new NotConnectedException();
+                }
+            }
+            set
+            {
+                try
+                {
+                    Int16 repr_position_response = ExecutePUT<Int16, Int16>("position", (Int16)value);
+                }
+                catch (Exception ex)
+                {
+                    // TODO log excaption
+                    throw new NotConnectedException();
+                }
+            }
+        }
     }
 }
