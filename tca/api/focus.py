@@ -192,7 +192,7 @@ def position_resource():
         # get data, via parser:
         n = request.data
         if putted:
-            dagor_focus.goto(n)
+            dagor_focus.get_controller()._step_to(n)
         else:
             dagor_focus.set_position(n)
     n = dagor_focus.get_position()
