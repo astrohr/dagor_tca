@@ -24,7 +24,11 @@ namespace ASCOM.DagorLights
         {
             // Place any validation constraint checks here
             // Update the state variables with results from the dialogue
-            Switch.comPort = (string)comboBoxComPort.SelectedItem;
+            Switch.protocol = (string)comboBoxProtocol.SelectedItem;
+            Switch.server = (string)textBoxServer.Text;
+            Switch.port = int.Parse(textBoxPort.Text);
+
+
             Switch.tl.Enabled = chkTrace.Checked;
         }
 
@@ -53,14 +57,23 @@ namespace ASCOM.DagorLights
         private void InitUI()
         {
             chkTrace.Checked = Switch.tl.Enabled;
-            // set the list of com ports to those that are currently available
-            comboBoxComPort.Items.Clear();
-            comboBoxComPort.Items.AddRange(System.IO.Ports.SerialPort.GetPortNames());      // use System.IO because it's static
-            // select the current port if possible
-            if (comboBoxComPort.Items.Contains(Switch.comPort))
+
+
+            // Set the list of available protocols to choose from
+            comboBoxProtocol.Items.Clear();
+            for (int i = 0; i < Switch.protocolOptions.Count; i++)
             {
-                comboBoxComPort.SelectedItem = Switch.comPort;
+                comboBoxProtocol.Items.Insert(i, Switch.protocolOptions[i]);
             }
+            // select the current protocol if possible
+            if (comboBoxProtocol.Items.Contains(Switch.protocol))
+            {
+                comboBoxProtocol.SelectedItem = Switch.protocol;
+            }
+            // set current server:
+            textBoxServer.Text = Switch.server;
+            // set current port:
+            textBoxPort.Text = Switch.port.ToString();
         }
     }
 }

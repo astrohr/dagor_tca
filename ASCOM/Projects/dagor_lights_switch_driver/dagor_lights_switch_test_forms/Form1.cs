@@ -12,6 +12,7 @@ namespace ASCOM.DagorLights
         {
             InitializeComponent();
             SetUIState();
+         
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -54,6 +55,49 @@ namespace ASCOM.DagorLights
             get
             {
                 return ((this.driver != null) && (driver.Connected == true));
+            }
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void checkBoxLight1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBoxLight1.Checked)
+            {
+
+                driver.SetSwitch(0, true);
+
+                checkBoxLight1.Text = "ON";
+                checkBoxLight1.BackColor = System.Drawing.Color.Green;
+               
+            }
+            else
+            {
+                driver.SetSwitch(0, false);
+
+                checkBoxLight1.Text = "OFF";
+                checkBoxLight1.BackColor = System.Drawing.Color.DarkRed;
+            }
+        }
+
+        private void checkBoxLight2_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBoxLight2.Checked)
+            {
+                driver.SetSwitch(1, true);
+
+                checkBoxLight2.Text = "ON";
+                checkBoxLight2.BackColor = System.Drawing.Color.Green;
+            }
+            else
+            {
+                driver.SetSwitch(1, false);
+
+                checkBoxLight2.Text = "OFF";
+                checkBoxLight2.BackColor = System.Drawing.Color.DarkRed;
             }
         }
     }

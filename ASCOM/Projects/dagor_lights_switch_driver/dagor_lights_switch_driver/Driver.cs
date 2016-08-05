@@ -1,23 +1,18 @@
 //tabs=4
 // --------------------------------------------------------------------------------
-// TODO fill in this information for your driver, then remove this line!
 //
 // ASCOM Switch driver for DagorLights
 //
-// Description:	Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam 
-//				nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam 
-//				erat, sed diam voluptua. At vero eos et accusam et justo duo 
-//				dolores et ea rebum. Stet clita kasd gubergren, no sea takimata 
-//				sanctus est Lorem ipsum dolor sit amet.
+// Description:	ASCOM Switch Driver for Dagor lights
 //
 // Implements:	ASCOM Switch interface version: <To be completed by driver developer>
 // Author:		(XXX) Your N. Here <your@email.here>
 //
 // Edit Log:
 //
-// Date			Who	Vers	Description
-// -----------	---	-----	-------------------------------------------------------
-// dd-mmm-yyyy	XXX	6.0.0	Initial edit, created from ASCOM driver template
+// Date			Who	    Vers	Description
+// -----------	---	    -----	-------------------------------------------------------
+// 04-08-2016	nenad	1.0.0	Initial edit, created from ASCOM driver template
 // --------------------------------------------------------------------------------
 //
 
@@ -48,10 +43,6 @@ namespace ASCOM.DagorLights
     // The Guid attribute sets the CLSID for ASCOM.DagorLights.Switch
     // The ClassInterface/None addribute prevents an empty interface called
     // _DagorLights from being created and used as the [default] interface
-    //
-    // TODO Replace the not implemented exceptions with code to implement the function or
-    // throw the appropriate ASCOM exception.
-    //
 
     /// <summary>
     /// ASCOM Switch Driver for DagorLights.
@@ -71,12 +62,20 @@ namespace ASCOM.DagorLights
         /// </summary>
         private static string driverDescription = "ASCOM Switch Driver for DagorLights.";
 
-        internal static string comPortProfileName = "COM Port"; // Constants used for Profile persistence
-        internal static string comPortDefault = "COM1";
+        internal static string protocolProfileName = "Proto";
+        internal static List<string> protocolOptions = new List<string>(new string[] { "http", "https" });
+        internal static string protocolDefault = protocolOptions[0];
+        internal static string serverProfileName = "Server";
+        internal static string serverDefault = "127.0.0.1";
+        internal static string portProfileName = "Port";
+        internal static string portDefault = "8000";
         internal static string traceStateProfileName = "Trace Level";
         internal static string traceStateDefault = "false";
 
-        internal static string comPort; // Variables to hold the currrent device configuration
+        // Variables to hold the currrent device configuration
+        internal static string protocol;
+        internal static string server;
+        internal static int port;
 
         /// <summary>
         /// Private variable to hold the connected state
@@ -98,6 +97,9 @@ namespace ASCOM.DagorLights
         /// </summary>
         internal static TraceLogger tl;
 
+        private LightsApiClient client;
+
+
         /// <summary>
         /// Initializes a new instance of the <see cref="DagorLights"/> class.
         /// Must be public for COM registration.
@@ -112,7 +114,10 @@ namespace ASCOM.DagorLights
             connectedState = false; // Initialise connected to false
             utilities = new Util(); //Initialise util object
             astroUtilities = new AstroUtils(); // Initialise astro utilities object
+
             //TODO: Implement your additional construction here
+                        
+            client = new LightsApiClient(protocol, server, port);
 
             tl.LogMessage("Switch", "Completed initialisation");
         }
@@ -202,6 +207,8 @@ namespace ASCOM.DagorLights
             utilities = null;
             astroUtilities.Dispose();
             astroUtilities = null;
+
+            client = null;
         }
 
         public bool Connected
@@ -220,13 +227,19 @@ namespace ASCOM.DagorLights
                 if (value)
                 {
                     connectedState = true;
-                    LogMessage("Connected Set", "Connecting to port {0}", comPort);
-                    // TODO connect to the device
+                    LogMessage("Connected Set", "Connecting to URL {0}", protocol);
+                    
+                    if (!client.IsReady)
+                    {
+                        throw new NotConnectedException();
+                    
+                    }
+
                 }
                 else
                 {
                     connectedState = false;
-                    LogMessage("Connected Set", "Disconnecting from port {0}", comPort);
+                    LogMessage("Connected Set", "Disconnecting from URL {0}", protocol);
                     // TODO disconnect from the device
                 }
             }
@@ -289,7 +302,7 @@ namespace ASCOM.DagorLights
 
         #region ISwitchV2 Implementation
 
-        private short numSwitch = 0;
+        private short numSwitch = 2;
 
         /// <summary>
         /// The number of switches managed by this driver
@@ -312,12 +325,13 @@ namespace ASCOM.DagorLights
         /// </returns>
         public string GetSwitchName(short id)
         {
-            Validate("GetSwitchName", id);
-            tl.LogMessage("GetSwitchName", string.Format("GetSwitchName({0}) - not implemented", id));
-            throw new MethodNotImplementedException("GetSwitchName");
+            //Validate("GetSwitchName", id);
+            //tl.LogMessage("GetSwitchName", string.Format("GetSwitchName({0}) - not implemented", id));
+            //throw new MethodNotImplementedException("GetSwitchName");
             // or
-            //tl.LogMessage("GetSwitchName", string.Format("GetSwitchName({0}) - default Switch{0}", id));
-            //return "Switch" + id.ToString();
+            
+            tl.LogMessage("GetSwitchName", string.Format("GetSwitchName({0}) - default Switch{0}", id));
+            return "Switch" + id.ToString();
         }
 
         /// <summary>
@@ -379,7 +393,10 @@ namespace ASCOM.DagorLights
         {
             Validate("GetSwitch", id);
             tl.LogMessage("GetSwitch", string.Format("GetSwitch({0}) - not implemented", id));
-            throw new MethodNotImplementedException("GetSwitch");
+            //throw new MethodNotImplementedException("GetSwitch");
+
+            return client.getSwitch(id + 1);
+
         }
 
         /// <summary>
@@ -400,7 +417,10 @@ namespace ASCOM.DagorLights
                 throw new MethodNotImplementedException(str);
             }
             tl.LogMessage("SetSwitch", string.Format("SetSwitch({0}) = {1} - not implemented", id, state));
-            throw new MethodNotImplementedException("SetSwitch");
+            //throw new MethodNotImplementedException("SetSwitch");
+
+            client.setSwitch(id + 1, state);
+
         }
 
         #endregion
@@ -488,6 +508,11 @@ namespace ASCOM.DagorLights
             }
             tl.LogMessage("SetSwitchValue", string.Format("SetSwitchValue({0}) = {1} - not implemented", id, value));
             throw new MethodNotImplementedException("SetSwitchValue");
+
+            //TO-DO
+            //Call Client to set switch 0/1 to true/false
+
+
         }
 
         #endregion
@@ -659,7 +684,10 @@ namespace ASCOM.DagorLights
             {
                 driverProfile.DeviceType = "Switch";
                 tl.Enabled = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, traceStateDefault));
-                comPort = driverProfile.GetValue(driverID, comPortProfileName, string.Empty, comPortDefault);
+
+                protocol = driverProfile.GetValue(driverID, protocolProfileName, string.Empty, protocolDefault);
+                server = driverProfile.GetValue(driverID, serverProfileName, string.Empty, serverDefault);
+                port = int.Parse(driverProfile.GetValue(driverID, portProfileName, string.Empty, portDefault));
             }
         }
 
@@ -672,7 +700,9 @@ namespace ASCOM.DagorLights
             {
                 driverProfile.DeviceType = "Switch";
                 driverProfile.WriteValue(driverID, traceStateProfileName, tl.Enabled.ToString());
-                driverProfile.WriteValue(driverID, comPortProfileName, comPort.ToString());
+                driverProfile.WriteValue(driverID, protocolProfileName, protocol.ToString());
+                driverProfile.WriteValue(driverID, serverProfileName, server.ToString());
+                driverProfile.WriteValue(driverID, portProfileName, port.ToString());
             }
         }
 
