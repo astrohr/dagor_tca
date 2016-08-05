@@ -56,11 +56,11 @@ def set_lights(n):
         controller.switch(1, False)
         controller.switch(2, False)
     elif n == 1:
-        controller.switch(1, False)
-        controller.switch(2, True)
-    elif n == 2:
         controller.switch(1, True)
         controller.switch(2, False)
+    elif n == 2:
+        controller.switch(1, False)
+        controller.switch(2, True)
     elif n == 3:
         controller.switch(1, True)
         controller.switch(2, True)
