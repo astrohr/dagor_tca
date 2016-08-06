@@ -1,5 +1,5 @@
-C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_driver\bin\Debug\ASCOM.DagorLights.Switch.dll.config
 C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_driver\bin\Debug\ASCOM.DagorLights.Switch.dll
+C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_driver\bin\Debug\ASCOM.DagorLights.Switch.dll.config
 C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_driver\bin\Debug\ASCOM.DagorLights.Switch.pdb
 C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_driver\bin\Debug\ASCOM.DagorLights.Switch.tlb
 C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_driver\bin\Debug\ASCOM.Astrometry.dll
@@ -10,8 +10,10 @@ C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_s
 C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_driver\bin\Debug\ASCOM.SettingsProvider.dll
 C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_driver\bin\Debug\ASCOM.Utilities.dll
 C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_driver\bin\Debug\ASCOM.Utilities.Video.dll
+C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_driver\bin\Debug\dagor_ascom_api_client.dll
 C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_driver\bin\Debug\Newtonsoft.Json.dll
 C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_driver\bin\Debug\ASCOM.Internal.Extensions.dll
+C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_driver\bin\Debug\dagor_ascom_api_client.pdb
 C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_driver\bin\Debug\ASCOM.Astrometry.xml
 C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_driver\bin\Debug\ASCOM.Attributes.xml
 C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_driver\bin\Debug\ASCOM.Controls.xml
