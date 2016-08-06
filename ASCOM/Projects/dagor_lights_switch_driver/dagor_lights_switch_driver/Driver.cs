@@ -171,9 +171,9 @@ namespace ASCOM.DagorLights
 
         public void CommandBlind(string command, bool raw)
         {
-            CheckConnected("CommandBlind");
+            // CheckConnected("CommandBlind");
             // Call CommandString and return as soon as it finishes
-            //this.CommandString(command, raw);
+            // this.CommandString(command, raw);
             // or
             throw new ASCOM.MethodNotImplementedException("CommandBlind");
 
@@ -181,8 +181,8 @@ namespace ASCOM.DagorLights
 
         public bool CommandBool(string command, bool raw)
         {
-            //CheckConnected("CommandBool");
-            //string ret = CommandString(command, raw);
+            // CheckConnected("CommandBool");
+            // string ret = CommandString(command, raw);
             // TODO decode the return string and return true or false
             // or
             throw new ASCOM.MethodNotImplementedException("CommandBool");
@@ -190,7 +190,7 @@ namespace ASCOM.DagorLights
 
         public string CommandString(string command, bool raw)
         {
-            //CheckConnected("CommandString");
+            // CheckConnected("CommandString");
             // it's a good idea to put all the low level communication with the device here,
             // then all communication calls this function
             // you need something to ensure that only one command is in progress at a time
@@ -207,7 +207,6 @@ namespace ASCOM.DagorLights
             utilities = null;
             astroUtilities.Dispose();
             astroUtilities = null;
-
             client = null;
         }
 
@@ -229,6 +228,7 @@ namespace ASCOM.DagorLights
                     connectedState = true;
                     LogMessage("Connected Set", "Connecting to URL {0}", protocol);
                     
+                    // Connect to the device
                     if (!client.IsReady)
                     {
                         throw new NotConnectedException();                    

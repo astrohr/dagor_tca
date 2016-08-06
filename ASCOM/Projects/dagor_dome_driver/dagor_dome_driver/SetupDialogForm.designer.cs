@@ -1,4 +1,4 @@
-namespace ASCOM.DagorDome
+namespace ASCOM.Dagor
 {
     partial class SetupDialogForm
     {
@@ -32,9 +32,13 @@ namespace ASCOM.DagorDome
             this.cmdCancel = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.picASCOM = new System.Windows.Forms.PictureBox();
-            this.label2 = new System.Windows.Forms.Label();
+            this.labelProtocol = new System.Windows.Forms.Label();
             this.chkTrace = new System.Windows.Forms.CheckBox();
-            this.comboBoxComPort = new System.Windows.Forms.ComboBox();
+            this.comboBoxProtocol = new System.Windows.Forms.ComboBox();
+            this.labelPort = new System.Windows.Forms.Label();
+            this.labelServer = new System.Windows.Forms.Label();
+            this.textBoxServer = new System.Windows.Forms.TextBox();
+            this.textBoxPort = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.picASCOM)).BeginInit();
             this.SuspendLayout();
             // 
@@ -42,7 +46,7 @@ namespace ASCOM.DagorDome
             // 
             this.cmdOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cmdOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.cmdOK.Location = new System.Drawing.Point(281, 112);
+            this.cmdOK.Location = new System.Drawing.Point(281, 190);
             this.cmdOK.Name = "cmdOK";
             this.cmdOK.Size = new System.Drawing.Size(59, 24);
             this.cmdOK.TabIndex = 0;
@@ -54,7 +58,7 @@ namespace ASCOM.DagorDome
             // 
             this.cmdCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.cmdCancel.Location = new System.Drawing.Point(281, 142);
+            this.cmdCancel.Location = new System.Drawing.Point(281, 220);
             this.cmdCancel.Name = "cmdCancel";
             this.cmdCancel.Size = new System.Drawing.Size(59, 25);
             this.cmdCancel.TabIndex = 1;
@@ -74,7 +78,7 @@ namespace ASCOM.DagorDome
             // 
             this.picASCOM.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.picASCOM.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.picASCOM.Image = global::ASCOM.DagorDome.Properties.Resources.ASCOM;
+            this.picASCOM.Image = global::ASCOM.Dagor.Properties.Resources.ASCOM;
             this.picASCOM.Location = new System.Drawing.Point(292, 9);
             this.picASCOM.Name = "picASCOM";
             this.picASCOM.Size = new System.Drawing.Size(48, 56);
@@ -84,41 +88,77 @@ namespace ASCOM.DagorDome
             this.picASCOM.Click += new System.EventHandler(this.BrowseToAscom);
             this.picASCOM.DoubleClick += new System.EventHandler(this.BrowseToAscom);
             // 
-            // label2
+            // labelProtocol
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(13, 90);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(58, 13);
-            this.label2.TabIndex = 5;
-            this.label2.Text = "Comm Port";
+            this.labelProtocol.AutoSize = true;
+            this.labelProtocol.Location = new System.Drawing.Point(13, 90);
+            this.labelProtocol.Name = "labelProtocol";
+            this.labelProtocol.Size = new System.Drawing.Size(49, 13);
+            this.labelProtocol.TabIndex = 5;
+            this.labelProtocol.Text = "Protocol:";
             // 
             // chkTrace
             // 
             this.chkTrace.AutoSize = true;
-            this.chkTrace.Location = new System.Drawing.Point(77, 118);
+            this.chkTrace.Location = new System.Drawing.Point(77, 180);
             this.chkTrace.Name = "chkTrace";
             this.chkTrace.Size = new System.Drawing.Size(69, 17);
             this.chkTrace.TabIndex = 6;
             this.chkTrace.Text = "Trace on";
             this.chkTrace.UseVisualStyleBackColor = true;
             // 
-            // comboBoxComPort
+            // comboBoxProtocol
             // 
-            this.comboBoxComPort.FormattingEnabled = true;
-            this.comboBoxComPort.Location = new System.Drawing.Point(77, 87);
-            this.comboBoxComPort.Name = "comboBoxComPort";
-            this.comboBoxComPort.Size = new System.Drawing.Size(90, 21);
-            this.comboBoxComPort.TabIndex = 7;
+            this.comboBoxProtocol.FormattingEnabled = true;
+            this.comboBoxProtocol.Location = new System.Drawing.Point(77, 87);
+            this.comboBoxProtocol.Name = "comboBoxProtocol";
+            this.comboBoxProtocol.Size = new System.Drawing.Size(100, 21);
+            this.comboBoxProtocol.TabIndex = 7;
+            // 
+            // labelPort
+            // 
+            this.labelPort.AutoSize = true;
+            this.labelPort.Location = new System.Drawing.Point(13, 153);
+            this.labelPort.Name = "labelPort";
+            this.labelPort.Size = new System.Drawing.Size(29, 13);
+            this.labelPort.TabIndex = 8;
+            this.labelPort.Text = "Port:";
+            // 
+            // labelServer
+            // 
+            this.labelServer.AutoSize = true;
+            this.labelServer.Location = new System.Drawing.Point(13, 121);
+            this.labelServer.Name = "labelServer";
+            this.labelServer.Size = new System.Drawing.Size(41, 13);
+            this.labelServer.TabIndex = 9;
+            this.labelServer.Text = "Server:";
+            // 
+            // textBoxServer
+            // 
+            this.textBoxServer.Location = new System.Drawing.Point(77, 118);
+            this.textBoxServer.Name = "textBoxServer";
+            this.textBoxServer.Size = new System.Drawing.Size(100, 20);
+            this.textBoxServer.TabIndex = 10;
+            // 
+            // textBoxPort
+            // 
+            this.textBoxPort.Location = new System.Drawing.Point(77, 150);
+            this.textBoxPort.Name = "textBoxPort";
+            this.textBoxPort.Size = new System.Drawing.Size(100, 20);
+            this.textBoxPort.TabIndex = 11;
             // 
             // SetupDialogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(350, 175);
-            this.Controls.Add(this.comboBoxComPort);
+            this.ClientSize = new System.Drawing.Size(350, 253);
+            this.Controls.Add(this.textBoxPort);
+            this.Controls.Add(this.textBoxServer);
+            this.Controls.Add(this.labelServer);
+            this.Controls.Add(this.labelPort);
+            this.Controls.Add(this.comboBoxProtocol);
             this.Controls.Add(this.chkTrace);
-            this.Controls.Add(this.label2);
+            this.Controls.Add(this.labelProtocol);
             this.Controls.Add(this.picASCOM);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.cmdCancel);
@@ -142,8 +182,12 @@ namespace ASCOM.DagorDome
         private System.Windows.Forms.Button cmdCancel;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.PictureBox picASCOM;
-        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label labelProtocol;
         private System.Windows.Forms.CheckBox chkTrace;
-        private System.Windows.Forms.ComboBox comboBoxComPort;
+        private System.Windows.Forms.ComboBox comboBoxProtocol;
+        private System.Windows.Forms.Label labelPort;
+        private System.Windows.Forms.Label labelServer;
+        private System.Windows.Forms.TextBox textBoxServer;
+        private System.Windows.Forms.TextBox textBoxPort;
     }
 }

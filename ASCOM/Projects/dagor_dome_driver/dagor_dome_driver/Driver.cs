@@ -1,29 +1,26 @@
 //tabs=4
 // --------------------------------------------------------------------------------
-// TODO fill in this information for your driver, then remove this line!
 //
 // ASCOM Dome driver for Dagor
 //
-// Description:	Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam 
-//				nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam 
-//				erat, sed diam voluptua. At vero eos et accusam et justo duo 
-//				dolores et ea rebum. Stet clita kasd gubergren, no sea takimata 
-//				sanctus est Lorem ipsum dolor sit amet.
+// Description:	ASCOM Dome driver for Dagor
 //
-// Implements:	ASCOM Dome interface version: <To be completed by driver developer>
-// Author:		(XXX) Your N. Here <your@email.here>
+// Implements:	ASCOM Dome interface version: 
+//              IDomeV2 Interface
+//              Namespace: ASCOM.DeviceInterface
+//              Assembly: ASCOM.DeviceInterfaces (in ASCOM.DeviceInterfaces.dll) 
+//              Version: 6.0.0.0 (6.2.0.2774)
+
+// Author:		Nenad K. <nenad.katanic@fer.hr>
 //
 // Edit Log:
 //
-// Date			Who	Vers	Description
-// -----------	---	-----	-------------------------------------------------------
-// dd-mmm-yyyy	XXX	6.0.0	Initial edit, created from ASCOM driver template
+// Date			Who	    Vers	Description
+// -----------	---	    -----	-------------------------------------------------------
+// 06-08-2016	nenad	1.0.0	Initial edit, created from ASCOM driver template
 // --------------------------------------------------------------------------------
 //
 
-
-// This is used to define code in the template that is specific to one class implementation
-// unused code canbe deleted and this definition removed.
 #define Dome
 
 using System;
@@ -40,7 +37,7 @@ using ASCOM.DeviceInterface;
 using System.Globalization;
 using System.Collections;
 
-namespace ASCOM.DagorDome
+namespace ASCOM.Dagor
 {
     //
     // Your driver's DeviceID is ASCOM.Dagor.Dome
@@ -65,18 +62,27 @@ namespace ASCOM.DagorDome
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
         internal static string driverID = "ASCOM.Dagor.Dome";
-        // TODO Change the descriptive string for your driver then remove this line
+
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
         private static string driverDescription = "ASCOM Dome Driver for Dagor.";
 
-        internal static string comPortProfileName = "COM Port"; // Constants used for Profile persistence
-        internal static string comPortDefault = "COM1";
+        internal static string protocolProfileName = "Proto";
+        internal static List<string> protocolOptions = new List<string>(new string[] { "http", "https" });
+        internal static string protocolDefault = protocolOptions[0];
+        internal static string serverProfileName = "Server";
+        internal static string serverDefault = "10.1.4.120";
+        internal static string portProfileName = "Port";
+        internal static string portDefault = "8001";
+
         internal static string traceStateProfileName = "Trace Level";
         internal static string traceStateDefault = "false";
 
-        internal static string comPort; // Variables to hold the currrent device configuration
+        // Variables to hold the currrent device configuration
+        internal static string protocol;
+        internal static string server;
+        internal static int port;
 
         /// <summary>
         /// Private variable to hold the connected state
@@ -98,6 +104,8 @@ namespace ASCOM.DagorDome
         /// </summary>
         internal static TraceLogger tl;
 
+        private DomeApiClient client;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Dagor"/> class.
         /// Must be public for COM registration.
@@ -105,22 +113,27 @@ namespace ASCOM.DagorDome
         public Dome()
         {
             tl = new TraceLogger("", "Dagor");
-            ReadProfile(); // Read device configuration from the ASCOM Profile store
+
+            // Read device configuration from the ASCOM Profile store
+            ReadProfile(); 
 
             tl.LogMessage("Dome", "Starting initialisation");
 
-            connectedState = false; // Initialise connected to false
-            utilities = new Util(); //Initialise util object
-            astroUtilities = new AstroUtils(); // Initialise astro utilities object
-            //TODO: Implement your additional construction here
+            // Initialise connected to false
+            connectedState = false;
+
+            //Initialise util object
+            utilities = new Util();
+
+            // Initialise astro utilities object
+            astroUtilities = new AstroUtils();
+
+            // Initialize API Client
+            client = new DomeApiClient(protocol, server, port);
 
             tl.LogMessage("Dome", "Completed initialisation");
         }
 
-
-        //
-        // PUBLIC COM INTERFACE IDomeV2 IMPLEMENTATION
-        //
 
         #region Common properties and methods.
 
@@ -142,7 +155,8 @@ namespace ASCOM.DagorDome
                 var result = F.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {
-                    WriteProfile(); // Persist device configuration values to the ASCOM Profile store
+                    // Persist device configuration values to the ASCOM Profile store
+                    WriteProfile(); 
                 }
             }
         }
@@ -166,29 +180,26 @@ namespace ASCOM.DagorDome
         {
             CheckConnected("CommandBlind");
             // Call CommandString and return as soon as it finishes
-            this.CommandString(command, raw);
+            // this.CommandString(command, raw);
             // or
             throw new ASCOM.MethodNotImplementedException("CommandBlind");
-            // DO NOT have both these sections!  One or the other
         }
 
         public bool CommandBool(string command, bool raw)
         {
-            CheckConnected("CommandBool");
-            string ret = CommandString(command, raw);
+            // CheckConnected("CommandBool");
+            // string ret = CommandString(command, raw);
             // TODO decode the return string and return true or false
             // or
-            throw new ASCOM.MethodNotImplementedException("CommandBool");
-            // DO NOT have both these sections!  One or the other
+            throw new ASCOM.MethodNotImplementedException("CommandBool");     
         }
 
         public string CommandString(string command, bool raw)
         {
-            CheckConnected("CommandString");
+            // CheckConnected("CommandString");
             // it's a good idea to put all the low level communication with the device here,
             // then all communication calls this function
             // you need something to ensure that only one command is in progress at a time
-
             throw new ASCOM.MethodNotImplementedException("CommandString");
         }
 
@@ -202,6 +213,7 @@ namespace ASCOM.DagorDome
             utilities = null;
             astroUtilities.Dispose();
             astroUtilities = null;
+            client = null;
         }
 
         public bool Connected
@@ -220,21 +232,26 @@ namespace ASCOM.DagorDome
                 if (value)
                 {
                     connectedState = true;
-                    LogMessage("Connected Set", "Connecting to port {0}", comPort);
-                    // TODO connect to the device
+                    LogMessage("Connected Set", "Connecting to URL {0}", protocol);
+
+                    // Connect to the device
+                    if (!client.IsReady)
+                    {
+                        throw new NotConnectedException();
+                    }                    
                 }
                 else
                 {
                     connectedState = false;
-                    LogMessage("Connected Set", "Disconnecting from port {0}", comPort);
-                    // TODO disconnect from the device
+                    LogMessage("Connected Set", "Disconnecting from port {0}", protocol);
+                    
+                    // TO-DO: Disconnect from the device
                 }
             }
         }
 
         public string Description
         {
-            // TODO customise this device description
             get
             {
                 tl.LogMessage("Description Get", driverDescription);
@@ -246,8 +263,7 @@ namespace ASCOM.DagorDome
         {
             get
             {
-                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                // TODO customise this driver description
+                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;              
                 string driverInfo = "Information about the driver itself. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
                 tl.LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
@@ -289,7 +305,8 @@ namespace ASCOM.DagorDome
 
         #region IDome Implementation
 
-        private bool domeShutterState = false; // Variable to hold the open/closed status of the shutter, true = Open
+        // Variable to hold the open/closed status of the shutter, true = Open
+        private bool domeShutterState = false; 
 
         public void AbortSlew()
         {
@@ -607,7 +624,10 @@ namespace ASCOM.DagorDome
             {
                 driverProfile.DeviceType = "Dome";
                 tl.Enabled = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, traceStateDefault));
-                comPort = driverProfile.GetValue(driverID, comPortProfileName, string.Empty, comPortDefault);
+
+                protocol = driverProfile.GetValue(driverID, protocolProfileName, string.Empty, protocolDefault);
+                server = driverProfile.GetValue(driverID, serverProfileName, string.Empty, serverDefault);
+                port = int.Parse(driverProfile.GetValue(driverID, portProfileName, string.Empty, portDefault));
             }
         }
 
@@ -620,7 +640,9 @@ namespace ASCOM.DagorDome
             {
                 driverProfile.DeviceType = "Dome";
                 driverProfile.WriteValue(driverID, traceStateProfileName, tl.Enabled.ToString());
-                driverProfile.WriteValue(driverID, comPortProfileName, comPort.ToString());
+                driverProfile.WriteValue(driverID, protocolProfileName, protocol.ToString());
+                driverProfile.WriteValue(driverID, serverProfileName, server.ToString());
+                driverProfile.WriteValue(driverID, portProfileName, port.ToString());
             }
         }
 

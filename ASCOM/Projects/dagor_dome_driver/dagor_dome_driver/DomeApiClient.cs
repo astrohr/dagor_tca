@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using ASCOM.DagorApiClient;
 
 
-namespace ASCOM.DagorDome
+namespace ASCOM.Dagor
 {
 
     public class ReprState : IRepr

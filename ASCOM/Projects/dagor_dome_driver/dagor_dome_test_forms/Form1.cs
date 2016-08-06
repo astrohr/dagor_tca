@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace ASCOM.DagorDome
+namespace ASCOM.Dagor
 {
     public partial class Form1 : Form
     {

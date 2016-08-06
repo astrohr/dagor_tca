@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace ASCOM.DagorDome
+namespace ASCOM.Dagor
 {
     static class Program
     {

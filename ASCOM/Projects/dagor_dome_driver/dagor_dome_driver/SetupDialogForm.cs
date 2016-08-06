@@ -6,9 +6,9 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using ASCOM.Utilities;
-using ASCOM.DagorDome;
+using ASCOM.Dagor;
 
-namespace ASCOM.DagorDome
+namespace ASCOM.Dagor
 {
     [ComVisible(false)]					// Form not registered for COM!
     public partial class SetupDialogForm : Form
@@ -24,7 +24,9 @@ namespace ASCOM.DagorDome
         {
             // Place any validation constraint checks here
             // Update the state variables with results from the dialogue
-            Dome.comPort = (string)comboBoxComPort.SelectedItem;
+            Dome.protocol = (string)comboBoxProtocol.SelectedItem;
+            Dome.server = (string)textBoxServer.Text;
+            Dome.port = int.Parse(textBoxPort.Text);
             Dome.tl.Enabled = chkTrace.Checked;
         }
 
@@ -53,14 +55,25 @@ namespace ASCOM.DagorDome
         private void InitUI()
         {
             chkTrace.Checked = Dome.tl.Enabled;
-            // set the list of com ports to those that are currently available
-            comboBoxComPort.Items.Clear();
-            comboBoxComPort.Items.AddRange(System.IO.Ports.SerialPort.GetPortNames());      // use System.IO because it's static
-            // select the current port if possible
-            if (comboBoxComPort.Items.Contains(Dome.comPort))
+           
+            // Set the list of available protocols to choose from
+            comboBoxProtocol.Items.Clear();
+            for (int i = 0; i < Dome.protocolOptions.Count; i++)
             {
-                comboBoxComPort.SelectedItem = Dome.comPort;
+                comboBoxProtocol.Items.Insert(i, Dome.protocolOptions[i]);
             }
+            
+            // select the current protocol if possible
+            if (comboBoxProtocol.Items.Contains(Dome.protocol))
+            {
+                comboBoxProtocol.SelectedItem = Dome.protocol;
+            }
+           
+            // set current server:
+            textBoxServer.Text = Dome.server;
+           
+            // set current port:
+            textBoxPort.Text = Dome.port.ToString();
         }
     }
 }

@@ -8,7 +8,7 @@
     <ProjectGuid>{64308775-BD4A-469C-BCAB-3ED830B811AF}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ASCOM.DagorDome</RootNamespace>
+    <RootNamespace>ASCOM.Dagor</RootNamespace>
     <AssemblyName>ASCOM.Dagor.Dome</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
