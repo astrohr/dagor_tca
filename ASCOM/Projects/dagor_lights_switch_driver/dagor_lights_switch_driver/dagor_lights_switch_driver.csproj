@@ -86,7 +86,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ApiClient.cs" />
     <Compile Include="Driver.cs" />
     <Compile Include="LightsApiClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -150,6 +149,12 @@
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\dagor_ascom_api_client\dagor_ascom_api_client\dagor_ascom_api_client.csproj">
+      <Project>{acf6a214-c9f8-4662-b957-8e7359ea607e}</Project>
+      <Name>dagor_ascom_api_client</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
