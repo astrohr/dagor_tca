@@ -21,6 +21,7 @@ C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_s
 C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_driver\bin\Debug\ASCOM.Utilities.xml
 C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_driver\bin\Debug\Newtonsoft.Json.xml
 C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_driver\bin\Debug\ASCOM.Internal.Extensions.xml
+C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_driver\obj\Debug\dagor_lights_switch_driver.csprojResolveAssemblyReference.cache
 C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_driver\obj\Debug\ASCOM.DagorLights.Properties.Resources.resources
 C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_driver\obj\Debug\ASCOM.DagorLights.SetupDialogForm.resources
 C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_driver\obj\Debug\dagor_lights_switch_driver.csproj.GenerateResource.Cache

@@ -12,11 +12,8 @@ namespace ASCOM.DagorLights
 
     public class ReprState : IRepr
     {
-
         public int n { get; set; }
-
     }
-
 
     class LightsApiClient : ApiClient<DefaultReadyRepr>
     {
@@ -35,7 +32,6 @@ namespace ASCOM.DagorLights
                 return true;
             }
         }
-
         
         public int N
         {
@@ -78,7 +74,7 @@ namespace ASCOM.DagorLights
             }
             catch (Exception ex)
             {
-                // TODO log excaption
+                // TODO log exception
                 throw new NotConnectedException();
             }
         }
@@ -92,11 +88,9 @@ namespace ASCOM.DagorLights
             }
             catch (Exception ex)
             {
-                // TODO log excaption
+                // TODO log exception
                 throw new NotConnectedException();
             }
         }
-
-
     }
 }

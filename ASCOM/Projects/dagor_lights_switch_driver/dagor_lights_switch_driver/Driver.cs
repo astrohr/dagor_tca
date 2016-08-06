@@ -5,8 +5,13 @@
 //
 // Description:	ASCOM Switch Driver for Dagor lights
 //
-// Implements:	ASCOM Switch interface version: <To be completed by driver developer>
-// Author:		(XXX) Your N. Here <your@email.here>
+// Implements:	ASCOM Switch interface version: 
+//              ISwitchV2 Interface
+//              Namespace: ASCOM.DeviceInterface
+//              Assembly: ASCOM.DeviceInterfaces (in ASCOM.DeviceInterfaces.dll) 
+//              Version: 6.0.0.0 (6.2.0.2774)
+
+// Author:		Nenad K. <nenad.katanic@fer.hr>
 //
 // Edit Log:
 //
@@ -16,9 +21,6 @@
 // --------------------------------------------------------------------------------
 //
 
-
-// This is used to define code in the template that is specific to one class implementation
-// unused code canbe deleted and this definition removed.
 #define Switch
 
 using System;
@@ -37,7 +39,6 @@ using System.Collections;
 
 namespace ASCOM.DagorLights
 {
-    //
     // Your driver's DeviceID is ASCOM.DagorLights.Switch
     //
     // The Guid attribute sets the CLSID for ASCOM.DagorLights.Switch
@@ -56,7 +57,7 @@ namespace ASCOM.DagorLights
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
         internal static string driverID = "ASCOM.DagorLights.Switch";
-        // TODO Change the descriptive string for your driver then remove this line
+
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
@@ -66,9 +67,9 @@ namespace ASCOM.DagorLights
         internal static List<string> protocolOptions = new List<string>(new string[] { "http", "https" });
         internal static string protocolDefault = protocolOptions[0];
         internal static string serverProfileName = "Server";
-        internal static string serverDefault = "127.0.0.1";
+        internal static string serverDefault = "10.1.4.120";
         internal static string portProfileName = "Port";
-        internal static string portDefault = "8000";
+        internal static string portDefault = "8001";
         internal static string traceStateProfileName = "Trace Level";
         internal static string traceStateDefault = "false";
 
@@ -98,8 +99,7 @@ namespace ASCOM.DagorLights
         internal static TraceLogger tl;
 
         private LightsApiClient client;
-
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="DagorLights"/> class.
         /// Must be public for COM registration.
@@ -107,25 +107,26 @@ namespace ASCOM.DagorLights
         public Switch()
         {
             tl = new TraceLogger("", "DagorLights");
-            ReadProfile(); // Read device configuration from the ASCOM Profile store
+
+            // Read device configuration from the ASCOM Profile store
+            ReadProfile(); 
 
             tl.LogMessage("Switch", "Starting initialisation");
 
-            connectedState = false; // Initialise connected to false
-            utilities = new Util(); //Initialise util object
-            astroUtilities = new AstroUtils(); // Initialise astro utilities object
+            // Initialise connected to false
+            connectedState = false;
 
-            //TODO: Implement your additional construction here
-                        
+            //Initialise util object 
+            utilities = new Util();
+
+            // Initialise astro utilities object
+            astroUtilities = new AstroUtils(); 
+
+            //Initialize API Client            
             client = new LightsApiClient(protocol, server, port);
 
             tl.LogMessage("Switch", "Completed initialisation");
         }
-
-
-        //
-        // PUBLIC COM INTERFACE ISwitchV2 IMPLEMENTATION
-        //
 
         #region Common properties and methods.
 
@@ -147,7 +148,8 @@ namespace ASCOM.DagorLights
                 var result = F.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {
-                    WriteProfile(); // Persist device configuration values to the ASCOM Profile store
+                    // Persist device configuration values to the ASCOM Profile store
+                    WriteProfile(); 
                 }
             }
         }
@@ -171,29 +173,27 @@ namespace ASCOM.DagorLights
         {
             CheckConnected("CommandBlind");
             // Call CommandString and return as soon as it finishes
-            this.CommandString(command, raw);
+            //this.CommandString(command, raw);
             // or
             throw new ASCOM.MethodNotImplementedException("CommandBlind");
-            // DO NOT have both these sections!  One or the other
+
         }
 
         public bool CommandBool(string command, bool raw)
         {
-            CheckConnected("CommandBool");
-            string ret = CommandString(command, raw);
+            //CheckConnected("CommandBool");
+            //string ret = CommandString(command, raw);
             // TODO decode the return string and return true or false
             // or
             throw new ASCOM.MethodNotImplementedException("CommandBool");
-            // DO NOT have both these sections!  One or the other
         }
 
         public string CommandString(string command, bool raw)
         {
-            CheckConnected("CommandString");
+            //CheckConnected("CommandString");
             // it's a good idea to put all the low level communication with the device here,
             // then all communication calls this function
             // you need something to ensure that only one command is in progress at a time
-
             throw new ASCOM.MethodNotImplementedException("CommandString");
         }
 
@@ -231,23 +231,21 @@ namespace ASCOM.DagorLights
                     
                     if (!client.IsReady)
                     {
-                        throw new NotConnectedException();
-                    
+                        throw new NotConnectedException();                    
                     }
-
                 }
                 else
                 {
                     connectedState = false;
                     LogMessage("Connected Set", "Disconnecting from URL {0}", protocol);
-                    // TODO disconnect from the device
+                    
+                    // Disconnect from the device - not needed for this driver
                 }
             }
         }
 
         public string Description
-        {
-            // TODO customise this device description
+        {         
             get
             {
                 tl.LogMessage("Description Get", driverDescription);
@@ -259,8 +257,7 @@ namespace ASCOM.DagorLights
         {
             get
             {
-                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                // TODO customise this driver description
+                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;                
                 string driverInfo = "Information about the driver itself. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
                 tl.LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
@@ -292,7 +289,7 @@ namespace ASCOM.DagorLights
         {
             get
             {
-                string name = "Short driver name - please customise";
+                string name = "DagorLightsSwitch";
                 tl.LogMessage("Name Get", name);
                 return name;
             }
@@ -326,12 +323,11 @@ namespace ASCOM.DagorLights
         public string GetSwitchName(short id)
         {
             //Validate("GetSwitchName", id);
-            //tl.LogMessage("GetSwitchName", string.Format("GetSwitchName({0}) - not implemented", id));
-            //throw new MethodNotImplementedException("GetSwitchName");
-            // or
-            
+            // tl.LogMessage("GetSwitchName", string.Format("GetSwitchName({0}) - not implemented", id));
+            // throw new MethodNotImplementedException("GetSwitchName");
+            // or            
             tl.LogMessage("GetSwitchName", string.Format("GetSwitchName({0}) - default Switch{0}", id));
-            return "Switch" + id.ToString();
+            return "Light " + (id + 1).ToString() + " Switch";
         }
 
         /// <summary>
@@ -370,13 +366,11 @@ namespace ASCOM.DagorLights
         /// <exception cref="InvalidValueException">If id is outside the range 0 to MaxSwitch - 1</exception>
         public bool CanWrite(short id)
         {
-            Validate("CanWrite", id);
-            // default behavour is to report true
+            Validate("CanWrite", id);      
             tl.LogMessage("CanWrite", string.Format("CanWrite({0}) - default true", id));
+            
+            // default behavour is to report true
             return true;
-            // implementation should report the correct behaviour
-            //tl.LogMessage("CanWrite", string.Format("CanWrite({0}) - not implemented", id));
-            //throw new MethodNotImplementedException("CanWrite");
         }
 
         #region boolean switch members
@@ -392,11 +386,9 @@ namespace ASCOM.DagorLights
         public bool GetSwitch(short id)
         {
             Validate("GetSwitch", id);
-            tl.LogMessage("GetSwitch", string.Format("GetSwitch({0}) - not implemented", id));
-            //throw new MethodNotImplementedException("GetSwitch");
+            tl.LogMessage("GetSwitch", string.Format("GetSwitch({0})", id));       
 
             return client.getSwitch(id + 1);
-
         }
 
         /// <summary>
@@ -416,11 +408,9 @@ namespace ASCOM.DagorLights
                 tl.LogMessage("SetSwitch", str);
                 throw new MethodNotImplementedException(str);
             }
-            tl.LogMessage("SetSwitch", string.Format("SetSwitch({0}) = {1} - not implemented", id, state));
-            //throw new MethodNotImplementedException("SetSwitch");
 
+            tl.LogMessage("SetSwitch", string.Format("SetSwitch({0}) = {1}", id, state));
             client.setSwitch(id + 1, state);
-
         }
 
         #endregion
@@ -438,9 +428,6 @@ namespace ASCOM.DagorLights
             Validate("MaxSwitchValue", id);
             // boolean switch implementation:
             return 1;
-            // or
-            //tl.LogMessage("MaxSwitchValue", string.Format("MaxSwitchValue({0}) - not implemented", id));
-            //throw new MethodNotImplementedException("MaxSwitchValue");
         }
 
         /// <summary>
@@ -452,11 +439,9 @@ namespace ASCOM.DagorLights
         public double MinSwitchValue(short id)
         {
             Validate("MinSwitchValue", id);
+            
             // boolean switch implementation:
             return 0;
-            // or
-            //tl.LogMessage("MinSwitchValue", string.Format("MinSwitchValue({0}) - not implemented", id));
-            //throw new MethodNotImplementedException("MinSwitchValue");
         }
 
         /// <summary>
@@ -470,11 +455,9 @@ namespace ASCOM.DagorLights
         public double SwitchStep(short id)
         {
             Validate("SwitchStep", id);
+            
             // boolean switch implementation:
             return 1;
-            // or
-            //tl.LogMessage("SwitchStep", string.Format("SwitchStep({0}) - not implemented", id));
-            //throw new MethodNotImplementedException("SwitchStep");
         }
 
         /// <summary>
@@ -508,11 +491,6 @@ namespace ASCOM.DagorLights
             }
             tl.LogMessage("SetSwitchValue", string.Format("SetSwitchValue({0}) = {1} - not implemented", id, value));
             throw new MethodNotImplementedException("SetSwitchValue");
-
-            //TO-DO
-            //Call Client to set switch 0/1 to true/false
-
-
         }
 
         #endregion
