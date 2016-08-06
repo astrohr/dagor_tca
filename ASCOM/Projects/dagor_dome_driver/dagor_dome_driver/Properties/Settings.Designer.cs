@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace ASCOM.Dagor.Properties {
+namespace ASCOM.DagorDome.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]

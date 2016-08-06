@@ -6,9 +6,9 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using ASCOM.Utilities;
-using ASCOM.Dagor;
+using ASCOM.DagorDome;
 
-namespace ASCOM.Dagor
+namespace ASCOM.DagorDome
 {
     [ComVisible(false)]					// Form not registered for COM!
     public partial class SetupDialogForm : Form

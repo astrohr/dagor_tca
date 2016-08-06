@@ -8,7 +8,7 @@
     <ProjectGuid>{8E8D406C-1838-4914-867D-AB602D0EAF3E}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ASCOM.Dagor</RootNamespace>
+    <RootNamespace>ASCOM.DagorDome</RootNamespace>
     <AssemblyName>ASCOM.Dagor.Test</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

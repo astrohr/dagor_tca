@@ -40,7 +40,7 @@ using ASCOM.DeviceInterface;
 using System.Globalization;
 using System.Collections;
 
-namespace ASCOM.Dagor
+namespace ASCOM.DagorDome
 {
     //
     // Your driver's DeviceID is ASCOM.Dagor.Dome
