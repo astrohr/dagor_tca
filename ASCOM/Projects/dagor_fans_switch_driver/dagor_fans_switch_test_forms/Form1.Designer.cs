@@ -31,6 +31,24 @@
             this.buttonChoose = new System.Windows.Forms.Button();
             this.buttonConnect = new System.Windows.Forms.Button();
             this.labelDriverId = new System.Windows.Forms.Label();
+            this.radioBtnFan1Off = new System.Windows.Forms.RadioButton();
+            this.radioBtnFan1Speed1 = new System.Windows.Forms.RadioButton();
+            this.radioBtnFan1Speed2 = new System.Windows.Forms.RadioButton();
+            this.radioBtnFan1Speed3 = new System.Windows.Forms.RadioButton();
+            this.radioBtnFan2Off = new System.Windows.Forms.RadioButton();
+            this.radioBtnFan2Speed1 = new System.Windows.Forms.RadioButton();
+            this.radioBtnFan2Speed2 = new System.Windows.Forms.RadioButton();
+            this.radioBtnFan2Speed3 = new System.Windows.Forms.RadioButton();
+            this.radioBtnFan3Off = new System.Windows.Forms.RadioButton();
+            this.radioBtnFan3Speed1 = new System.Windows.Forms.RadioButton();
+            this.radioBtnFan3Speed2 = new System.Windows.Forms.RadioButton();
+            this.radioBtnFan3Speed3 = new System.Windows.Forms.RadioButton();
+            this.groupBoxFan1 = new System.Windows.Forms.GroupBox();
+            this.groupBoxFan2 = new System.Windows.Forms.GroupBox();
+            this.groupBoxFan3 = new System.Windows.Forms.GroupBox();
+            this.groupBoxFan1.SuspendLayout();
+            this.groupBoxFan2.SuspendLayout();
+            this.groupBoxFan3.SuspendLayout();
             this.SuspendLayout();
             // 
             // buttonChoose
@@ -64,17 +82,224 @@
             this.labelDriverId.Text = global::ASCOM.DagorFans.Properties.Settings.Default.DriverId;
             this.labelDriverId.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
+            // radioBtnFan1Off
+            // 
+            this.radioBtnFan1Off.Appearance = System.Windows.Forms.Appearance.Button;
+            this.radioBtnFan1Off.AutoSize = true;
+            this.radioBtnFan1Off.Location = new System.Drawing.Point(19, 26);
+            this.radioBtnFan1Off.Name = "radioBtnFan1Off";
+            this.radioBtnFan1Off.Size = new System.Drawing.Size(40, 23);
+            this.radioBtnFan1Off.TabIndex = 6;
+            this.radioBtnFan1Off.TabStop = true;
+            this.radioBtnFan1Off.Text = "OFF";
+            this.radioBtnFan1Off.UseVisualStyleBackColor = true;
+            this.radioBtnFan1Off.CheckedChanged += new System.EventHandler(this.radioBtnFan1Off_CheckedChanged);
+            // 
+            // radioBtnFan1Speed1
+            // 
+            this.radioBtnFan1Speed1.Appearance = System.Windows.Forms.Appearance.Button;
+            this.radioBtnFan1Speed1.AutoSize = true;
+            this.radioBtnFan1Speed1.Location = new System.Drawing.Point(19, 55);
+            this.radioBtnFan1Speed1.Name = "radioBtnFan1Speed1";
+            this.radioBtnFan1Speed1.Size = new System.Drawing.Size(64, 23);
+            this.radioBtnFan1Speed1.TabIndex = 7;
+            this.radioBtnFan1Speed1.TabStop = true;
+            this.radioBtnFan1Speed1.Text = "Speed 1";
+            this.radioBtnFan1Speed1.UseVisualStyleBackColor = true;
+            this.radioBtnFan1Speed1.CheckedChanged += new System.EventHandler(this.radioBtnFan1Speed1_CheckedChanged);
+            // 
+            // radioBtnFan1Speed2
+            // 
+            this.radioBtnFan1Speed2.Appearance = System.Windows.Forms.Appearance.Button;
+            this.radioBtnFan1Speed2.AutoSize = true;
+            this.radioBtnFan1Speed2.Location = new System.Drawing.Point(19, 84);
+            this.radioBtnFan1Speed2.Name = "radioBtnFan1Speed2";
+            this.radioBtnFan1Speed2.Size = new System.Drawing.Size(64, 23);
+            this.radioBtnFan1Speed2.TabIndex = 8;
+            this.radioBtnFan1Speed2.TabStop = true;
+            this.radioBtnFan1Speed2.Text = "Speed 2";
+            this.radioBtnFan1Speed2.UseVisualStyleBackColor = true;
+            this.radioBtnFan1Speed2.CheckedChanged += new System.EventHandler(this.radioBtnFan1Speed2_CheckedChanged);
+            // 
+            // radioBtnFan1Speed3
+            // 
+            this.radioBtnFan1Speed3.Appearance = System.Windows.Forms.Appearance.Button;
+            this.radioBtnFan1Speed3.AutoSize = true;
+            this.radioBtnFan1Speed3.Location = new System.Drawing.Point(19, 113);
+            this.radioBtnFan1Speed3.Name = "radioBtnFan1Speed3";
+            this.radioBtnFan1Speed3.Size = new System.Drawing.Size(64, 23);
+            this.radioBtnFan1Speed3.TabIndex = 9;
+            this.radioBtnFan1Speed3.TabStop = true;
+            this.radioBtnFan1Speed3.Text = "Speed 3";
+            this.radioBtnFan1Speed3.UseVisualStyleBackColor = true;
+            this.radioBtnFan1Speed3.CheckedChanged += new System.EventHandler(this.radioBtnFan1Speed3_CheckedChanged);
+            // 
+            // radioBtnFan2Off
+            // 
+            this.radioBtnFan2Off.Appearance = System.Windows.Forms.Appearance.Button;
+            this.radioBtnFan2Off.AutoSize = true;
+            this.radioBtnFan2Off.Location = new System.Drawing.Point(18, 26);
+            this.radioBtnFan2Off.Name = "radioBtnFan2Off";
+            this.radioBtnFan2Off.Size = new System.Drawing.Size(40, 23);
+            this.radioBtnFan2Off.TabIndex = 10;
+            this.radioBtnFan2Off.TabStop = true;
+            this.radioBtnFan2Off.Text = "OFF";
+            this.radioBtnFan2Off.UseVisualStyleBackColor = true;
+            this.radioBtnFan2Off.CheckedChanged += new System.EventHandler(this.radioBtnFan2Off_CheckedChanged);
+            // 
+            // radioBtnFan2Speed1
+            // 
+            this.radioBtnFan2Speed1.Appearance = System.Windows.Forms.Appearance.Button;
+            this.radioBtnFan2Speed1.AutoSize = true;
+            this.radioBtnFan2Speed1.Location = new System.Drawing.Point(18, 55);
+            this.radioBtnFan2Speed1.Name = "radioBtnFan2Speed1";
+            this.radioBtnFan2Speed1.Size = new System.Drawing.Size(64, 23);
+            this.radioBtnFan2Speed1.TabIndex = 11;
+            this.radioBtnFan2Speed1.TabStop = true;
+            this.radioBtnFan2Speed1.Text = "Speed 1";
+            this.radioBtnFan2Speed1.UseVisualStyleBackColor = true;
+            this.radioBtnFan2Speed1.CheckedChanged += new System.EventHandler(this.radioBtnFan2Speed1_CheckedChanged);
+            // 
+            // radioBtnFan2Speed2
+            // 
+            this.radioBtnFan2Speed2.Appearance = System.Windows.Forms.Appearance.Button;
+            this.radioBtnFan2Speed2.AutoSize = true;
+            this.radioBtnFan2Speed2.Location = new System.Drawing.Point(18, 84);
+            this.radioBtnFan2Speed2.Name = "radioBtnFan2Speed2";
+            this.radioBtnFan2Speed2.Size = new System.Drawing.Size(64, 23);
+            this.radioBtnFan2Speed2.TabIndex = 12;
+            this.radioBtnFan2Speed2.TabStop = true;
+            this.radioBtnFan2Speed2.Text = "Speed 2";
+            this.radioBtnFan2Speed2.UseVisualStyleBackColor = true;
+            this.radioBtnFan2Speed2.CheckedChanged += new System.EventHandler(this.radioBtnFan2Speed2_CheckedChanged);
+            // 
+            // radioBtnFan2Speed3
+            // 
+            this.radioBtnFan2Speed3.Appearance = System.Windows.Forms.Appearance.Button;
+            this.radioBtnFan2Speed3.AutoSize = true;
+            this.radioBtnFan2Speed3.Location = new System.Drawing.Point(18, 113);
+            this.radioBtnFan2Speed3.Name = "radioBtnFan2Speed3";
+            this.radioBtnFan2Speed3.Size = new System.Drawing.Size(64, 23);
+            this.radioBtnFan2Speed3.TabIndex = 13;
+            this.radioBtnFan2Speed3.TabStop = true;
+            this.radioBtnFan2Speed3.Text = "Speed 3";
+            this.radioBtnFan2Speed3.UseVisualStyleBackColor = true;
+            this.radioBtnFan2Speed3.CheckedChanged += new System.EventHandler(this.radioBtnFan2Speed3_CheckedChanged);
+            // 
+            // radioBtnFan3Off
+            // 
+            this.radioBtnFan3Off.Appearance = System.Windows.Forms.Appearance.Button;
+            this.radioBtnFan3Off.AutoSize = true;
+            this.radioBtnFan3Off.Location = new System.Drawing.Point(17, 26);
+            this.radioBtnFan3Off.Name = "radioBtnFan3Off";
+            this.radioBtnFan3Off.Size = new System.Drawing.Size(40, 23);
+            this.radioBtnFan3Off.TabIndex = 14;
+            this.radioBtnFan3Off.TabStop = true;
+            this.radioBtnFan3Off.Text = "OFF";
+            this.radioBtnFan3Off.UseVisualStyleBackColor = true;
+            this.radioBtnFan3Off.CheckedChanged += new System.EventHandler(this.radioBtnFan3Off_CheckedChanged);
+            // 
+            // radioBtnFan3Speed1
+            // 
+            this.radioBtnFan3Speed1.Appearance = System.Windows.Forms.Appearance.Button;
+            this.radioBtnFan3Speed1.AutoSize = true;
+            this.radioBtnFan3Speed1.Location = new System.Drawing.Point(17, 55);
+            this.radioBtnFan3Speed1.Name = "radioBtnFan3Speed1";
+            this.radioBtnFan3Speed1.Size = new System.Drawing.Size(64, 23);
+            this.radioBtnFan3Speed1.TabIndex = 15;
+            this.radioBtnFan3Speed1.TabStop = true;
+            this.radioBtnFan3Speed1.Text = "Speed 1";
+            this.radioBtnFan3Speed1.UseVisualStyleBackColor = true;
+            this.radioBtnFan3Speed1.CheckedChanged += new System.EventHandler(this.radioBtnFan3Speed1_CheckedChanged);
+            // 
+            // radioBtnFan3Speed2
+            // 
+            this.radioBtnFan3Speed2.Appearance = System.Windows.Forms.Appearance.Button;
+            this.radioBtnFan3Speed2.AutoSize = true;
+            this.radioBtnFan3Speed2.Location = new System.Drawing.Point(17, 84);
+            this.radioBtnFan3Speed2.Name = "radioBtnFan3Speed2";
+            this.radioBtnFan3Speed2.Size = new System.Drawing.Size(64, 23);
+            this.radioBtnFan3Speed2.TabIndex = 16;
+            this.radioBtnFan3Speed2.TabStop = true;
+            this.radioBtnFan3Speed2.Text = "Speed 2";
+            this.radioBtnFan3Speed2.UseVisualStyleBackColor = true;
+            this.radioBtnFan3Speed2.CheckedChanged += new System.EventHandler(this.radioBtnFan3Speed2_CheckedChanged);
+            // 
+            // radioBtnFan3Speed3
+            // 
+            this.radioBtnFan3Speed3.Appearance = System.Windows.Forms.Appearance.Button;
+            this.radioBtnFan3Speed3.AutoSize = true;
+            this.radioBtnFan3Speed3.Location = new System.Drawing.Point(17, 113);
+            this.radioBtnFan3Speed3.Name = "radioBtnFan3Speed3";
+            this.radioBtnFan3Speed3.Size = new System.Drawing.Size(64, 23);
+            this.radioBtnFan3Speed3.TabIndex = 17;
+            this.radioBtnFan3Speed3.TabStop = true;
+            this.radioBtnFan3Speed3.Text = "Speed 3";
+            this.radioBtnFan3Speed3.UseVisualStyleBackColor = true;
+            this.radioBtnFan3Speed3.CheckedChanged += new System.EventHandler(this.radioBtnFan3Speed3_CheckedChanged);
+            // 
+            // groupBoxFan1
+            // 
+            this.groupBoxFan1.Controls.Add(this.radioBtnFan1Speed1);
+            this.groupBoxFan1.Controls.Add(this.radioBtnFan1Off);
+            this.groupBoxFan1.Controls.Add(this.radioBtnFan1Speed2);
+            this.groupBoxFan1.Controls.Add(this.radioBtnFan1Speed3);
+            this.groupBoxFan1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.groupBoxFan1.Location = new System.Drawing.Point(12, 89);
+            this.groupBoxFan1.Name = "groupBoxFan1";
+            this.groupBoxFan1.Size = new System.Drawing.Size(102, 150);
+            this.groupBoxFan1.TabIndex = 18;
+            this.groupBoxFan1.TabStop = false;
+            this.groupBoxFan1.Text = "Fan 1";
+            // 
+            // groupBoxFan2
+            // 
+            this.groupBoxFan2.Controls.Add(this.radioBtnFan2Speed1);
+            this.groupBoxFan2.Controls.Add(this.radioBtnFan2Off);
+            this.groupBoxFan2.Controls.Add(this.radioBtnFan2Speed2);
+            this.groupBoxFan2.Controls.Add(this.radioBtnFan2Speed3);
+            this.groupBoxFan2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.groupBoxFan2.Location = new System.Drawing.Point(146, 89);
+            this.groupBoxFan2.Name = "groupBoxFan2";
+            this.groupBoxFan2.Size = new System.Drawing.Size(100, 150);
+            this.groupBoxFan2.TabIndex = 19;
+            this.groupBoxFan2.TabStop = false;
+            this.groupBoxFan2.Text = "Fan 2";
+            // 
+            // groupBoxFan3
+            // 
+            this.groupBoxFan3.Controls.Add(this.radioBtnFan3Speed2);
+            this.groupBoxFan3.Controls.Add(this.radioBtnFan3Off);
+            this.groupBoxFan3.Controls.Add(this.radioBtnFan3Speed1);
+            this.groupBoxFan3.Controls.Add(this.radioBtnFan3Speed3);
+            this.groupBoxFan3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.groupBoxFan3.Location = new System.Drawing.Point(282, 89);
+            this.groupBoxFan3.Name = "groupBoxFan3";
+            this.groupBoxFan3.Size = new System.Drawing.Size(99, 150);
+            this.groupBoxFan3.TabIndex = 20;
+            this.groupBoxFan3.TabStop = false;
+            this.groupBoxFan3.Text = "Fan 3";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(409, 262);
+            this.ClientSize = new System.Drawing.Size(390, 247);
+            this.Controls.Add(this.groupBoxFan3);
+            this.Controls.Add(this.groupBoxFan2);
+            this.Controls.Add(this.groupBoxFan1);
             this.Controls.Add(this.labelDriverId);
             this.Controls.Add(this.buttonConnect);
             this.Controls.Add(this.buttonChoose);
             this.Name = "Form1";
             this.Text = "TEMPLATEDEVICETYPE Test";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
+            this.groupBoxFan1.ResumeLayout(false);
+            this.groupBoxFan1.PerformLayout();
+            this.groupBoxFan2.ResumeLayout(false);
+            this.groupBoxFan2.PerformLayout();
+            this.groupBoxFan3.ResumeLayout(false);
+            this.groupBoxFan3.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -84,6 +309,21 @@
         private System.Windows.Forms.Button buttonChoose;
         private System.Windows.Forms.Button buttonConnect;
         private System.Windows.Forms.Label labelDriverId;
+        private System.Windows.Forms.RadioButton radioBtnFan1Off;
+        private System.Windows.Forms.RadioButton radioBtnFan1Speed1;
+        private System.Windows.Forms.RadioButton radioBtnFan1Speed2;
+        private System.Windows.Forms.RadioButton radioBtnFan1Speed3;
+        private System.Windows.Forms.RadioButton radioBtnFan2Off;
+        private System.Windows.Forms.RadioButton radioBtnFan2Speed1;
+        private System.Windows.Forms.RadioButton radioBtnFan2Speed2;
+        private System.Windows.Forms.RadioButton radioBtnFan2Speed3;
+        private System.Windows.Forms.RadioButton radioBtnFan3Off;
+        private System.Windows.Forms.RadioButton radioBtnFan3Speed1;
+        private System.Windows.Forms.RadioButton radioBtnFan3Speed2;
+        private System.Windows.Forms.RadioButton radioBtnFan3Speed3;
+        private System.Windows.Forms.GroupBox groupBoxFan1;
+        private System.Windows.Forms.GroupBox groupBoxFan2;
+        private System.Windows.Forms.GroupBox groupBoxFan3;
     }
 }
 

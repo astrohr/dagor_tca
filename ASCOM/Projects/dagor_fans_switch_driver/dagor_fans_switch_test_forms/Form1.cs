@@ -12,6 +12,10 @@ namespace ASCOM.DagorFans
         {
             InitializeComponent();
             SetUIState();
+
+            // TODO: get state for each fan
+
+            // TODO: Initialise radio button states
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -56,5 +60,188 @@ namespace ASCOM.DagorFans
                 return ((this.driver != null) && (driver.Connected == true));
             }
         }
+
+        #region Fan 1
+
+        private void radioBtnFan1Off_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioBtnFan1Off.Checked)
+            {                
+                radioBtnFan1Off.BackColor = System.Drawing.Color.DarkRed;
+
+                // TODO: Turn Off Fan 1
+            }
+            else
+            {
+                radioBtnFan1Off.BackColor = default(System.Drawing.Color);
+            }
+        }
+
+        private void radioBtnFan1Speed1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioBtnFan1Speed1.Checked)
+            {
+                radioBtnFan1Speed1.BackColor = System.Drawing.Color.Green;
+
+                // TODO: Set to speed 1
+            }
+            else
+            {
+                radioBtnFan1Speed1.BackColor = default(System.Drawing.Color);
+            }
+        }
+
+        private void radioBtnFan1Speed2_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioBtnFan1Speed2.Checked)
+            {
+                radioBtnFan1Speed2.BackColor = System.Drawing.Color.Green;
+
+                // TODO: Set to speed 2
+            }
+            else
+            {
+                radioBtnFan1Speed2.BackColor = default(System.Drawing.Color);
+            }
+        }
+
+        private void radioBtnFan1Speed3_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioBtnFan1Speed3.Checked)
+            {
+                radioBtnFan1Speed3.BackColor = System.Drawing.Color.Green;
+
+                // TODO: Set to speed 3
+
+            }
+            else
+            {
+                radioBtnFan1Speed3.BackColor = default(System.Drawing.Color);
+            }
+        }
+
+        #endregion
+
+        #region Fan 2
+
+        private void radioBtnFan2Off_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioBtnFan2Off.Checked)
+            {                
+                radioBtnFan2Off.BackColor = System.Drawing.Color.DarkRed;
+
+                // TODO: Turn Off Fan 2
+            }
+            else
+            {
+                radioBtnFan2Off.BackColor = default(System.Drawing.Color);
+            }
+        }
+
+        private void radioBtnFan2Speed1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioBtnFan2Speed1.Checked)
+            {
+                radioBtnFan2Speed1.BackColor = System.Drawing.Color.Green;
+
+                // TODO: Set to speed 1
+            }
+            else
+            {
+                radioBtnFan2Speed1.BackColor = default(System.Drawing.Color);
+            }
+        }
+
+        private void radioBtnFan2Speed2_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioBtnFan2Speed2.Checked)
+            {
+                radioBtnFan2Speed2.BackColor = System.Drawing.Color.Green;
+
+                // TODO: Set to speed 2
+            }
+            else
+            {
+                radioBtnFan2Speed2.BackColor = default(System.Drawing.Color);
+            }
+        }
+
+        private void radioBtnFan2Speed3_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioBtnFan2Speed3.Checked)
+            {
+                radioBtnFan2Speed3.BackColor = System.Drawing.Color.Green;
+
+                // TODO: Set to speed 3
+
+            }
+            else
+            {
+                radioBtnFan2Speed3.BackColor = default(System.Drawing.Color);
+            }
+        }
+
+        #endregion
+
+        #region Fan 3
+
+        private void radioBtnFan3Off_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioBtnFan3Off.Checked)
+            {                
+                radioBtnFan3Off.BackColor = System.Drawing.Color.DarkRed;
+
+                // TODO: Turn Off Fan 3
+            }
+            else
+            {
+                radioBtnFan3Off.BackColor = default(System.Drawing.Color);
+            }
+        }
+
+        private void radioBtnFan3Speed1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioBtnFan3Speed1.Checked)
+            {
+                radioBtnFan3Speed1.BackColor = System.Drawing.Color.Green;
+
+                // TODO: Set to speed 1
+            }
+            else
+            {
+                radioBtnFan3Speed1.BackColor = default(System.Drawing.Color);
+            }
+        }
+
+        private void radioBtnFan3Speed2_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioBtnFan3Speed2.Checked)
+            {
+                radioBtnFan3Speed2.BackColor = System.Drawing.Color.Green;
+                
+                // TODO: Set to speed 2
+            }
+            else
+            {
+                radioBtnFan3Speed2.BackColor = default(System.Drawing.Color);
+            }
+        }
+
+        private void radioBtnFan3Speed3_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioBtnFan3Speed3.Checked)
+            {
+                radioBtnFan3Speed3.BackColor = System.Drawing.Color.Green;
+
+                // TODO: Set to speed 3
+            }
+            else
+            {
+                radioBtnFan3Speed3.BackColor = default(System.Drawing.Color);
+            }
+        }
+
+        #endregion
+
     }
 }
