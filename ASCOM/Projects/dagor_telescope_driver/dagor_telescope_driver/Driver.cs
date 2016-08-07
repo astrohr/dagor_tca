@@ -1,29 +1,25 @@
 //tabs=4
 // --------------------------------------------------------------------------------
-// TODO fill in this information for your driver, then remove this line!
 //
 // ASCOM Telescope driver for Dagor
 //
-// Description:	Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam 
-//				nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam 
-//				erat, sed diam voluptua. At vero eos et accusam et justo duo 
-//				dolores et ea rebum. Stet clita kasd gubergren, no sea takimata 
-//				sanctus est Lorem ipsum dolor sit amet.
+// Description:	ASCOM Telescope driver for Dagor
 //
-// Implements:	ASCOM Telescope interface version: <To be completed by driver developer>
-// Author:		(XXX) Your N. Here <your@email.here>
+// Implements:	ASCOM Telescope interface version: 
+//              ITelescopeV3 Interface
+//              Namespace: ASCOM.DeviceInterface
+//              Assembly: ASCOM.DeviceInterfaces (in ASCOM.DeviceInterfaces.dll) 
+//              Version: 6.0.0.0 (6.2.0.2774)
+
+// Author:		Nenad K. <nenad.katanic@fer.hr>
 //
 // Edit Log:
 //
-// Date			Who	Vers	Description
-// -----------	---	-----	-------------------------------------------------------
-// dd-mmm-yyyy	XXX	6.0.0	Initial edit, created from ASCOM driver template
+// Date			Who	    Vers	Description
+// -----------	---	    -----	-------------------------------------------------------
+// 07-08-2016	nenad	1.0.0	Initial edit, created from ASCOM driver template
 // --------------------------------------------------------------------------------
-//
 
-
-// This is used to define code in the template that is specific to one class implementation
-// unused code canbe deleted and this definition removed.
 #define Telescope
 
 using System;
@@ -42,17 +38,12 @@ using System.Collections;
 
 namespace ASCOM.Dagor
 {
-    //
     // Your driver's DeviceID is ASCOM.Dagor.Telescope
     //
     // The Guid attribute sets the CLSID for ASCOM.Dagor.Telescope
     // The ClassInterface/None addribute prevents an empty interface called
     // _Dagor from being created and used as the [default] interface
-    //
-    // TODO Replace the not implemented exceptions with code to implement the function or
-    // throw the appropriate ASCOM exception.
-    //
-
+    
     /// <summary>
     /// ASCOM Telescope Driver for Dagor.
     /// </summary>
@@ -65,18 +56,26 @@ namespace ASCOM.Dagor
         /// The DeviceID is used by ASCOM applications to load the driver at runtime.
         /// </summary>
         internal static string driverID = "ASCOM.Dagor.Telescope";
-        // TODO Change the descriptive string for your driver then remove this line
+       
         /// <summary>
         /// Driver description that displays in the ASCOM Chooser.
         /// </summary>
         private static string driverDescription = "ASCOM Telescope Driver for Dagor.";
 
-        internal static string comPortProfileName = "COM Port"; // Constants used for Profile persistence
-        internal static string comPortDefault = "COM1";
+        internal static string protocolProfileName = "Proto";
+        internal static List<string> protocolOptions = new List<string>(new string[] { "http", "https" });
+        internal static string protocolDefault = protocolOptions[0];
+        internal static string serverProfileName = "Server";
+        internal static string serverDefault = "10.1.4.120";
+        internal static string portProfileName = "Port";
+        internal static string portDefault = "8001";
         internal static string traceStateProfileName = "Trace Level";
         internal static string traceStateDefault = "false";
 
-        internal static string comPort; // Variables to hold the currrent device configuration
+        // Variables to hold the currrent device configuration
+        internal static string protocol;
+        internal static string server;
+        internal static int port;
 
         /// <summary>
         /// Private variable to hold the connected state
@@ -98,6 +97,8 @@ namespace ASCOM.Dagor
         /// </summary>
         internal static TraceLogger tl;
 
+        private TelescopeApiClient client;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Dagor"/> class.
         /// Must be public for COM registration.
@@ -105,22 +106,27 @@ namespace ASCOM.Dagor
         public Telescope()
         {
             tl = new TraceLogger("", "Dagor");
-            ReadProfile(); // Read device configuration from the ASCOM Profile store
+
+            // Read device configuration from the ASCOM Profile store
+            ReadProfile(); 
 
             tl.LogMessage("Telescope", "Starting initialisation");
 
-            connectedState = false; // Initialise connected to false
-            utilities = new Util(); //Initialise util object
-            astroUtilities = new AstroUtils(); // Initialise astro utilities object
-            //TODO: Implement your additional construction here
+            // Initialise connected to false
+            connectedState = false;
+
+            //Initialise util object
+            utilities = new Util();
+
+            // Initialise astro utilities object 
+            astroUtilities = new AstroUtils();
+
+            // Initialize API Client
+            client = new TelescopeApiClient(protocol, server, port); 
 
             tl.LogMessage("Telescope", "Completed initialisation");
         }
 
-
-        //
-        // PUBLIC COM INTERFACE ITelescopeV3 IMPLEMENTATION
-        //
 
         #region Common properties and methods.
 
@@ -142,7 +148,8 @@ namespace ASCOM.Dagor
                 var result = F.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {
-                    WriteProfile(); // Persist device configuration values to the ASCOM Profile store
+                    // Persist device configuration values to the ASCOM Profile store
+                    WriteProfile(); 
                 }
             }
         }
@@ -164,31 +171,28 @@ namespace ASCOM.Dagor
 
         public void CommandBlind(string command, bool raw)
         {
-            CheckConnected("CommandBlind");
+            // CheckConnected("CommandBlind");
             // Call CommandString and return as soon as it finishes
-            this.CommandString(command, raw);
+            // this.CommandString(command, raw);
             // or
             throw new ASCOM.MethodNotImplementedException("CommandBlind");
-            // DO NOT have both these sections!  One or the other
         }
 
         public bool CommandBool(string command, bool raw)
         {
-            CheckConnected("CommandBool");
-            string ret = CommandString(command, raw);
+            // CheckConnected("CommandBool");
+            // string ret = CommandString(command, raw);
             // TODO decode the return string and return true or false
             // or
             throw new ASCOM.MethodNotImplementedException("CommandBool");
-            // DO NOT have both these sections!  One or the other
         }
 
         public string CommandString(string command, bool raw)
         {
-            CheckConnected("CommandString");
+            // CheckConnected("CommandString");
             // it's a good idea to put all the low level communication with the device here,
             // then all communication calls this function
             // you need something to ensure that only one command is in progress at a time
-
             throw new ASCOM.MethodNotImplementedException("CommandString");
         }
 
@@ -202,6 +206,7 @@ namespace ASCOM.Dagor
             utilities = null;
             astroUtilities.Dispose();
             astroUtilities = null;
+            client = null;
         }
 
         public bool Connected
@@ -220,14 +225,20 @@ namespace ASCOM.Dagor
                 if (value)
                 {
                     connectedState = true;
-                    LogMessage("Connected Set", "Connecting to port {0}", comPort);
-                    // TODO connect to the device
+                    LogMessage("Connected Set", "Connecting to URL {0}", protocol);
+
+                    // Connect to the device
+                    if (!client.IsReady)
+                    {
+                        throw new NotConnectedException();
+                    }
                 }
                 else
                 {
                     connectedState = false;
-                    LogMessage("Connected Set", "Disconnecting from port {0}", comPort);
-                    // TODO disconnect from the device
+                    LogMessage("Connected Set", "Disconnecting from URL {0}", protocol);
+                    
+                    // TO-DO: Disconnect from the device
                 }
             }
         }
@@ -247,7 +258,6 @@ namespace ASCOM.Dagor
             get
             {
                 Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                // TODO customise this driver description
                 string driverInfo = "Information about the driver itself. Version: " + String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor);
                 tl.LogMessage("DriverInfo Get", driverInfo);
                 return driverInfo;
@@ -288,6 +298,7 @@ namespace ASCOM.Dagor
         #endregion
 
         #region ITelescope Implementation
+
         public void AbortSlew()
         {
             tl.LogMessage("AbortSlew", "Not implemented");
@@ -1039,7 +1050,10 @@ namespace ASCOM.Dagor
             {
                 driverProfile.DeviceType = "Telescope";
                 tl.Enabled = Convert.ToBoolean(driverProfile.GetValue(driverID, traceStateProfileName, string.Empty, traceStateDefault));
-                comPort = driverProfile.GetValue(driverID, comPortProfileName, string.Empty, comPortDefault);
+
+                protocol = driverProfile.GetValue(driverID, protocolProfileName, string.Empty, protocolDefault);
+                server = driverProfile.GetValue(driverID, serverProfileName, string.Empty, serverDefault);
+                port = int.Parse(driverProfile.GetValue(driverID, portProfileName, string.Empty, portDefault));
             }
         }
 
@@ -1052,7 +1066,9 @@ namespace ASCOM.Dagor
             {
                 driverProfile.DeviceType = "Telescope";
                 driverProfile.WriteValue(driverID, traceStateProfileName, tl.Enabled.ToString());
-                driverProfile.WriteValue(driverID, comPortProfileName, comPort.ToString());
+                driverProfile.WriteValue(driverID, protocolProfileName, protocol.ToString());
+                driverProfile.WriteValue(driverID, serverProfileName, server.ToString());
+                driverProfile.WriteValue(driverID, portProfileName, port.ToString());
             }
         }
 

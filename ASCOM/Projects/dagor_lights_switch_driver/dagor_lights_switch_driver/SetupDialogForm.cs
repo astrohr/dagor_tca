@@ -28,7 +28,6 @@ namespace ASCOM.DagorLights
             Switch.server = (string)textBoxServer.Text;
             Switch.port = int.Parse(textBoxPort.Text);
 
-
             Switch.tl.Enabled = chkTrace.Checked;
         }
 
@@ -58,21 +57,23 @@ namespace ASCOM.DagorLights
         {
             chkTrace.Checked = Switch.tl.Enabled;
 
-
             // Set the list of available protocols to choose from
             comboBoxProtocol.Items.Clear();
             for (int i = 0; i < Switch.protocolOptions.Count; i++)
             {
                 comboBoxProtocol.Items.Insert(i, Switch.protocolOptions[i]);
             }
+
             // select the current protocol if possible
             if (comboBoxProtocol.Items.Contains(Switch.protocol))
             {
                 comboBoxProtocol.SelectedItem = Switch.protocol;
             }
-            // set current server:
+
+            // set current server
             textBoxServer.Text = Switch.server;
-            // set current port:
+
+            // set current port        
             textBoxPort.Text = Switch.port.ToString();
         }
     }

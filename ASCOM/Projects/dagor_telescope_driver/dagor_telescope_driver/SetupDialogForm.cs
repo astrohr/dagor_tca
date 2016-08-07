@@ -24,7 +24,10 @@ namespace ASCOM.Dagor
         {
             // Place any validation constraint checks here
             // Update the state variables with results from the dialogue
-            Telescope.comPort = (string)comboBoxComPort.SelectedItem;
+            Telescope.protocol = (string)comboBoxProtocol.SelectedItem;
+            Telescope.server = (string)textBoxServer.Text;
+            Telescope.port = int.Parse(textBoxPort.Text);
+
             Telescope.tl.Enabled = chkTrace.Checked;
         }
 
@@ -53,14 +56,25 @@ namespace ASCOM.Dagor
         private void InitUI()
         {
             chkTrace.Checked = Telescope.tl.Enabled;
-            // set the list of com ports to those that are currently available
-            comboBoxComPort.Items.Clear();
-            comboBoxComPort.Items.AddRange(System.IO.Ports.SerialPort.GetPortNames());      // use System.IO because it's static
-            // select the current port if possible
-            if (comboBoxComPort.Items.Contains(Telescope.comPort))
+
+            // Set the list of available protocols to choose from
+            comboBoxProtocol.Items.Clear();
+            for (int i = 0; i < Telescope.protocolOptions.Count; i++)
             {
-                comboBoxComPort.SelectedItem = Telescope.comPort;
+                comboBoxProtocol.Items.Insert(i, Telescope.protocolOptions[i]);
             }
+
+            // select the current protocol if possible
+            if (comboBoxProtocol.Items.Contains(Telescope.protocol))
+            {
+                comboBoxProtocol.SelectedItem = Telescope.protocol;
+            }
+
+            // set current server
+            textBoxServer.Text = Telescope.server;
+
+            // set current port        
+            textBoxPort.Text = Telescope.port.ToString();
         }
     }
 }
