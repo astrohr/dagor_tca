@@ -105,21 +105,6 @@ namespace ASCOM.DagorFans
             }
         }
 
-        private void radioBtnFan1Speed3_CheckedChanged(object sender, EventArgs e)
-        {
-            if (radioBtnFan1Speed3.Checked)
-            {
-                radioBtnFan1Speed3.BackColor = System.Drawing.Color.Green;
-
-                // TODO: Set to speed 3
-
-            }
-            else
-            {
-                radioBtnFan1Speed3.BackColor = default(System.Drawing.Color);
-            }
-        }
-
         #endregion
 
         #region Fan 2
@@ -166,21 +151,6 @@ namespace ASCOM.DagorFans
             }
         }
 
-        private void radioBtnFan2Speed3_CheckedChanged(object sender, EventArgs e)
-        {
-            if (radioBtnFan2Speed3.Checked)
-            {
-                radioBtnFan2Speed3.BackColor = System.Drawing.Color.Green;
-
-                // TODO: Set to speed 3
-
-            }
-            else
-            {
-                radioBtnFan2Speed3.BackColor = default(System.Drawing.Color);
-            }
-        }
-
         #endregion
 
         #region Fan 3
@@ -224,20 +194,6 @@ namespace ASCOM.DagorFans
             else
             {
                 radioBtnFan3Speed2.BackColor = default(System.Drawing.Color);
-            }
-        }
-
-        private void radioBtnFan3Speed3_CheckedChanged(object sender, EventArgs e)
-        {
-            if (radioBtnFan3Speed3.Checked)
-            {
-                radioBtnFan3Speed3.BackColor = System.Drawing.Color.Green;
-
-                // TODO: Set to speed 3
-            }
-            else
-            {
-                radioBtnFan3Speed3.BackColor = default(System.Drawing.Color);
             }
         }
 

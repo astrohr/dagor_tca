@@ -429,9 +429,9 @@ namespace ASCOM.DagorFans
         public double MaxSwitchValue(short id)
         {
             Validate("MaxSwitchValue", id);
-    
-            // All switches have 4 possible states [0, 3]
-            return 3;            
+
+            // All switches have 3 possible states [0, 2], step 1
+            return 2;            
         }
 
         /// <summary>
@@ -444,7 +444,7 @@ namespace ASCOM.DagorFans
         {
             Validate("MinSwitchValue", id);
 
-            // All switches have 4 possible states [0, 3]
+            // All switches have 3 possible states [0, 2], step 1
             return 0;
  
         }
@@ -461,7 +461,7 @@ namespace ASCOM.DagorFans
         {
             Validate("SwitchStep", id);
 
-            // All switches have 4 possible states [0, 3], step 1
+            // All switches have 3 possible states [0, 2], step 1
             return 1;       
         }
 
@@ -497,7 +497,7 @@ namespace ASCOM.DagorFans
             }
             tl.LogMessage("SetSwitchValue", string.Format("SetSwitchValue({0}) = {1}", id, value));
            
-            //TO-DO: Call to Client API to set switch API
+            //TO-DO: Call to Client API to set switch value
 
         }
 
