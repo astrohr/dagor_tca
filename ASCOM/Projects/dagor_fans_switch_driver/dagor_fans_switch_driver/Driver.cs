@@ -475,8 +475,9 @@ namespace ASCOM.DagorFans
         {
             Validate("GetSwitchValue", id);
 
-            //TO-DO: Call to Client API to get switch value
-            return 1.0;
+            //Call to Client API to get switch value
+            double switchValue = client.getFanState(id + 1);
+            return switchValue;
         }
 
         /// <summary>
@@ -496,9 +497,10 @@ namespace ASCOM.DagorFans
                 throw new ASCOM.MethodNotImplementedException(string.Format("SetSwitchValue({0}) - Cannot write", id));
             }
             tl.LogMessage("SetSwitchValue", string.Format("SetSwitchValue({0}) = {1}", id, value));
-           
-            //TO-DO: Call to Client API to set switch value
 
+            //Call to Client API to set switch value
+
+            client.setFanState(id + 1, value);
         }
 
         #endregion

@@ -29,6 +29,34 @@ namespace ASCOM.DagorFans
             {
                 return true;
             }
-        }       
+        }
+
+        public double getFanState(int fanId)
+        {
+            try
+            {
+                double repr_state = ExecuteGET<double>(fanId.ToString());
+                return repr_state;
+            }
+            catch (Exception ex)
+            {
+                // TODO log exception
+                throw new NotConnectedException();
+            }
+        }
+
+        public bool setFanState(int fanId, double fanState)
+        {
+            try
+            {
+                bool repr_state = ExecutePUT<bool, double>(fanId.ToString(), fanState);
+                return repr_state;
+            }
+            catch (Exception ex)
+            {
+                // TODO log exception
+                throw new NotConnectedException();
+            }
+        }
     }
 }
