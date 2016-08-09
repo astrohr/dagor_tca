@@ -17,3 +17,5 @@ ASCOM/Projects/**/bin/Debug
 ASCOM/Projects/**/obj/Debug
 
 *.cache
+hardware/dagor_fans/firmware/.travis.yml
+hardware/dagor_fans/firmware/platformio.ini
