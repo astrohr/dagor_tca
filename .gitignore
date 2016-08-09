@@ -16,4 +16,6 @@ ASCOM/Projects/**/obj/x86/Debug
 ASCOM/Projects/**/bin/Debug
 ASCOM/Projects/**/obj/Debug
 
+.idea/*
+
 *.cache
