@@ -300,7 +300,7 @@ namespace ASCOM.DagorFans
 
         #region ISwitchV2 Implementation
 
-        private short numSwitch = 3;
+        private short numSwitch = 2;
 
         /// <summary>
         /// The number of switches managed by this driver

@@ -8,11 +8,10 @@ namespace ASCOM.DagorFans
 
         private ASCOM.DriverAccess.Switch driver;
 
-        const int NUM_FANS = 3;
+        const int NUM_FANS = 2;
 
-        const int FAN_1_ID = 0;
-        const int FAN_2_ID = 1;
-        const int FAN_3_ID = 2;
+        const int FAN_CENTRAL_ID = 0;
+        const int FAN_OTHER_ID = 1;
 
         const double FAN_STATE_OFF = 0.0;
         const double FAN_STATE_SPEED_1 = 1.0;
@@ -75,7 +74,7 @@ namespace ASCOM.DagorFans
             }
         }
 
-        #region Fan 1
+        #region Central Fan
 
         private void radioBtnFan1Off_CheckedChanged(object sender, EventArgs e)
         {
@@ -83,8 +82,8 @@ namespace ASCOM.DagorFans
             {                
                 radioBtnFan1Off.BackColor = System.Drawing.Color.DarkRed;
 
-                // Turn Off Fan 1
-                driver.SetSwitchValue(FAN_1_ID, FAN_STATE_OFF);
+                // Turn Off Central Fan
+                driver.SetSwitchValue(FAN_CENTRAL_ID, FAN_STATE_OFF);
 
             }
             else
@@ -100,7 +99,7 @@ namespace ASCOM.DagorFans
                 radioBtnFan1Speed1.BackColor = System.Drawing.Color.Green;
 
                 // Set to speed 1
-                driver.SetSwitchValue(FAN_1_ID, FAN_STATE_SPEED_1);
+                driver.SetSwitchValue(FAN_CENTRAL_ID, FAN_STATE_SPEED_1);
                 
             }
             else
@@ -116,7 +115,7 @@ namespace ASCOM.DagorFans
                 radioBtnFan1Speed2.BackColor = System.Drawing.Color.Green;
 
                 // Set to speed 2
-                driver.SetSwitchValue(FAN_1_ID, FAN_STATE_SPEED_2);
+                driver.SetSwitchValue(FAN_CENTRAL_ID, FAN_STATE_SPEED_2);
             }
             else
             {
@@ -134,8 +133,8 @@ namespace ASCOM.DagorFans
             {                
                 radioBtnFan2Off.BackColor = System.Drawing.Color.DarkRed;
 
-                // Turn Off Fan 2
-                driver.SetSwitchValue(FAN_2_ID, FAN_STATE_OFF);
+                // Turn Off Other Fans 
+                driver.SetSwitchValue(FAN_OTHER_ID, FAN_STATE_OFF);
             }
             else
             {
@@ -150,7 +149,7 @@ namespace ASCOM.DagorFans
                 radioBtnFan2Speed1.BackColor = System.Drawing.Color.Green;
 
                 // Set to speed 1
-                driver.SetSwitchValue(FAN_2_ID, FAN_STATE_SPEED_1);
+                driver.SetSwitchValue(FAN_OTHER_ID, FAN_STATE_SPEED_1);
             }
             else
             {
@@ -165,60 +164,11 @@ namespace ASCOM.DagorFans
                 radioBtnFan2Speed2.BackColor = System.Drawing.Color.Green;
 
                 // Set to speed 2
-                driver.SetSwitchValue(FAN_2_ID, FAN_STATE_SPEED_2);
+                driver.SetSwitchValue(FAN_OTHER_ID, FAN_STATE_SPEED_2);
             }
             else
             {
                 radioBtnFan2Speed2.BackColor = default(System.Drawing.Color);
-            }
-        }
-
-        #endregion
-
-        #region Fan 3
-
-        private void radioBtnFan3Off_CheckedChanged(object sender, EventArgs e)
-        {
-            if (radioBtnFan3Off.Checked)
-            {                
-                radioBtnFan3Off.BackColor = System.Drawing.Color.DarkRed;
-
-                // Turn Off Fan 3
-                driver.SetSwitchValue(FAN_3_ID, FAN_STATE_OFF);
-            }
-            else
-            {
-                radioBtnFan3Off.BackColor = default(System.Drawing.Color);
-            }
-        }
-
-        private void radioBtnFan3Speed1_CheckedChanged(object sender, EventArgs e)
-        {
-            if (radioBtnFan3Speed1.Checked)
-            {
-                radioBtnFan3Speed1.BackColor = System.Drawing.Color.Green;
-
-                // Set to speed 1
-                driver.SetSwitchValue(FAN_3_ID, FAN_STATE_SPEED_1);
-            }
-            else
-            {
-                radioBtnFan3Speed1.BackColor = default(System.Drawing.Color);
-            }
-        }
-
-        private void radioBtnFan3Speed2_CheckedChanged(object sender, EventArgs e)
-        {
-            if (radioBtnFan3Speed2.Checked)
-            {
-                radioBtnFan3Speed2.BackColor = System.Drawing.Color.Green;
-
-                // Set to speed 2
-                driver.SetSwitchValue(FAN_3_ID, FAN_STATE_SPEED_2);
-            }
-            else
-            {
-                radioBtnFan3Speed2.BackColor = default(System.Drawing.Color);
             }
         }
 
@@ -230,7 +180,7 @@ namespace ASCOM.DagorFans
         {
             switch (fanId)
             {
-                case FAN_1_ID:
+                case FAN_CENTRAL_ID:
 
                     if (state == FAN_STATE_OFF)
                     {
@@ -252,7 +202,7 @@ namespace ASCOM.DagorFans
 
                     break;
 
-                case FAN_2_ID:
+                case FAN_OTHER_ID:
 
                     if (state == FAN_STATE_OFF)
                     {
@@ -270,28 +220,6 @@ namespace ASCOM.DagorFans
                     {
                         radioBtnFan2Speed2.Checked = true;
                         radioBtnFan2Speed2.BackColor = System.Drawing.Color.Green;
-                    }
-
-                    break;
-
-                case FAN_3_ID:
-
-                    if (state == FAN_STATE_OFF)
-                    {
-                        radioBtnFan3Off.Checked = true;
-                        radioBtnFan3Off.BackColor = System.Drawing.Color.DarkRed;
-                    }
-
-                    else if (state == FAN_STATE_SPEED_1)
-                    {
-                        radioBtnFan3Speed1.Checked = true;
-                        radioBtnFan3Speed1.BackColor = System.Drawing.Color.Green;
-                    }
-
-                    else
-                    {
-                        radioBtnFan3Speed2.Checked = true;
-                        radioBtnFan3Speed2.BackColor = System.Drawing.Color.Green;
                     }
 
                     break;
