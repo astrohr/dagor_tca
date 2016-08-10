@@ -39,9 +39,6 @@ void Relays::setup()
 
   Serial.println("Ok ziv sam");
   Serial.flush();
-  while (true) {
-    /* code */
-  }
 }
 
 

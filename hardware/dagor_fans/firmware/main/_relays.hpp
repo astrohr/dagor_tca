@@ -11,11 +11,9 @@
 // Include any modules that depend on this one here:
 // (relays module has no dependences)
 
-
 // This guard enables module's header file to be included multiple times:
 #ifndef RELAYS_HPP
 #define RELAYS_HPP
-
 
 #define RELAYS_NOOP 0
 #define RELAYS_ON 1

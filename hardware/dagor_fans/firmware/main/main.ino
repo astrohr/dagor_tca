@@ -11,10 +11,8 @@
 
 // Include the actual modules:
 #include "_relays.ino.hpp"
+#include "_fans.ino.hpp"
 #include "_blink.ino.hpp"
-#include "_blink_counter.ino.hpp"
-#include "_blink_modifier.ino.hpp"
-#include "_button.ino.hpp"
 
 #include "_protocol.ino.hpp"
 #include "_serial_comm.ino.hpp"

@@ -46,17 +46,8 @@ void Protocol::loop()
   if (command == "status") {
     // calculate how many lines are going to be in the reply:
     int status_reply_count = 0;
-    #ifdef BLINK_HPP
+    #ifdef FANS_HPP
       status_reply_count += 2;
-    #endif
-    #ifdef BLINK_MODIFIER_HPP
-      status_reply_count += 1;
-    #endif
-    #ifdef BLINK_COUNTER_HPP
-      status_reply_count += 1;
-    #endif
-    #ifdef BUTTON_HPP
-      status_reply_count += 1;
     #endif
 
     // first line of the reply, with the number of lines to follow:
@@ -65,101 +56,62 @@ void Protocol::loop()
     replyPrinter->print(F("\n"));
 
     // status from blink module:
-    #ifdef BLINK_HPP
-      replyPrinter->print(F("blink: "));
-      replyPrinter->print(blink->ledState ? F("ON") : F("OFF"));
+    #ifdef FANS_HPP
+      replyPrinter->print(F("fan 1: "));
+      replyPrinter->print(fans->fan1);
       replyPrinter->print(F("\n"));
-      replyPrinter->print(F("interval: "));
-      replyPrinter->print(blink->interval);
+      replyPrinter->print(F("fan 2: "));
+      replyPrinter->print(fans->fan2);
       replyPrinter->print(F("\n"));
     #endif  //#ifdef BLINK_HPP
-
-    // status from blink_modifier module:
-    #ifdef BLINK_MODIFIER_HPP
-      replyPrinter->print(F("index: "));
-      replyPrinter->print(blink_modifier->index);
-      replyPrinter->print(F("\n"));
-    #endif  //#ifdef BLINK_MODIFIER_HPP
-
-    // status from blink module:
-    #ifdef BLINK_COUNTER_HPP
-      replyPrinter->print(F("count: "));
-      replyPrinter->print(blink_counter->count);
-      replyPrinter->print(F("\n"));
-    #endif  //#ifdef BLINK_COUNTER_HPP
-
-    // status from blink module:
-    #ifdef BUTTON_HPP
-      replyPrinter->print(F("button: "));
-      replyPrinter->print( button->pressed ? F("closed") : F("open"));
-      replyPrinter->print(F("\n"));
-    #endif  //#ifdef BUTTON_HPP
 
   // finished with "status" command
 
 
-  #ifdef BLINK_MODIFIER_HPP
+  #ifdef FANS_HPP
 
   // blink module can handle one command:
-  } else if (command == "interval get") {
+} else if (command.substring(0, 10) == "fan 1 set ") {
+  String data = command.substring(10);
+  char buf[data.length() + 1];
+  data.toCharArray(buf, data.length() + 1);
+  int value = atoi(buf);
+  if (value >= 0 && value <= FANS_MAX) {
+    fans->setFan1 = value;
     replyPrinter->print(F("ok 1\n"));
-    replyPrinter->print(blink->interval);
+    replyPrinter->print(value);
+    replyPrinter->print(F("\n"));
+  } else {
+    replyPrinter->print(F("error 1\n"));
+    replyPrinter->print(F("value not in range\n"));
+  }
+
+} else if (command.substring(0, 10) == "fan 2 set ") {
+  String data = command.substring(10);
+  char buf[data.length() + 1];
+  data.toCharArray(buf, data.length() + 1);
+  int value = atoi(buf);
+  if (value >= 0 && value <= FANS_MAX) {
+    fans->setFan2 = value;
+    replyPrinter->print(F("ok 1\n"));
+    replyPrinter->print(value);
+    replyPrinter->print(F("\n"));
+  } else {
+    replyPrinter->print(F("error 1\n"));
+    replyPrinter->print(F("value not in range\n"));
+  }
+
+  } else if (command == "fan 1 get") {
+    replyPrinter->print(F("ok 1\n"));
+    replyPrinter->print(fans->fan1);
     replyPrinter->print(F("\n"));
 
-  #endif  // #ifdef BLINK_MODIFIER_HPP
-
-
-  #ifdef BLINK_MODIFIER_HPP
-  // blink_modifier can handle three commands:
-
-  } else if (command == "index get") {
+  } else if (command == "fan 2 get") {
     replyPrinter->print(F("ok 1\n"));
-    replyPrinter->print(blink_modifier->index);
+    replyPrinter->print(fans->fan2);
     replyPrinter->print(F("\n"));
 
-  } else if (command == "index next") {
-    blink_modifier->setNextInterval = true;
-    replyPrinter->print(F("ok 0\n"));
-
-  } else if (command.substring(0, 10) == "index set ") {
-    // parse the rest of command variable for int value:
-    String data = command.substring(10);
-    char buf[data.length() + 1];
-    data.toCharArray(buf, data.length() + 1);
-    int value = atoi(buf);
-    // make sure the value is valid:
-    if (value < 0 || value >= BLINK_MODIFIER_INTERVALS_N) {
-      replyPrinter->print("error 3\n");
-      replyPrinter->print("value out of range\n");
-      replyPrinter->print("got value: ");
-      replyPrinter->print(value);
-      replyPrinter->print("\n");
-      replyPrinter->print("range: 0 to ");
-      replyPrinter->print(BLINK_MODIFIER_INTERVALS_N - 1);
-      replyPrinter->print("\n");
-    } else {
-      // the value is valid, use it:
-      blink_modifier->setIntervalTo = value;
-      replyPrinter->print("ok 0\n");
-    }
-
-  #endif  // #ifdef BLINK_MODIFIER_HPP
-
-
-  #ifdef BLINK_COUNTER_HPP
-  // blink_counter can handle two commands:
-
-  } else if (command == "count get") {
-    replyPrinter->print(F("ok 1\n"));
-    replyPrinter->print(blink_counter->count);
-    replyPrinter->print(F("\n"));
-
-  } else if (command == "count reset") {
-      replyPrinter->print(F("ok 0\n"));
-      blink_counter->setReset = true;
-
-  #endif  // #ifdef BLINK_COUNTER_HPP
-
+  #endif  // #ifdef FANS_HPP
 
   // unknown command:
 
