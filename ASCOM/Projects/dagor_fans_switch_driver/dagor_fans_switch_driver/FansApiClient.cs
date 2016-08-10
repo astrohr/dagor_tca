@@ -31,11 +31,11 @@ namespace ASCOM.DagorFans
             }
         }
 
-        public double getFanState(int fanId)
+        public int getFanState(int fanId)
         {
             try
             {
-                double repr_state = ExecuteGET<double>(fanId.ToString());
+                int repr_state = ExecuteGET<int>(fanId.ToString());
                 return repr_state;
             }
             catch (Exception ex)
@@ -45,12 +45,17 @@ namespace ASCOM.DagorFans
             }
         }
 
-        public bool setFanState(int fanId, double fanState)
+        public void setFanState(int fanId, int fanState)
         {
             try
-            {
-                bool repr_state = ExecutePUT<bool, double>(fanId.ToString(), fanState);
-                return repr_state;
+            {         
+                int repr_state = ExecutePUT<int, int>(fanId.ToString(), fanState);                
+                if (repr_state != fanState)
+                {
+                    throw new ASCOM.ValueNotSetException(
+                        "setFanState: Unexpected value returned. Expected: " + fanState.ToString() +
+                        " Returned: " + repr_state.ToString());                         
+                }
             }
             catch (Exception ex)
             {
