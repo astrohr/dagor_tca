@@ -124,9 +124,11 @@ class AnalogueSwitchController(object):
             raise CommunicationException(
                 'Cannot connect to Arduino: {}'.format(e))
 
-        a_char = self._serial.read()
-        while not a_char.strip():
+        a_char = ""
+        for _ in range(40):
             a_char = self._serial.read()
+            if a_char.strip():
+                break
         if not self.RESET_DISABLED:
             line = a_char + self._serial.readline().strip()
             if line and line == 'ready':
@@ -140,10 +142,12 @@ class AnalogueSwitchController(object):
     # TODO: Make generic
     def _refresh_status_analogue(self):
         self._serial.write('status\n')
-        response = self._serial.readline().strip()
         # drop any leading blank lines:
-        while not response.strip():
+        response = ""
+        for _ in range(5):
             response = self._serial.readline().strip()
+            if response.strip():
+                break
         if response != 'status 2':
             raise CommunicationException(
                 'Controller doesnt acknowlege status command, instead got: {}'.format(

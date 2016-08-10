@@ -16,7 +16,7 @@ Options:
     -h --help    Show this screen or description of specific command.
     --version    Show version.
 """
-
+from collections import OrderedDict
 from functools import wraps
 from mock.mock import MagicMock
 from docopt import docopt
@@ -69,6 +69,14 @@ def fan_repr(n):
     return dagor_fans.get_fan(n)
 
 
+def device_repr():
+    status = dagor_fans.get_fans()
+    response = OrderedDict()
+    response["fan 1"] = int(status[0])
+    response["fan 2"] = int(status[1])
+    return response
+
+
 # decorators:
 
 def check_connectivity(func):
@@ -93,6 +101,23 @@ def handle_request_errors(func):
             return render_error(e)
     return func_wrapper
 
+
+@api.route('/state/', methods=['GET', 'PUT', ])
+@check_connectivity
+def state_resource():
+    """
+    Fans device status.
+
+    ### Hyperlinks
+
+    * [Up](..)
+    """
+    if request.method in {'PUT', }:
+        dagor_fans.set_fan(1, request.data["fan 1"])
+        dagor_fans.set_fan(2, request.data["fan 2"])
+    return device_repr()
+
+
 @api.route('/', methods=['GET', ])
 @check_connectivity
 def resource():
@@ -102,6 +127,7 @@ def resource():
     ### Hyperlinks:
 
     * [Up](..)
+    * [Device state](./state/)
     * [Central fan](./1/)
     * [Other three fans](./2/)
     """
@@ -124,9 +150,10 @@ def fan_resource(fan_i):
     """
     State for a Central Fan (1) or other three fans (2).
     In both cases there are three possible states:
-       0 -> OFF
-       1 -> Speed 1
-       2 -> Speed 2
+
+        0 -> OFF
+        1 -> Speed 1
+        2 -> Speed 2
 
     ### Hyperlinks:
 
