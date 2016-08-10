@@ -194,6 +194,9 @@ class AnalogueSwitchController(object):
                 'Expected "0", "1" or "2", got: {}'.format(response))
         self._status[n - 1] = response
 
+        #return 'Fan {} set to state {}'.format(n, response)
+
+
 
 class CommunicationException(Exception):
     """ There was an error communicating with Arduino controller """

@@ -51,7 +51,7 @@ def get_fans():
 def set_fan(fan_id, state):
     controller = FansController()
     controller.switch_analogue(fan_id, state)
-
+    #return controller.switch_analogue(fan_id, state)
 
 def _main(args):
     if args['set']:
