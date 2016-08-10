@@ -78,7 +78,7 @@ void Protocol::loop()
   // finished with "status" command
 
 
-  #ifdef FANS_HPP
+#ifdef FANS_HPP
 
   // blink module can handle one command:
 } else if (command.substring(0, 10) == "fan 1 set ") {
@@ -128,7 +128,15 @@ void Protocol::loop()
 
   #endif  // #ifdef FANS_HPP
 
-  // unknown command:
+
+  #ifdef RESET_HPP
+
+  } else if (command == "reset") {
+    reset->trigger = true;
+    replyPrinter->print(F("ok 0\n\n"));
+    delay(100);
+
+  #endif  // #ifdef RESET_HPP
 
   } else {
     replyPrinter->print(F("error 2\n"));

@@ -11,6 +11,7 @@
 
 // Include the actual modules:
 #include "_relays.ino.hpp"
+#include "_reset.ino.hpp"
 #include "_fans.ino.hpp"
 #include "_blink.ino.hpp"
 #include "_power.ino.hpp"
