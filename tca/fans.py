@@ -4,6 +4,7 @@
 Usage:
     fans.py status
     fans.py set <FAN_ID> <FAN_STATE>
+    fans.py get <FAN_ID>
     fans.py -h | --help
     fans.py --version
 
@@ -32,35 +33,50 @@ CommunicationException = dagor_analogue_switches.CommunicationException
 
 class FansController(dagor_analogue_switches.AnalogueSwitchController):
     PORT = fans_config.PORT
-    RESET_DISABLED = True
+    RESET_DISABLED = False
 
     def __init__(self):
         super(FansController, self).__init__()  # Just keeping PEP8 happy...
 
+    instance = None
+    
+    @classmethod
+    def get_instance(cls):
+        if cls.instance is None:
+            cls.instance = cls()
+        return cls.instance
+    
+
+def get_controller():
+    return FansController.get_instance()
+
 
 def get_fan(n):
-    controller = FansController()
+    controller = get_controller()
     status = controller.status_analogue
-    return int(status[n])
+    return int(status[n - 1])
 
 
 def get_fans():
-    controller = FansController()
+    controller = get_controller()
     status = controller.status_analogue
     return status
 
 
 def set_fan(fan_id, state):
-    controller = FansController()
+    controller = get_controller()
     controller.switch_analogue(fan_id, state)
-    #return controller.switch_analogue(fan_id, state)
 
 
 def _main(args):
     if args['set']:
         fan_id = int(args['<FAN_ID>'])
         state = int(args['<FAN_STATE>'])
-        print(set_fan(fan_id, state))
+        set_fan(fan_id, state)
+
+    if args['get']:
+        fan_id = int(args['<FAN_ID>'])
+        print(get_fan(fan_id))
 
     elif args['status']:
         status = get_fans()

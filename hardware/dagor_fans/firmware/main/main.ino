@@ -30,6 +30,7 @@ void setup()
   for (i = 0; i < ModulesRegistry::count; i++) {
     ModulesRegistry::modules[i]->setup();
   }
+  Serial.print(F("\nready\n"));
 }
 
 

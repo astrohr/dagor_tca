@@ -124,13 +124,13 @@ class AnalogueSwitchController(object):
             raise CommunicationException(
                 'Cannot connect to Arduino: {}'.format(e))
 
-        while self._serial.read():
-            pass
+        a_char = self._serial.read()
+        while not a_char.strip():
+            a_char = self._serial.read()
         if not self.RESET_DISABLED:
-            for i in range(6):
-                line = self._serial.readline().strip()
-                if line and line == 'ready':
-                    return  # TODO maybe wait for next readline to timeout, so we are sure this is the last data in serial pipe?
+            line = a_char + self._serial.readline().strip()
+            if line and line == 'ready':
+                return  # TODO maybe wait for next readline to timeout, so we are sure this is the last data in serial pipe?
             raise CommunicationException(
                 'Cannot establish serial communication: Arduino not reporting ready')
         else:  # self._RESET_DISABLED
@@ -141,6 +141,9 @@ class AnalogueSwitchController(object):
     def _refresh_status_analogue(self):
         self._serial.write('status\n')
         response = self._serial.readline().strip()
+        # drop any leading blank lines:
+        while not response.strip():
+            response = self._serial.readline().strip()
         if response != 'status 2':
             raise CommunicationException(
                 'Controller doesnt acknowlege status command, instead got: {}'.format(
@@ -151,22 +154,22 @@ class AnalogueSwitchController(object):
         # Read status for central fan --> expected "Fan1: <status_code>"
 
         response = self._serial.readline().strip()
-        if not response.startswith("Fan1:"):
+        if not response.startswith("fan 1: "):
             raise CommunicationException(
                 'Expected "fan 1: <status_code>", got: {}'.format(response))
 
         fan_status = response.split(":")
-        status_code = fan_status[1].strip();
+        status_code = fan_status[1].strip()
         if status_code not in ('0', '1', '2'):
             raise CommunicationException(
                 'Expected "0", "1" or "2", got: {}'.format(response))
 
-        self._status[0] = status_code
+        self._status.append(status_code)
 
         # Read status for other fans --> expected "Fan2: <status_code>"
 
         response = self._serial.readline().strip()
-        if not response.startswith("Fan2:"):
+        if not response.startswith("fan 2: "):
             raise CommunicationException(
                 'Expected "fan 2: <status_code>", got: {}'.format(response))
 
@@ -176,12 +179,15 @@ class AnalogueSwitchController(object):
             raise CommunicationException(
                 'Expected "0", "1" or "2", got: {}'.format(response))
 
-        self._status[1] = status_code
+        self._status.append(status_code)
 
     def _switch_analogue(self, n, state):
         self._serial.write('fan {} set {}\n'.format(n, state))
 
         response = self._serial.readline().strip()
+        # drop any leading blank lines:
+        while not response.strip():
+            response = self._serial.readline().strip()
 
         if response != 'ok 1':
             raise CommunicationException(

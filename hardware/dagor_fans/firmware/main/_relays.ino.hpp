@@ -34,11 +34,6 @@ void Relays::setup()
   digitalWrite(relayPin2, HIGH);
   digitalWrite(relayPin3, HIGH);
   digitalWrite(relayPin4, HIGH);
-
-  interval = 1000;
-
-  Serial.println("Ok ziv sam");
-  Serial.flush();
 }
 
 
