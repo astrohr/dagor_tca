@@ -26,7 +26,9 @@ from docopt import docopt
 import tca.switches_analogue as dagor_analogue_switches
 from tca.local import fans_config
 
+
 CommunicationException = dagor_analogue_switches.CommunicationException
+
 
 class FansController(dagor_analogue_switches.AnalogueSwitchController):
     PORT = fans_config.PORT
@@ -53,10 +55,11 @@ def set_fan(fan_id, state):
     controller.switch_analogue(fan_id, state)
     #return controller.switch_analogue(fan_id, state)
 
+
 def _main(args):
     if args['set']:
         fan_id = int(args['<FAN_ID>'])
-        state = int(args['<STATE>'])
+        state = int(args['<FAN_STATE>'])
         print(set_fan(fan_id, state))
 
     elif args['status']:
