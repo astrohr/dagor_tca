@@ -141,31 +141,53 @@ class AnalogueSwitchController(object):
     def _refresh_status_analogue(self):
         self._serial.write('status\n')
         response = self._serial.readline().strip()
-        if response != 'status':
+        if response != 'status 2':
             raise CommunicationException(
                 'Controller doesnt acknowlege status command, instead got: {}'.format(
                     response))
-        response = self._serial.readline().strip()
-        try:
-            self._n = int(response)
-        except ValueError:
-            raise CommunicationException(
-                'Expected int, got: {}'.format(response))
+
         self._status = []
-        for _ in range(self._n):
-            response = self._serial.readline().strip()
-            if response in ("0", "1", "2"): self._status.append(response)
-            else:
-                raise CommunicationException(
-                    'Expected "0", "1" or "2", got: {}'.format(response))
+
+        # Read status for central fan --> expected "Fan1: <status_code>"
+
+        response = self._serial.readline().strip()
+        if not response.startswith("Fan1:"):
+            raise CommunicationException(
+                'Expected "fan 1: <status_code>", got: {}'.format(response))
+
+        fan_status = response.split(":")
+        status_code = fan_status[1].strip();
+        if status_code not in ('0', '1', '2'):
+            raise CommunicationException(
+                'Expected "0", "1" or "2", got: {}'.format(response))
+
+        self._status[0] = status_code
+
+        # Read status for other fans --> expected "Fan2: <status_code>"
+
+        response = self._serial.readline().strip()
+        if not response.startswith("Fan2:"):
+            raise CommunicationException(
+                'Expected "fan 2: <status_code>", got: {}'.format(response))
+
+        fan_status = response.split(":")
+        status_code = fan_status[1].strip();
+        if status_code not in ('0', '1', '2'):
+            raise CommunicationException(
+                'Expected "0", "1" or "2", got: {}'.format(response))
+
+        self._status[1] = status_code
 
     def _switch_analogue(self, n, state):
-        self._serial.write('switch {} {}\n'.format(n, state))
+        self._serial.write('fan {} set {}\n'.format(n, state))
+
         response = self._serial.readline().strip()
-        if response != 'switch {}'.format(n):
+
+        if response != 'ok 1':
             raise CommunicationException(
-                'Controller doesnt acknowledge switch command, instead got: {}'.format(
+                'Controller doesnt acknowledge fan command, instead got: {}'.format(
                     response))
+
         response = self._serial.readline().strip()
         if response not in ('0', '1', '2'):
             raise CommunicationException(
