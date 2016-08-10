@@ -35,7 +35,7 @@ void Protocol::loop()
   setReplyPrinter = nullptr;
 
 
-  // we'll need a fancy String object, for simplr parsing:
+  // we'll need a fancy String object, for simple parsing:
   String command = setCommand;
 
   // set busy flag (just in case we have to handle this command over multiple cycles):
@@ -49,13 +49,16 @@ void Protocol::loop()
     #ifdef FANS_HPP
       status_reply_count += 2;
     #endif
+    #ifdef POWER_HPP
+      status_reply_count += 1;
+    #endif
 
     // first line of the reply, with the number of lines to follow:
     replyPrinter->print(F("status "));
     replyPrinter->print(status_reply_count);
     replyPrinter->print(F("\n"));
 
-    // status from blink module:
+    // status from fans module:
     #ifdef FANS_HPP
       replyPrinter->print(F("fan 1: "));
       replyPrinter->print(fans->fan1);
@@ -64,6 +67,13 @@ void Protocol::loop()
       replyPrinter->print(fans->fan2);
       replyPrinter->print(F("\n"));
     #endif  //#ifdef BLINK_HPP
+
+    // status from power module:
+    #ifdef POWER_HPP
+      replyPrinter->print(F("power: "));
+      replyPrinter->print(power->powerState);
+      replyPrinter->print(F("\n"));
+    #endif  //#ifdef POWER_HPP
 
   // finished with "status" command
 
@@ -109,6 +119,11 @@ void Protocol::loop()
   } else if (command == "fan 2 get") {
     replyPrinter->print(F("ok 1\n"));
     replyPrinter->print(fans->fan2);
+    replyPrinter->print(F("\n"));
+
+  } else if (command == "power get") {
+    replyPrinter->print(F("ok 1\n"));
+    replyPrinter->print(power->powerState);
     replyPrinter->print(F("\n"));
 
   #endif  // #ifdef FANS_HPP

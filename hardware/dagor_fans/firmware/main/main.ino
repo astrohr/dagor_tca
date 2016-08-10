@@ -13,6 +13,7 @@
 #include "_relays.ino.hpp"
 #include "_fans.ino.hpp"
 #include "_blink.ino.hpp"
+#include "_power.ino.hpp"
 
 #include "_protocol.ino.hpp"
 #include "_serial_comm.ino.hpp"
