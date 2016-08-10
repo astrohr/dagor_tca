@@ -31,7 +31,8 @@ from tca.api import version
 from tca.api.utils import (
     RegexConverter, BoolRenderer, BoolBrowsableAPIRenderer,
     BoolParser, render_error,
-    set_mock_var, read_mock_var)
+    set_mock_var, read_mock_var, IntBrowsableAPIRenderer, IntParser,
+    IntRenderer)
 from tca.logging_conf import get_logger
 
 # noinspection PyUnboundLocalVariable
@@ -114,9 +115,9 @@ def resource():
         }, http_status.HTTP_200_OK
 
 
-@api.route('/<regex("[0-9]+"):fan_i>/', methods=['GET', 'PUT', ])
-@set_renderers(BoolBrowsableAPIRenderer, BoolRenderer)
-@set_parsers(BoolParser)
+@api.route('/<regex(1|2):fan_i>/', methods=['GET', 'PUT', ])
+@set_renderers(IntBrowsableAPIRenderer, IntRenderer)
+@set_parsers(IntParser)
 @check_connectivity
 @handle_request_errors
 def fan_resource(fan_i):
@@ -140,7 +141,7 @@ def fan_resource(fan_i):
         # get data, via parser:
         data = request.data
         dagor_fans.set_fan(fan_i, data)
-    response = make_response(fan_repr(fan_i - 1))
+    response = make_response(str(fan_repr(fan_i)))
     return response
 
 
