@@ -148,7 +148,7 @@ class AnalogueSwitchController(object):
             response = self._serial.readline().strip()
             if response.strip():
                 break
-        if response != 'status 2':
+        if response != 'status 3':
             raise CommunicationException(
                 'Controller doesnt acknowlege status command, instead got: {}'.format(
                     response))
@@ -156,34 +156,35 @@ class AnalogueSwitchController(object):
         self._status = []
 
         # Read status for central fan --> expected "Fan1: <status_code>"
-
         response = self._serial.readline().strip()
         if not response.startswith("fan 1: "):
             raise CommunicationException(
                 'Expected "fan 1: <status_code>", got: {}'.format(response))
-
         fan_status = response.split(":")
         status_code = fan_status[1].strip()
         if status_code not in ('0', '1', '2'):
             raise CommunicationException(
                 'Expected "0", "1" or "2", got: {}'.format(response))
-
         self._status.append(status_code)
 
         # Read status for other fans --> expected "Fan2: <status_code>"
-
         response = self._serial.readline().strip()
         if not response.startswith("fan 2: "):
             raise CommunicationException(
                 'Expected "fan 2: <status_code>", got: {}'.format(response))
-
         fan_status = response.split(":")
         status_code = fan_status[1].strip();
         if status_code not in ('0', '1', '2'):
             raise CommunicationException(
                 'Expected "0", "1" or "2", got: {}'.format(response))
-
         self._status.append(status_code)
+
+        # Read power status --> expected "power: <0_or_1>"
+        response = self._serial.readline().strip()
+        if not response.startswith("power: "):
+            raise CommunicationException(
+                'Expected "fan 2: <status_code>", got: {}'.format(response))
+        # TODO do something with power status datum
 
     def _switch_analogue(self, n, state):
         self._serial.write('fan {} set {}\n'.format(n, state))
