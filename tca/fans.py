@@ -33,7 +33,7 @@ CommunicationException = dagor_analogue_switches.CommunicationException
 
 class FansController(dagor_analogue_switches.AnalogueSwitchController):
     PORT = fans_config.PORT
-    RESET_DISABLED = False
+    RESET_DISABLED = True
 
     def __init__(self):
         super(FansController, self).__init__()  # Just keeping PEP8 happy...

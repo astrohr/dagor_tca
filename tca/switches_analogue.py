@@ -124,12 +124,12 @@ class AnalogueSwitchController(object):
             raise CommunicationException(
                 'Cannot connect to Arduino: {}'.format(e))
 
-        a_char = ""
-        for _ in range(40):
-            a_char = self._serial.read()
-            if a_char.strip():
-                break
         if not self.RESET_DISABLED:
+            a_char = ""
+            for _ in range(40):
+                a_char = self._serial.read()
+                if a_char.strip():
+                    break
             line = a_char + self._serial.readline().strip()
             if line and line == 'ready':
                 return  # TODO maybe wait for next readline to timeout, so we are sure this is the last data in serial pipe?
