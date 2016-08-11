@@ -20,7 +20,7 @@ namespace ASCOM.DagorApiClient
     {
         bool ready { get; set; }
     }
-    
+
 
     public interface IApiClient<ReadyRepr>
         where ReadyRepr : class
@@ -38,7 +38,7 @@ namespace ASCOM.DagorApiClient
     }
 
     public abstract class ApiClient<ReadyRepr> : IApiClient<ReadyRepr>
-        where ReadyRepr: class
+        where ReadyRepr : class
     {
 
         public ApiClient(string Proto, string Server, int Port)
@@ -53,7 +53,8 @@ namespace ASCOM.DagorApiClient
         protected string Proto { get; set; }
         protected string Server { get; set; }
         protected int Port { get; set; }
-        protected string DevPath {
+        protected string DevPath
+        {
             get
             {
                 string devPath = _DevPath();
@@ -66,8 +67,10 @@ namespace ASCOM.DagorApiClient
         private HttpClient _client;
         protected HttpClient client
         {
-            get {
-                if (_client == null) {
+            get
+            {
+                if (_client == null)
+                {
                     _client = new HttpClient();
                     _client.BaseAddress = new Uri(Proto + "://" + Server + ":" + Port + "/" + DevPath + "/");
                     // Add an Accept header for JSON format:
@@ -79,7 +82,8 @@ namespace ASCOM.DagorApiClient
         }
 
 
-        public int Retries {
+        public int Retries
+        {
             get { return 50; }
             set { throw new NotImplementedException(); }
         }
@@ -98,7 +102,7 @@ namespace ASCOM.DagorApiClient
                     // TODO Log exception
                     Debug.WriteLine(ex.ToString());
                     return false;
-                } 
+                }
 
 
             }

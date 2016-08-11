@@ -1,0 +1,16 @@
+C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_test_forms\bin\Debug\ASCOM.DagorLights.Test.exe.config
+C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_test_forms\bin\Debug\ASCOM.DagorLights.Test.exe
+C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_test_forms\bin\Debug\ASCOM.DagorLights.Test.pdb
+C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_test_forms\bin\Debug\ASCOM.DeviceInterfaces.dll
+C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_test_forms\bin\Debug\ASCOM.DriverAccess.dll
+C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_test_forms\bin\Debug\ASCOM.Utilities.dll
+C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_test_forms\bin\Debug\ASCOM.Exceptions.dll
+C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_test_forms\bin\Debug\ASCOM.DeviceInterfaces.xml
+C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_test_forms\bin\Debug\ASCOM.DriverAccess.xml
+C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_test_forms\bin\Debug\ASCOM.Utilities.xml
+C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_test_forms\bin\Debug\ASCOM.Exceptions.xml
+C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_test_forms\obj\x86\Debug\ASCOM.DagorLights.Form1.resources
+C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_test_forms\obj\x86\Debug\ASCOM.DagorLights.Properties.Resources.resources
+C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_test_forms\obj\x86\Debug\dagor_lights_switch_test_forms.csproj.GenerateResource.Cache
+C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_test_forms\obj\x86\Debug\ASCOM.DagorLights.Test.exe
+C:\Users\nenad\projects\ASCOM\Projects\dagor_lights_switch_driver\dagor_lights_switch_test_forms\obj\x86\Debug\ASCOM.DagorLights.Test.pdb
