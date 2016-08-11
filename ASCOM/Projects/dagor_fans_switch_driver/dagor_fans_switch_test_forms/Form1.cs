@@ -43,6 +43,13 @@ namespace ASCOM.DagorFans
             if (IsConnected)
             {
                 driver.Connected = false;
+
+                // Reset all radio button states
+                for (short i = 0; i < NUM_FANS; i++)
+                {
+                    setRadioButtonStates(i, 0);
+                }
+
             }
             else
             {
@@ -50,7 +57,7 @@ namespace ASCOM.DagorFans
                 driver.Connected = true;
 
                 // Get current state for each fan
-                for (short i = 1; i <= NUM_FANS; i++)
+                for (short i = 0; i < NUM_FANS; i++)
                 {
                     double state = driver.GetSwitchValue(i);
                     setRadioButtonStates(i, state);
@@ -125,7 +132,7 @@ namespace ASCOM.DagorFans
 
         #endregion
 
-        #region Fan 2
+        #region Other Fans
 
         private void radioBtnFan2Off_CheckedChanged(object sender, EventArgs e)
         {
