@@ -2,32 +2,31 @@
 """Dagor dome rotation interface version 2.0.
 
 Usage:
-    dome.py server
-    dome.py status [-v | --verbose]
+    dome.py status
     dome.py calibrate
-    dome.py goto <azimuth>
+    dome.py go_to <azimuth>
     dome.py azimuth set <azimuth>
     dome.py azimuth get
     dome.py park
     dome.py door (open|close|stop)
     dome.py home (set|get)
-    dome.py (up|down|stop)
+    dome.py slew (left|right|abort)
     dome.py -h | --help
     dome.py --version
 
 Commands:
-    status         Dome status (azimuth \\n rotating or not \\n calibrated, during calibration or uncalibrated).
+    status         Dome status.
     calibrate      Start calibration.
-    goto           Move dome to specified azimuth.
+    go_to          Move dome to specified azimuth.
     azimuth set    Set specified azimuth as current position.
     azimuth get    Get current azimuth.
     park           Move dome to home azimuth.
-    door           Open or close door.
+    door           Open, close or stop the door.
     home set       Set home to current azimuth.
     home get       Get home azimuth.
-    up             Start rotation of the dome (south-east-north-west).
-    down           Start rotation of the dome (south-wast-north-east).
-    stop           Stop rotation of the dome.
+    slew left      Start rotation of the dome (south-east-north-west).
+    slew right     Start rotation of the dome (south-wast-north-east).
+    slew abort     Stop rotation of the dome.
 
 Options:
     -h --help      Show this screen.
@@ -81,7 +80,15 @@ class DomeController(object):
             cls.instance = cls()
         return cls.instance
 
+
     # public API
+    @property
+    def status(self):
+        self._refresh_status()
+        return self._status
+
+    # TODO: Door/Dome moving check implemented in calibrate, go_to, set_azimuth and park functions as an example
+    # TODO: Discuss if needed for other operations as well
 
     def __init__(self, SERIAL=SERIAL, RESET_DISABLED=RESET_DISABLED):
         """ Open and confirm communication, request current status """
@@ -89,58 +96,188 @@ class DomeController(object):
         self._RESET_DISABLED = RESET_DISABLED
         self._open_serial()
 
-    @property
-    def status(self):
-        self._refresh_status()
-        return self._status
-
     def pretty_status(self):
         self._refresh_status()
         for key, val in self._status.iteritems():
             print('{}: {}'.format(key, val))
 
     def calibrate(self):
+        try:
+            retry = RETRIES
+            while retry:
+                retry -= 1
+                try:
+                    self._calibrate()
+                except DoorException:
+                    logger.info("Door not idle, stopping")
+                    self._door_stop()
+                    time.sleep(1)  # seconds
+                except SlewException:
+                    logger.info("Dome not idle, aborting")
+                    self._slew_abort()
+                    time.sleep(1)  # seconds
+                else:
+                    break  # from while
+            if retry == 0:
+                raise CommunicationException('Failed "go_to" after {} retries'
+                                             .format(RETRIES))
+            print_("Calibrating.", end='')
+            self._refresh_status()
+            # Check status until the dome and door stop slewing/moving
+            while (not self._status['slew'] == 0) or (self._status['door'] == 4):
+                _wait_for_time(INTERVAL, dots=True,
+                               enter_abort=True,
+                               end='')
+                self._refresh_status()
+            print()
+            print('Successfully calibrated.')
+        except (KeyboardInterrupt, EnterAbort):
+            ##TODO What to do here?
+            print()
 
     def go_to(self, azimuth):
+        try:
+            retry = RETRIES
+            while retry:
+                retry -= 1
+                try:
+                    self._go_to(azimuth)
+                except DoorException:
+                    logger.info("Door not idle, stopping")
+                    self._door_stop()
+                    time.sleep(1)  # seconds
+                except SlewException:
+                    logger.info("Dome not idle, aborting")
+                    self.slew_abort()
+                    time.sleep(1)  # seconds
+                else:
+                    break  # from while
+            if retry == 0:
+                raise CommunicationException('Failed "go_to" after {} retries'
+                                             .format(RETRIES))
+            print_("Slewing.", end='')
+            self._refresh_status()
+            # Check status until the dome and door stop slewing/moving
+            while (not self._status['slew'] == 0) or (self._status['door'] == 4):
+                _wait_for_time(INTERVAL, dots=True,
+                               enter_abort=True,
+                               end='')
+                self._refresh_status()
+            print()
+            print('position (azimuth): {}'.format(self._status['azimuth']))
+        except (KeyboardInterrupt, EnterAbort):
+            self.slew_abort()
 
-    def set_azim(self, azimuth):
+    def set_azimuth(self, azimuth):
+        #TODO Discuss - same es goto?
+        try:
+            retry = RETRIES
+            while retry:
+                retry -= 1
+                try:
+                    self._set_azimuth(azimuth)
+                except DoorException:
+                    logger.info("Door not idle, stopping")
+                    self._door_stop()
+                    time.sleep(1)  # seconds
+                except SlewException:
+                    logger.info("Dome not idle, aborting")
+                    self.slew_abort()
+                    time.sleep(1)  # seconds
+                else:
+                    break  # from while
+            if retry == 0:
+                raise CommunicationException('Failed "go_to" after {} retries'
+                                             .format(RETRIES))
+            print_("Setting azimuth.", end='')
+            self._refresh_status()
+            # Check status until the dome and door stop slewing/moving
+            while (not self._status['slew'] == 0) or (self._status['door'] == 4):
+                _wait_for_time(INTERVAL, dots=True,
+                               enter_abort=True,
+                               end='')
+                self._refresh_status()
+            print()
+            print('Position (azimuth): {}'.format(self._status['azimuth']))
+        except (KeyboardInterrupt, EnterAbort):
+            self.slew_abort()
 
-    def get_azim(self):
-    # Maybe better as a property "azimuth"
+    def get_azimuth(self):
+        return self._get_azimuth()
 
     def park(self):
+        try:
+            retry = RETRIES
+            while retry:
+                retry -= 1
+                try:
+                    self._park()
+                except DoorException:
+                    logger.info("Door not idle, stopping")
+                    self._door_stop()
+                    time.sleep(1)  # seconds
+                except SlewException:
+                    logger.info("Dome not idle, aborting")
+                    self.slew_abort()
+                    time.sleep(1)  # seconds
+                else:
+                    break  # from while
+            if retry == 0:
+                raise CommunicationException('Failed "go_to" after {} retries'
+                                             .format(RETRIES))
+            print_("Parking.", end='')
+            self._refresh_status()
+            # Check status until the dome and door stop slewing/moving
+            while (not self._status['slew'] == 0) or (self._status['door'] == 4):
+                _wait_for_time(INTERVAL, dots=True,
+                               enter_abort=True,
+                               end='')
+                self._refresh_status()
+            print()
+            print('Parked successfully')
+        except (KeyboardInterrupt, EnterAbort):
+            self.slew_abort()
 
     def door_open(self):
+        self._door_open()
 
     def door_close(self):
+        self._door_close()
 
     def door_stop(self):
+        self._door_stop()
 
-    def set_home(self, azimuth):
+    def set_home(self):
+        self._set_home()
 
     def get_home(self):
-    # Maybe better as a property "home"
+        return self._get_home()
 
     def slew_left(self):
+        self._slew_left()
 
     def slew_right(self):
+        self._slew_right()
 
     def slew_abort(self):
-
+        self._slew_abort()
 
     # private members
 
-
-    return_str = 'Azimuth: ' + str(position) + "\n" + 'Rotation: ' + {'0': 'Stop', '1': 'Down', '-1': 'Up'}[
-        rotation] + "\n" + 'Calibration: ' + {'0': 'In progress', '1': 'Done', '-1': 'Not calibrated'}[calibration]
-
-
-    # Rotation (Slew):
+    ## Status Codes:
+    #
+    ## Rotation (Slew):
     #   0: Stop
     #   1: Down (Right)
     #  -1: Up (Left)
-
-    # Calibration:
+    #
+    ## Door
+    #   0: Closed
+    #   1: Opened
+    #   3: Unknown state # Stopped at some point during open/close
+    #   4: Moving
+    #
+    ## Calibration:
     #   0: In progress
     #   1: Done
     #  -1 Not calibrated
@@ -149,12 +286,14 @@ class DomeController(object):
     _default_status = {
         'azimuth': 0,
         'slew': 0,
-        'calibration': 0,
+        'door': 0,
+        'calibration': -1,
     }
     _default_status_type = {
         'azimuth': int,
-        'slew': str_bool,
-        'calibration': str_bool,
+        'slew': int,
+        'door': int,
+        'calibration': int,
     }
     _serial = None  # serial.Serial()
 
@@ -215,73 +354,252 @@ class DomeController(object):
 
         self._status = new_status
 
-    def _step_to(self, n):
-
     def _calibrate(self):
+        self._refresh_status()
+
+        # Check if the door is moving
+        if self._status['door'] == 4:
+            logger.debug("not idle - door is moving")
+            raise DoorException('Door not idle')
+
+        # Check if the dome is slewing
+        if not self._status['slew'] == 0:
+            logger.debug("not idle - dome is slewing")
+            raise StateException('Dome not idle')
+
+        # send command:
+        self._serial.write('calibrate\n')
+        # read first response line:
+        response = self._serial.readline().strip()  # expect: "ok 0\n"
+        if not response:  # blank line
+            response = self._serial.readline().strip()
+        if not response.startswith('ok 0'):
+            raise CommunicationException('Controller doesnt acknowledge "calibrate" command, instead got: {}'.format(response))
+
 
     def _go_to(self, azimuth):
+        self._refresh_status()
 
-    def _set_azim(self, azimuth):
+        # Check if the door is moving
+        if self._status['door'] == 4:
+            logger.debug("not idle - door is moving")
+            raise DoorException('Door not idle')
 
-    def _get_azim(self):
+        # Check if the dome is slewing
+        if not self._status['slew'] == 0:
+            logger.debug("not idle - dome is slewing")
+            raise StateException('Dome not idle')
+
+        # send command:
+        self._serial.write('goto {}\n'.format(azimuth))
+        # read first response line:
+        response = self._serial.readline().strip()  # expect: "ok 0\n"
+        if not response:  # blank line
+            response = self._serial.readline().strip()
+        if not response.startswith('ok 0'):
+            raise CommunicationException('Controller doesnt acknowledge "goto" command, instead got: {}'.format(response))
+
+
+    def _set_azimuth(self, azimuth):
+        self._refresh_status()
+
+        # Check if the door is moving
+        if self._status['door'] == 4:
+            logger.debug("not idle - door is moving")
+            raise DoorException('Door not idle')
+
+        # Check if the dome is slewing
+        if not self._status['slew'] == 0:
+            logger.debug("not idle - dome is slewing")
+            raise StateException('Dome not idle')
+
+        # send command:
+        self._serial.write('force {}\n'.format(azimuth))
+        # read first response line:
+        response = self._serial.readline().strip()  # expect: "ok 0\n"
+        if not response:  # blank line
+            response = self._serial.readline().strip()
+        if not response.startswith('ok 0'):
+            raise CommunicationException('Controller doesnt acknowledge "goto" command, instead got: {}'.format(response))
+
+    def _get_azimuth(self):
+        self._refresh_status()
+
+        #TODO: Dicsuss: not necessary - we can read this directly from status
+        # send command:
+        #self._serial.write('current_azimuth\n'.format(azimuth))
+
+        return self._status['azimuth']
 
     def _park(self):
+        self._refresh_status()
+
+        # Check if the door is moving
+        if self._status['door'] == 4:
+            logger.debug("not idle - door is moving")
+            raise DoorException('Door not idle')
+
+        # Check if the dome is slewing
+        if not self._status['slew'] == 0:
+            logger.debug("not idle - dome is slewing")
+            raise StateException('Dome not idle')
+
+        # send command:
+        self._serial.write('park\n')
+        # read first response line:
+        response = self._serial.readline().strip()  # expect: "ok 0\n"
+        if not response:  # blank line
+            response = self._serial.readline().strip()
+        if not response.startswith('ok 0'):
+            raise CommunicationException('Controller doesnt acknowledge "park" command, instead got: {}'.format(response))
 
     def _door_open(self):
+        # send command:
+        self._serial.write('door_open\n')
+        # read first response line:
+        response = self._serial.readline().strip()  # expect: "ok 0\n"
+        if not response:  # blank line
+            response = self._serial.readline().strip()
+        if not response.startswith('ok 0'):
+            raise CommunicationException('Controller doesnt acknowledge "door_open" command, instead got: {}'.format(response))
 
     def _door_close(self):
+        # send command:
+        self._serial.write('door_close\n')
+        # read first response line:
+        response = self._serial.readline().strip()  # expect: "ok 0\n"
+        if not response:  # blank line
+            response = self._serial.readline().strip()
+        if not response.startswith('ok 0'):
+            raise CommunicationException('Controller doesnt acknowledge "door_close" command, instead got: {}'.format(response))
 
     def _door_stop(self):
+        # send command:
+        self._serial.write('door_stop\n')
+        # read first response line:
+        response = self._serial.readline().strip()  # expect: "ok 0\n"
+        if not response:  # blank line
+            response = self._serial.readline().strip()
+        if not response.startswith('ok 0'):
+            raise CommunicationException('Controller doesnt acknowledge "door_stop" command, instead got: {}'.format(response))
 
-    def _set_home(self, azimuth):
+    def _set_home(self):
+        # send command:
+        self._serial.write('set_as_home\n')
+        # read first response line:
+        response = self._serial.readline().strip()  # expect: "ok 0\n"
+        if not response:  # blank line
+            response = self._serial.readline().strip()
+        if not response.startswith('ok 0'):
+            raise CommunicationException('Controller doesnt acknowledge "set_as_home" command, instead got: {}'.format(response))
 
     def _get_home(self):
+        # send command:
+        self._serial.write('home_azimuth\n')
+        # read first response line:
+        response = self._serial.readline().strip()  # expect: "ok 1\n"
+        if not response:  # blank line
+            response = self._serial.readline().strip()
+        if not response.startswith('ok 1'):
+            raise CommunicationException('Controller doesnt acknowledge "home_azimuth" command, instead got: {}'.format(response))
+
+        response = self._serial.readline().strip()  # expect: position number
+        try:
+            n = int(response)
+        except ValueError:
+            raise CommunicationException(
+                'Controller acknowledges "home_azimuth" command, but returned something strange: {}'.format(
+                    response))
+        return n
 
     def _slew_left(self):
+        # send command:
+        self._serial.write('up\n')
+        # read first response line:
+        response = self._serial.readline().strip()  # expect: "ok 0\n"
+        if not response:  # blank line
+            response = self._serial.readline().strip()
+        if not response.startswith('ok 0'):
+            raise CommunicationException('Controller doesnt acknowledge "up" command, instead got: {}'.format(response))
 
     def _slew_right(self):
+        # send command:
+        self._serial.write('down\n')
+        # read first response line:
+        response = self._serial.readline().strip()  # expect: "ok 0\n"
+        if not response:  # blank line
+            response = self._serial.readline().strip()
+        if not response.startswith('ok 0'):
+            raise CommunicationException('Controller doesnt acknowledge "down" command, instead got: {}'.format(response))
 
     def _slew_abort(self):
-
-
-
-
-def get_controller():
-    return DomeController.get_instance()
-
-
-def get_status():
-    return get_controller().status
-
-
-def get_position():
-    return get_controller().get()
-
-
-def set_position(n):
-    n = int('{}'.format(n))
-    return get_controller().set(n)
-
-
-def goto(n):
-    n = int('{}'.format(n))
-    return get_controller().step_to(n)
+        # send command:
+        self._serial.write('stop\n')
+        # read first response line:
+        response = self._serial.readline().strip()  # expect: "ok 0\n"
+        if not response:  # blank line
+            response = self._serial.readline().strip()
+        if not response.startswith('ok 0'):
+            raise CommunicationException('Controller doesnt acknowledge "stop" command, instead got: {}'.format(response))
 
 
 class CommunicationException(Exception):
     """ There was an error communicating with Arduino controller """
     pass
 
-
 class StateException(Exception):
     """ Cannot complete the request at this time """
     pass
+
+class SlewException(Exception):
+    """ Cannot complete the request at this time - dome is slewing """
+    pass
+
+class DoorException(Exception):
+    """ Cannot complete the request at this time - door is moving"""
+    pass
+
+def get_controller():
+    return DomeController.get_instance()
+
+def get_status():
+    return get_controller().status
 
 
 def _main(args):
     controller = get_controller()
 
-    #TODO Parse agruments
+    if args['status']:
+        controller.pretty_status()
+    elif args['calibrate']:
+        controller.calibrate()
+    elif args['go_to']:
+        azimuth = int(args['<azimuth>'])
+        controller.go_to(azimuth)
+    elif args['azimuth'] and args['set']:
+        azimuth = int(args['<azimuth>'])
+        controller.set_azimuth(azimuth)
+    elif args['azimuth'] and args['get']:
+        print(controller.get_azimuth())
+    elif args['park']:
+        controller.park()
+    elif args['door'] and args['opem']:
+        controller.door_open()
+    elif args['door'] and args['close']:
+        controller.door_close()
+    elif args['door'] and args['stop']:
+        controller.door_stop()
+    elif args['home'] and args['set']:
+        azimuth = int(args['<azimuth>'])
+        controller.set_home(azimuth)
+    elif args['home'] and args['get']:
+        print(controller.get_home())
+    elif args['slew'] and args['left']:
+        controller.slew_left()
+    elif args['slew'] and args['right']:
+        controller.slew_right()
+    elif args['slew'] and args['abort']:
+        controller.slew_abort()
 
     exit(0)
 
