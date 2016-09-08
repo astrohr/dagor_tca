@@ -3,9 +3,8 @@
 
 Usage:
   path.py get
-  path.py (path | move) from [--ring] <ha0> <de0> to <ha1> <de1> [--space=<file>] [--quiet]
+  path.py (path | move) from [--ring] <ha0> <de0> to <ha1> <de1> [--space=<file> | --force] [--quiet]
   path.py test position [--ring] <ha> <de> [--space=<file>] [--quiet]
-  path.py track [stop]
   path.py [-h | --help | help]
   path.py --version
 
@@ -19,13 +18,14 @@ Commands:
                         ...
                         haN deN
                     Exit with 0 if path exists, exit with 31 if no allowed path exists.
+                    See "--force" option, use is discouraged
   move from - to    Execute the path.
-  track             Start tracking on current position.
 
 
 Options:
   -h --help         Show this screen.
   --quiet           Only data on stdout
+  --force           Go directly to given coordinates, disregarding space cnstraints
   --space=<file>    File defining allowed space region [default: space.txt]
 
 
@@ -220,7 +220,7 @@ class ImpossibleEnd(NoPath):
         return 'Impossible End Position'
 
 
-def get_path(start_internal, end_internal, space=None):
+def get_path(start_internal, end_internal, space=None, force=False):
     """
     Use internal coordinates only!
     """
@@ -228,19 +228,26 @@ def get_path(start_internal, end_internal, space=None):
         space = _get_space()
     p_0 = Position(start_internal['ha'], start_internal['de'])
     p_1 = Position(end_internal['ha'], end_internal['de'])
-    line = LineString([(p_0.ha, p_0.de), (p_1.ha, p_1.de)])
-    line_is_in = space.polygon.contains(line)
-    if not space.contains(p_0.point()):
-        raise ImpossibleStart()
-    if not space.contains(p_1.point()):
-        raise ImpossibleEnd()
-    if not line_is_in:
-        path = space.path(p_0, p_1)
-        if path is None:
-            raise NoPath()
-    else:
+    if force:
         path = [p_0, p_1]
+        # TODO log a warning!
+    else:
+        line = LineString([(p_0.ha, p_0.de), (p_1.ha, p_1.de)])
+        line_is_in = space.polygon.contains(line)
+        if not space.contains(p_0.point()):
+            raise ImpossibleStart()
+        if not space.contains(p_1.point()):
+            raise ImpossibleEnd()
+        if line_is_in:
+            # simple path:
+            path = [p_0, p_1]
+        else:
+            # A* algorithm:
+            path = space.path(p_0, p_1)
+            if path is None:
+                raise NoPath()
     return path
+
 
 # Run as CLI client
 
@@ -259,14 +266,25 @@ def _main(args):
         de_0 = args['<de0>']
         ha_1 = args['<ha1>']
         de_1 = args['<de1>']
+        force = args['--force']
         try:
             space = _get_space(args['--space'])
-            path = get_path({'ha': ha_0, 'de': de_0}, {'ha': ha_1, 'de': de_1}, space)
+            path = get_path(
+                {'ha': ha_0, 'de': de_0},
+                {'ha': ha_1, 'de': de_1},
+                space,
+                force
+            )
         except ImpossibleStart:
+            print "nos"
             exit_('IMPOSSIBLE_START')
         except ImpossibleEnd:
+            print {'ha': ha_0, 'de': de_0}
+            print {'ha': ha_1, 'de': de_1}
+
             exit_('IMPOSSIBLE_END')
         except NoPath:
+            print "nop"
             exit_('IMPOSSIBLE_PATH_FAIL')
         else:
             for position in path:
@@ -275,11 +293,6 @@ def _main(args):
                 exit_('OK')
             else:
                 exit_('NO_DIRECT')
-
-
-
-
-
 
 
 _verbose = True

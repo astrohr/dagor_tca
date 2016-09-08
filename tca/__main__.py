@@ -5,19 +5,18 @@ Usage:
   tca configure
   tca get [float] (celest | local | altaz)
   tca get chirality
-  tca move to local <HA> <DE> [ce | cw] [quick] [track]
-  tca move to altaz <ALT> <AZ> [ce | cw] [quick] [track]
-  tca move to celest <RA> <DE> [ce | cw] [quick] [notrack]
-  tca move to star <NAME> [ce | cw] [quick] [notrack]
-  tca move to cat <NAME> [(from <CATALOG>)] [ce | cw] [quick] [notrack]
-  tca move to home
-  tca track to celest <RA> <DE> [ce | cw]
-  tca track to star <NAME> [ce | cw]
-  tca track to cat <NAME> [(from <CATALOG>)] [ce | cw]
-  tca track start
-  tca sync console
+  tca goto home [ce]
+  tca goto home2 [cw]
+  tca goto altaz <ALT> <AZ> [ce | cw | cc] [quick | track] [force]
+  tca goto local <HA> <DE> [ce | cw | cc] [notrack [quick]] [force]
+  tca goto celest <RA> <DE> [ce | cw | cc] [quick] [notrack] [force]
+  tca goto internal <int_HA> <int_DE> [quick] [force]
+  tca goto star <NAME> [ce | cw | cc] [quick] [notrack] [force]
+  tca goto cat <NAME> [(from <CATALOG>)] [ce | cw | cc] [quick] [notrack] [force]
+  tca goto this
   tca stop
   tca manual
+  tca sync console
   tca set celest <RA> <DE> [blind]
   tca set star <NAME> [blind]
   tca set cat <NAME> [(from <CATALOG>)] [blind]
@@ -43,8 +42,14 @@ Parameters:
   <DE>              Declination angle, -90 - 90
   <ALT>             Altitude (elevation) angle, 0 - 24
   <AZ>              Azimuth angle, -90 - 90
-  ce | cw           Telescope position, ce = "east", cw = "west"
+  ce | cw | cc      Chirality, side of pillar when pointing South
+                    ce: East
+                    cw: West
+                    cc: closest
+                    default: keep same chirality
   <NAME>            Name of a start, capitalized, e.g. Vega
+  force             Go directly to specified coordinates, disregarding safety constraints.
+                    Use very carefully!
 
 Options:
   -h --help         Show this screen.
@@ -59,7 +64,7 @@ from time import sleep
 from docopt import docopt
 import ephem
 import math
-from common import print_, _wait_for_stop, sign, EnterAbort
+from common import print_, _wait_for_stop, sign
 from formats import parse_hours, parse_degrees, format_hours, format_degrees
 import position as dagor_position
 import cat as dagor_catalog
@@ -124,108 +129,112 @@ def _main(args):
             values = {'chirality': dagor_position.get_chirality()}
         print template.format(**values)
 
-    if args['move']:
-        if args['to']:
-            track = False
-            celest = False
-            chirality = None
-            if args['ce']:
-                chirality = dagor_position.CHIRAL_E
-            if args['cw']:
-                chirality = dagor_position.CHIRAL_W
-            quick = True if args['quick'] else False
-            try:
-                local_end = None
-                if args['local']:
-                    track = True if args['track'] else False
-                    local_end = {
-                        'ha': parse_hours(args['<HA>']),
-                        'de': parse_degrees(args['<DE>']),
-                    }
-                elif args['altaz']:
-                    track = True if args['track'] else False
-                    altaz_end = {
-                        'alt': parse_degrees(args['<ALT>']),
-                        'az': parse_degrees(args['<AZ>']),
-                    }
-                    local_end = dagor_position.altaz_to_local(altaz_end)
-                elif args['celest']:
-                    track = False if args['notrack'] else True
-                    celest = {
-                        'ra': parse_hours(args['<RA>']),
-                        'de': parse_degrees(args['<DE>']),
-                    }
-                elif args['star']:
-                    track = False if args['notrack'] else True
-                    star = ephem.star(args['<NAME>'])
-                    star.compute(dagor_position.tican())
-                    celest = {
-                        'ra': parse_hours(star.ra / math.pi * 12),
-                        'de': parse_degrees(star.dec / math.pi * 180),
-                    }
-                elif args['cat']:
-                    track = False if args['notrack'] else True
-                    celest = dagor_catalog.get_celest(args['<NAME>'], args['<CATALOG>'])
-                elif args['home']:
-                    altaz_end = {
-                        'alt': 20,
-                        'az': 180,
-                    }
-                    chirality = dagor_position.CHIRAL_W
-                    quick = True
-                    local_end = dagor_position.altaz_to_local(altaz_end)
-                else:
-                    raise AttributeError()
-                if local_end or celest:
-                    if celest:
-                        move_to_local(celest=celest, chirality=chirality, quick=quick, track=track)
-                    else:
-                        move_to_local(local=local_end, chirality=chirality, quick=quick, track=track)
-            except EnterAbort:
-                print_("stop")
-                dagor_motors.stop()
-                _wait_for_stop(dagor_motors._ha, dots=True, skip_dots=3)
-                _wait_for_stop(dagor_motors._de, dots=True, skip_dots=3)
+    if args['goto'] and not args['focus']:
+        track = False
+        stop_on_target = True
+        quick = True if args['quick'] else False
+        internal_end = None
+        chirality = None  # default: None (keep chirality)
+        if args['ce']:
+            chirality = dagor_position.CHIRAL_E
+        if args['cw']:
+            chirality = dagor_position.CHIRAL_W
+        if args['cc']:
+            chirality = dagor_position.CHIRAL_CLOSEST
 
-    if args['track']:
-        if args['to']:
-            track = False
-            celest = False
-            chirality = None
+        if args['home']:
+            chirality = dagor_position.HOME_CHIRALITY
             if args['ce']:
                 chirality = dagor_position.CHIRAL_E
+            internal_end = dagor_position.altaz_to_internal(
+                dagor_position.HOME_ALTAZ,
+                chirality)
+            quick = True
+            stop_on_target = True
+
+        if args['home2']:
+            chirality = dagor_position.HOME_N_CHIRALITY
             if args['cw']:
                 chirality = dagor_position.CHIRAL_W
-            try:
-                local_end = None
-                if args['celest']:
-                    track = False if args['notrack'] else True
-                    celest = {
-                        'ra': parse_hours(args['<RA>']),
-                        'de': parse_degrees(args['<DE>']),
-                    }
-                elif args['star']:
-                    track = False if args['notrack'] else True
-                    star = ephem.star(args['<NAME>'])
-                    star.compute(dagor_position.tican())
-                    celest = {
-                        'ra': parse_hours(star.ra / math.pi * 12),
-                        'de': parse_degrees(star.dec / math.pi * 180),
-                    }
-                elif args['cat']:
-                    track = False if args['notrack'] else True
-                    celest = dagor_catalog.get_celest(args['<NAME>'], args['<CATALOG>'])
-                else:
-                    raise AttributeError()
-                internal = dagor_position.celest_to_internal(celest, chirality)
-                dagor_track.speed_tracking(internal)
-            except EnterAbort:
-                print_("stop")
-                dagor_motors.stop()
-                _wait_for_stop(dagor_motors._ha, dots=True, skip_dots=3)
-                _wait_for_stop(dagor_motors._de, dots=True, skip_dots=3)
-        elif args['start']:
-            dagor_track.speed_tracking()
+            internal_end = dagor_position.altaz_to_internal(
+                dagor_position.HOME_N_ALTAZ,
+                chirality)
+            quick = True
+            stop_on_target = True
+
+        elif args['altaz']:
+            track = True if args['track'] else False
+            stop_on_target = not track
+            altaz_end = {
+                'alt': parse_degrees(args['<ALT>']),
+                'az': parse_degrees(args['<AZ>']),
+            }
+            if chirality is None:
+                chirality = dagor_position.CHIRAL_CLOSEST
+            internal_end = dagor_position.altaz_to_internal(
+                altaz_end, chirality
+            )
+
+        elif args['local']:
+            track = False if args['notrack'] else True
+            stop_on_target = not track
+            local_end = {
+                'ha': parse_hours(args['<HA>']),
+                'de': parse_degrees(args['<DE>']),
+            }
+            internal_end = dagor_position.local_to_internal(
+                local_end, chirality
+            )
+
+        elif args['celest'] or args['cat'] or args['star']:
+
+            if args['celest']:
+                celest = {
+                    'ra': parse_hours(args['<RA>']),
+                    'de': parse_degrees(args['<DE>']),
+                }
+            elif args['cat']:
+                celest = dagor_catalog.get_celest(args['<NAME>'],
+                                                  args['<CATALOG>'])
+            elif args['star']:
+                star = ephem.star(args['<NAME>'])
+                star.compute(dagor_position.tican())
+                celest = {
+                    'ra': parse_hours(star.ra / math.pi * 12),
+                    'de': parse_degrees(star.dec / math.pi * 180),
+                }
+            else:
+                celest = None  # should not be possible to reach
+
+            track = False if args['notrack'] else True
+            stop_on_target = not track
+            internal_end = dagor_position.celest_to_internal(
+                celest, chirality
+            )
+
+        elif args['internal']:
+            internal_end = {
+                'ha': args['<int_HA>'],
+                'de': args['<int_DE>'],
+            }
+            track = False
+            stop_on_target = True
+
+        elif args['this']:
+            # stat tracking current coordinates
+            internal_end = None
+            track = True
+            stop_on_target = False
+            quick = False
+
+        # start track console:
+        dagor_track.speed_tracking(
+            internal_end,
+            static_target=not track,
+            stop_on_target=stop_on_target,
+            rough=quick,
+            force=args['force'],
+        )
 
     if args['sync'] and args['console']:
         dagor_track.sync_console()
