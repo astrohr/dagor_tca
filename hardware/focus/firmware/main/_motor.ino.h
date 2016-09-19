@@ -25,6 +25,9 @@ void Motor::setup()
   pinMode(MOTOR_2_1, OUTPUT);
   pinMode(MOTOR_1_2, OUTPUT);
 
+  pinMode(MOTOR_LOGIC_POWER_1, OUTPUT);
+  pinMode(MOTOR_LOGIC_POWER_2, OUTPUT);
+  pinMode(MOTOR_LOGIC_POWER_3, OUTPUT);
 
   // TODO EEPROM this, and configure via serial
   int acc;
@@ -38,6 +41,11 @@ void Motor::setup()
 
 void Motor::loop()
 {
+  // power the logic (if not already powered):
+  digitalWrite(MOTOR_LOGIC_POWER_1, HIGH);
+  digitalWrite(MOTOR_LOGIC_POWER_2, HIGH);
+  digitalWrite(MOTOR_LOGIC_POWER_3, HIGH);
+
   // call AccepStepper library to do its thing:
   stepper.run();
 
