@@ -16,6 +16,8 @@ Usage:
   tca goto this
   tca stop
   tca manual
+  tca motors [ha | de] status
+  tca motors [ha | de] reset
   tca sync console
   tca set celest <RA> <DE> [blind]
   tca set star <NAME> [blind]
@@ -266,6 +268,12 @@ def _main(args):
             dagor_focus.set_position(args['<N>'])
         elif args['goto']:
             dagor_focus.goto(args['<N>'])
+
+    if args['motors']:
+        if args['reset']:
+            dagor_motors.reset(args['ha'], args['de'])
+        if args['status']:
+            dagor_motors.status_str(args['ha'] or None, args['de'] or None)
 
     if args['lights']:
         n = None
