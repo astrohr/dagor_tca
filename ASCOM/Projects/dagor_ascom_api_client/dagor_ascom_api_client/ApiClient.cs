@@ -84,7 +84,7 @@ namespace ASCOM.DagorApiClient
 
         public int Retries
         {
-            get { return 50; }
+            get { return 5; }
             set { throw new NotImplementedException(); }
         }
 
