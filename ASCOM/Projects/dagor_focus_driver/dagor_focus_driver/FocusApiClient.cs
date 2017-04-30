@@ -36,7 +36,16 @@ namespace ASCOM.DagorFocus
         {
             get
             {
-                return true;
+                try
+                {
+                    Boolean repr_idle = ExecuteGET<Boolean>("idle");
+                    return (bool)repr_idle;
+                }
+                catch (Exception ex)
+                {
+                    // TODO log excaption
+                    throw new NotConnectedException();
+                }
             }
         }
 
