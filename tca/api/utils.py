@@ -82,12 +82,15 @@ class BrowsableAPITitleRenderer(BrowsableAPIRenderer):
         return render_template(self.template, **context)
 
 
-class BoolRenderer(renderers.BaseRenderer):
+class BoolRenderer(renderers.JSONRenderer):
     """JSON renderer that only supports "true" and "false" values"""
     media_type = 'application/json'
 
     def render(self, data, media_type, **options):
-        return "true" if data == "true" else "false"
+        try:
+            return "true" if data in {"true", "True"} else "false"
+        except:
+            return super(BoolRenderer, self).render(data, media_type, **options)
 
 
 class BoolBrowsableAPIRenderer(renderers.BrowsableAPIRenderer):
