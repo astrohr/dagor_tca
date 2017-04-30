@@ -79,6 +79,11 @@ class FocuserController(object):
         return self._status['position']
 
     @property
+    def idle(self):
+        self._refresh_status()
+        return self._status['idle']
+
+    @property
     def can_go_up(self):
         self._refresh_status()
         return self._status['can_go_up']
@@ -362,6 +367,10 @@ def get_controller():
 
 def get_status():
     return get_controller().status
+
+
+def get_idle():
+    return get_controller().idle
 
 
 def get_position():
