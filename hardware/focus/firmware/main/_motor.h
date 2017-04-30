@@ -16,6 +16,11 @@
 #define MOTOR_2_1 11
 #define MOTOR_2_2 8
 
+// logic power:
+#define MOTOR_LOGIC_POWER_1 A0
+#define MOTOR_LOGIC_POWER_2 A1
+#define MOTOR_LOGIC_POWER_3 A2
+
 
 typedef struct {
   bool idle;

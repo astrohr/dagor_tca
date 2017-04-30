@@ -79,6 +79,11 @@ class FocuserController(object):
         return self._status['position']
 
     @property
+    def idle(self):
+        self._refresh_status()
+        return self._status['idle']
+
+    @property
     def can_go_up(self):
         self._refresh_status()
         return self._status['can_go_up']
@@ -229,18 +234,26 @@ class FocuserController(object):
 
     def _refresh_status(self):
         # send command:
-        self._serial.write('status\n')
+        self._serial.write('\n\n\n\n\n\n\n\n\n\nstatus\n')
         # read first response line:
         response = self._serial.readline().strip()  # expect: "status 9\n"
         if not response:  # blank line
             response = self._serial.readline().strip()
         if not response.startswith('status '):
-            raise CommunicationException('Controller doesnt acknowledge "status" command, instead got: {}'.format(response))
+            if response.startswith('error '):
+                try:
+                    n = int(response[len('error '):])
+                    for _ in range(n):
+                        additional_response = self._serial.readline().strip()
+                        response = "{}\n{}".format(response, additional_response)
+                except:
+                    pass
+            raise CommunicationException('Controller doesnt acknowledge "status" command, instead got: "{}"'.format(response))
         # parse N (number of lines that follow):
         try:
             self._n = int(response[len('status '):])
         except ValueError:
-            raise CommunicationException('Expected int, got: {}'.format(response))
+            raise CommunicationException('Expected int, got: "{}"'.format(response))
         # read remaining reaponse lines:
         new_status = {}
         for _ in range(self._n):
@@ -267,13 +280,13 @@ class FocuserController(object):
             logger.debug("not idle")
             raise StateException('Motor not idle')
         # send command:
-        self._serial.write('step to {}\n'.format(n))
+        self._serial.write('\n\n\n\n\n\n\n\n\n\nstep to {}\n'.format(n))
         # read first response line:
         response = self._serial.readline().strip()  # expect: "ok 0\n"
         if not response:  # blank line
             response = self._serial.readline().strip()
         if not response.startswith('ok 0'):
-            raise CommunicationException('Controller doesnt acknowledge "step to" command, instead got: {}'.format(response))
+            raise CommunicationException('Controller doesnt acknowledge "step to" command, instead got: "{}"'.format(response))
 
     def _step_by(self, n):
         self._refresh_status()
@@ -281,48 +294,52 @@ class FocuserController(object):
             logger.debug("not idle")
             raise StateException('Motor not idle')
         # send command:
-        self._serial.write('step by {}\n'.format(n))
+        self._serial.write('\n\n\n\n\n\n\n\n\n\nstep by {}\n'.format(n))
         # read first response line:
         response = self._serial.readline().strip()  # expect: "ok 0\n"
         if not response:  # blank line
             response = self._serial.readline().strip()
         if not response.startswith('ok 0'):
-            raise CommunicationException('Controller doesnt acknowledge "step by" command, instead got: {}'.format(response))
+            raise CommunicationException('Controller doesnt acknowledge "step by" command, instead got: "{}"'.format(response))
 
     def _stop(self):
         logger.debug("stop")
         # send command:
-        self._serial.write('stop\n')
+        self._serial.write('\n\n\n\n\n\n\n\n\n\nstop\n')
         # read first response line:
         response = self._serial.readline().strip()  # expect: "stopping 0\n"
         if not response:  # blank line
             response = self._serial.readline().strip()
         if not response.startswith('stopping 0'):
-            raise CommunicationException('Controller doesnt acknowledge "stop" command, instead got: {}'.format(response))
+            raise CommunicationException('Controller doesnt acknowledge "stop" command, instead got: "{}"'.format(response))
 
     def _set(self, n):
         # send command:
-        self._serial.write('position set {}\n'.format(n))
+        self._serial.write('\n\n\n\n\n\n\n\n\n\nposition set {}\n'.format(n))
         # read first response line:
         response = self._serial.readline().strip()  # expect: "ok 1\n"
         if not response:  # blank line
             response = self._serial.readline().strip()
         if not response.startswith('ok 1'):
-            raise CommunicationException('Controller doesnt acknowledge "set" command, instead got: {}'.format(response))
+            raise CommunicationException('Controller doesnt acknowledge "set" command, instead got: "{}"'.format(response))
         response = self._serial.readline().strip()  # expect: new position number
         if not response.startswith('{}'.format(n)):
             raise CommunicationException('Controller acknowledges "set" command, but returned wrong position: {}'.format(response))
 
     def _get(self):
         # send command:
-        self._serial.write('position\n'.format())
+        self._serial.write('\n\n\n\n\n\n\n\n\n\nposition\n'.format())
         # read first response line:
         response = self._serial.readline().strip()  # expect: "position 1\n"
         if not response:  # blank line
             response = self._serial.readline().strip()
+        if not response:  # blank line
+            response = self._serial.readline().strip()
+        if not response:  # blank line
+            response = self._serial.readline().strip()
         if not response.startswith('position 1'):
             raise CommunicationException(
-                'Controller doesnt acknowledge "get" command, instead got: {}'.format(
+                'Controller doesnt acknowledge "get" command, instead got: "{}"'.format(
                     response))
         response = self._serial.readline().strip()  # expect: position number
         try:
@@ -350,6 +367,10 @@ def get_controller():
 
 def get_status():
     return get_controller().status
+
+
+def get_idle():
+    return get_controller().idle
 
 
 def get_position():

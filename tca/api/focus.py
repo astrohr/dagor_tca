@@ -29,8 +29,10 @@ from tca import focus as dagor_focus
 from tca.api import version
 from tca.api.utils import (
     RegexConverter, render_error, IntBrowsableAPIRenderer,
+    BoolRenderer, BoolParser,
     IntRenderer, IntParser,
-    set_mock_var, read_mock_var)
+    set_mock_var, read_mock_var,
+)
 from tca.logging_conf import get_logger
 
 # noinspection PyUnboundLocalVariable
@@ -152,6 +154,7 @@ def state_resource():
     ### Hyperlinks
 
     * [Up](..)
+    * [Idle](../idle/)
     """
     if request.method in {'PUT', 'POST', }:
         posted = request.method == 'POST'
@@ -177,12 +180,14 @@ def position_resource():
     Simple resource that only handles position.
 
     ### Methods
+    GET: show current focus.<br />
     PUT: move focuser position.<br />
     POST: set focuser position without moving.
 
     ### Hyperlinks
 
      * [Up](..)
+     * [Idle](../idle/)
     """
     putted = request.method == 'PUT'
     if request.method in {'PUT', 'POST', }:
@@ -200,6 +205,31 @@ def position_resource():
         str(n),
         http_status.HTTP_202_ACCEPTED if putted else http_status.HTTP_200_OK)
     return response
+
+
+@api.route('/idle/', methods=['GET', ])
+@check_connectivity
+@set_renderers(IntBrowsableAPIRenderer, BoolRenderer)
+@set_parsers(BoolParser)
+@handle_request_errors
+def idle_resource():
+    """
+    Simple resource that only handles "idle" status.
+
+    ### Methods
+    GET: show current focus.
+
+    ### Hyperlinks
+
+     * [Up](..)
+     * [Position](../position/)
+    """
+    idle = dagor_focus.get_idle()
+    response = make_response(
+        str(idle),
+        http_status.HTTP_200_OK)
+    return response
+
 
 
 def _run():
