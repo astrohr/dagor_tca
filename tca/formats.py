@@ -57,6 +57,11 @@ def parse_degrees(value):
     m = 0
     s = 0
     value = '{}'.format(value).strip()
+    value = value.replace('°', ':')
+    value = value.replace('\'', ':')
+    value = value.replace('"', '')
+    if value[0] == '+':
+        value = value[1:]
     sign = -1 if value[0] == '-' else 1
     form1_1 = re.compile(ur'^-?(([0-9]{1,3})(\.[0-9]*)?):?$')
     form1_2 = re.compile(ur'^-?([0-9]{1,3}):((([0-9]{1,2})(\.[0-9]*)?):?)$')
