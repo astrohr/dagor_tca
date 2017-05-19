@@ -3,6 +3,7 @@
 
 Usage:
   motors.py [ha | de] manual
+  motors.py [ha | de] alarm
   motors.py [ha | de] status
   motors.py [ha | de] enabled
   motors.py [ha | de] speed
@@ -10,6 +11,7 @@ Usage:
   motors.py [ha | de] stop
   motors.py [ha | de] enable
   motors.py [ha | de] disable
+  motors.py [ha | de] reset
   motors.py (ha | de) move by <angle> [pulse] [speed <S>]
   motors.py [ha | de] configure
   motors.py [-h | --help | help]
@@ -196,6 +198,42 @@ class MotorCommunication(object):
     tasks = range(1, MAX_TASKS+1)
 
 
+    ALARM_NAMES = [
+        #LO:
+        'Overcurrent regen resistance alarm',  # 1
+        'Holding brake alarm',  # 2
+        'In - rush bus alarm',  # 3
+        'Auxiliry voltage alarm',  # 4
+        'NA',  # 5
+        'NA',  # 6
+        'Flash alarm',  # 7
+        'CanBus alarm'  # 8
+        'NA',  # 9
+        'Homing alarm',  # 10
+        'NA',  # 11
+        'NA',  # 12
+        'NA',  # 13
+        'NA',  # 14
+        'NA',  # 15
+        # HI:
+        'Eeprom alarm',  # 0
+        'Overcurrent alarm',  # 1
+        'Drive temperature alarm',  # 2
+        'Hall alarm',  # 3
+        'Encoder alarm',  # 4
+        'I2t drive alarm',  # 5
+        'Motor temperature alarm',  # 6
+        'Regen resistance alarm',  # 7
+        'Min / Max voltage alarm',  # 8
+        'NA',  # 9
+        'NA',  # 10
+        'Resolver alarm',  # 11
+        'NA',  # 12
+        'Following error alarm',  # 13
+        'Limit switch alarm',  # 14
+        'NA',  # 15
+    ]
+
     def __init__(self, protocol, address, *args, **kwargs):
         self.protocol = protocol
         self.address = address
@@ -249,13 +287,15 @@ class MotorCommunication(object):
     def configure_DGTIO(self):
         #self.DGTOUT1Conf = 3  # Homing ok
         self.DGTOUT1Conf = 2  # Speed < ...
-        self.DGTOUT1 = 5  # Speed < 5
+        self.DGTOUT1 = 1  # Speed <= this
         self.DGTOUT2Conf = 7  # Target ok
         self.SetHomingType = 35  # immediate homing
         # DGTIN1 is Enable
         self.DGTIN2Conf = 13  # start homing
         self.DGTIN3Conf = 8  # task 1
         self.DGTIN3 = 1
+        self.DGTIN4 = 0
+        self.DGTIN4Conf = 14  # Reset Fault
         self.DGTIN5Conf = 12  # Emergency
 
     def configure_speed(self):
@@ -289,6 +329,24 @@ class MotorCommunication(object):
         self.clear_start_task()
         self.disable()
 
+    def alarms_str(self):
+        alarm = self.ALARM
+        present_alarms = []
+        for i, alarm_name in enumerate(self.ALARM_NAMES):
+            if alarm & 2**i:
+                present_alarms.append("AL{}: {}".format(i, alarm_name))
+        return present_alarms
+
+    def status_str(self):
+        bool_en = lambda v: "Enabled" if v else "Disabled"
+        values = {}
+        template = "{en}, alarms: {al}"
+        values = {
+            'en': bool_en(self.is_enabled),
+            'al': self.alarms_str(),
+        }
+        return template.format(**values)
+
     def enable(self):
         self.DGTINSET |= 1
 
@@ -297,6 +355,14 @@ class MotorCommunication(object):
             print("Refusing to disable moving drive!")
             return
         self.DGTINCLR |= 1
+
+    def reset(self):
+        if not self.is_stopped:
+            print("Refusing to reset moving drive!")
+            return
+        self.disable()
+        self.DGTIN4 = 1
+        self.enable()
 
     @property
     def is_enabled(self):
@@ -474,6 +540,29 @@ def set_manual(ha=None, de=None):
         _de.OperationMode = OP_MODE_MANUAL
 
 
+def status_str(ha=None, de=None):
+    global _inited, _ha, _de
+    init()
+    if ha is None and de is None:
+        ha = True
+        de = True
+    if ha:
+        print "ha: {}".format(_ha.status_str())
+    if de:
+        print "de: {}".format(_de.status_str())
+
+
+def reset(ha=None, de=None):
+    global _inited, _ha, _de
+    init()
+    if ha is None and de is None:
+        ha = True
+        de = True
+    if ha:
+        _ha.reset()
+    if de:
+        _de.reset()
+
 
 # Run as CLI client
 
@@ -528,25 +617,26 @@ def _main(args):
         if args['de']:
             _de.disable()
 
-    if args['status']:
-        values = {}
-        template = "ha={ha}\nde={de}"
+    if args['reset']:
         if not args['ha'] and not args['de']:
-            values = {
-                'ha': _ha.is_enabled,
-                'de': _de.is_enabled,
-            }
+            args['ha'] = True
+            args['de'] = True
         if args['ha']:
-            values = {
-                'ha': _ha.is_enabled,
-            }
-            template = "{ha}"
+            _ha.reset()
         if args['de']:
-            values = {
-                'de': _de.is_enabled,
-            }
-            template = "{de}"
-        print template.format(**values)
+            _de.reset()
+
+    if args['alarm']:
+        if not args['ha'] and not args['de']:
+            print _ha.ALARM
+            print _de.ALARM
+        if args['ha']:
+            print _ha.ALARM
+        if args['de']:
+            print _de.ALARM
+
+    if args['status']:
+        status_str(args['ha'] or None, args['de'] or None)
 
     if args['manual']:
         if not args['ha'] and not args['de']:

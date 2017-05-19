@@ -1,0 +1,7 @@
+C:\Users\operator\Documents\dagor_tca\ASCOM\Projects\dagor_ascom_api_client\dagor_ascom_api_client\bin\x64\Debug\dagor_ascom_api_client.dll
+C:\Users\operator\Documents\dagor_tca\ASCOM\Projects\dagor_ascom_api_client\dagor_ascom_api_client\bin\x64\Debug\dagor_ascom_api_client.pdb
+C:\Users\operator\Documents\dagor_tca\ASCOM\Projects\dagor_ascom_api_client\dagor_ascom_api_client\bin\x64\Debug\Newtonsoft.Json.dll
+C:\Users\operator\Documents\dagor_tca\ASCOM\Projects\dagor_ascom_api_client\dagor_ascom_api_client\bin\x64\Debug\Newtonsoft.Json.xml
+C:\Users\operator\Documents\dagor_tca\ASCOM\Projects\dagor_ascom_api_client\dagor_ascom_api_client\obj\x64\Debug\dagor_ascom_api_client.csprojResolveAssemblyReference.cache
+C:\Users\operator\Documents\dagor_tca\ASCOM\Projects\dagor_ascom_api_client\dagor_ascom_api_client\obj\x64\Debug\dagor_ascom_api_client.dll
+C:\Users\operator\Documents\dagor_tca\ASCOM\Projects\dagor_ascom_api_client\dagor_ascom_api_client\obj\x64\Debug\dagor_ascom_api_client.pdb
