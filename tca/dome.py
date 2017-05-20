@@ -42,10 +42,10 @@ from _controller import (
     CommunicationException,
     StateException,
     BaseController,
-    simple_cli_handler,
+    CliMixin,
 )
 from common import EnterAbort, _wait_for_time, print_, exit_
-from local import dome_config
+from local.configuration import DOME_CONFIG
 
 from docopt import docopt
 import sys
@@ -56,26 +56,17 @@ from logging_conf import get_logger
 logger = get_logger(__file__)
 
 
-SERIAL = {
-    'port': dome_config.PORT,
-    'baud_rate': 9600,
-    'timeout': 1,  # if no data available, block for max this many seconds
-    'retries': 5,
-    'interval': 1,  # seconds
-    'reset_disabled': True,
-}
-
-
-class DomeController(BaseController):
-    """ Controls the dome rotation and doors, responds to serial/USB 
+class DomeController(CliMixin, BaseController):
+    """ 
+    Controls the dome rotation and doors, responds to serial/USB 
     communication.
 
-        Note: it always requests latest status from Arduino controller.
+    Note: it always requests latest status from Arduino controller.
 
-     .. Serial settings: 
+    .. Serial settings: 
         9600 baud, newline line ending
 
-     .. Protocol:
+    .. Protocol:
          TODO describe protocol
     """
 
@@ -99,21 +90,21 @@ class DomeController(BaseController):
         self._refresh_status()
         return self._status['azimuth']
 
-    @simple_cli_handler('_door_open')
-    def door_open(self, method_return_value):
+    def door_open(self):
         """CLI handler with retries"""
+        self._simple_cli_handler(self._door_open)
         print_("door opening.")
         # TODO sense door closed, and implement dots while closing
 
-    @simple_cli_handler('_door_close')
-    def door_close(self, method_return_value):
+    def door_close(self):
         """CLI handler with retries"""
+        self._simple_cli_handler(self._door_close)
         print_("door closing.")
         # TODO sense door closed, and implement dots while closing
 
-    @simple_cli_handler('_door_stop')
-    def door_stop(self, method_return_value):
+    def door_stop(self):
         """CLI handler with retries"""
+        self._simple_cli_handler(self._door_stop)
         print_("door stopped.")
         # TODO sense door closed, and implement dots while closing
 
@@ -278,7 +269,7 @@ def get_controller():
     Get controller singleton
     :return: DomeController
     """
-    return DomeController.get_instance(SERIAL)
+    return DomeController.get_instance(DOME_CONFIG)
 
 
 def get_status():

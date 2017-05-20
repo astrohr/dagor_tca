@@ -39,15 +39,13 @@ class BaseController(object):
             cls.instance = cls(**controller_config)
         return cls.instance
 
-    def __init__(self, port, baud_rate, timeout, retries, interval, reset_disabled):
+    def __init__(self, port, baud_rate, timeout, reset_disabled):
         """ Open and confirm communication, request current status """
         # TODO inherit from namedtulpe?
         self._port = port
         self._baud_rate = baud_rate
         self._timeout = timeout
-        self._retries = retries
         self._reset_disabled = reset_disabled
-        self._interval = interval
         self._open_serial()
 
     def _open_serial(self):
@@ -86,11 +84,6 @@ class BaseController(object):
         self._refresh_status()
         return self._status
 
-    def pretty_status(self):
-        """Print status dict, pretty"""
-        self._refresh_status()
-        for key, val in self._status.iteritems():
-            print('{}: {}'.format(key, val))
 
     def _refresh_status(self):
         """Fetch status via serial and store it on `self._status`"""
@@ -118,31 +111,35 @@ class BaseController(object):
         return data
 
 
+class CliMixin(object):
+    _status = {}
+    _retries = 0
+    _interval = 1  # seconds
 
-def simple_cli_handler(method_name, *method_args, **method_kwargs):
-    def decorator(func):
-        """Actual decorator"""
-        @wraps(func)
-        def f(self, *args, **kwargs):
-            """Wrapper body, passes `response_data` into decorated func"""
-            # TODO wanna play with yield in the decorated func? "byref"
-            assert isinstance(self, BaseController)
-            retry = self._retries
-            returned = None
-            while retry:
-                retry -= 1
-                try:
-                    method = getattr(self, method_name)
-                    returned = method(*method_args, **method_kwargs)
-                except:
-                    time.sleep(1)  # seconds
-                else:
-                    break  # from while
-            if retry == 0:
-                raise CommunicationException(
-                    'Failed "{}" after {} retries'
-                    .format(method_name, self._retries)
-                )
-            return func(self, method_return_value=returned, *args, **kwargs)
-        return f
-    return decorator
+    def __init__(self, retries, interval, **kwargs):
+        self._retries = retries
+        self._interval = interval
+        # noinspection PyArgumentList
+        super(CliMixin, self).__init__(**kwargs)
+
+    def pretty_status(self):
+        """Print status dict, pretty"""
+        for key, val in self._status.iteritems():
+            print('{}: {}'.format(key, val))
+
+    def _simple_cli_handler(self, func, *func_args, **func_kwargs):
+        """Ruins a callable untill no exception, up to `self._retries` times"""
+        retry = self._retries
+        while retry:
+            retry -= 1
+            try:
+                returned = func(*func_args, **func_kwargs)
+            except:
+                time.sleep(self._interval)
+            else:
+                return returned
+        if retry == 0:
+            raise CommunicationException(
+                'Failed calling "{}(*{}, **{})" after {} retries'
+                .format(func, func_args, func_kwargs, self._retries)
+            )
