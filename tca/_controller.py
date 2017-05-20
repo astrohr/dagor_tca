@@ -124,7 +124,16 @@ class CliMixin(object):
     def pretty_status(self):
         """Print status dict, pretty"""
         for key, val in self._status.iteritems():
-            print('{}: {}'.format(key, val))
+            print('{}: {}'.format(
+                self.prettify_key(key, val),
+                self.prettify_val(key, val),
+            ))
+
+    def prettify_key(self, key, val):
+        return key
+
+    def prettify_val(self, key, val):
+        return val
 
     def _simple_cli_handler(self, func):
         """Ruins a callable untill no exception, up to `self._retries` times"""
@@ -168,5 +177,5 @@ class CliMixin(object):
                                enter_abort=True,
                                end='')
         except (KeyboardInterrupt, EnterAbort):
-            print('stoppingG')
+            print('stopping')
             func_stop()

@@ -78,6 +78,8 @@ class DomeController(CliMixin, BaseController):
     CALIBRATION_DONE = 1
     CALIBRATION_IN_PROGRESS = 0
 
+    UNKNOWN_AZIMUTH = 500.0
+
     # public API
 
     @property
@@ -138,6 +140,25 @@ class DomeController(CliMixin, BaseController):
         'calibration': int,
     }
 
+    def prettify_val(self, key, val):
+        """Make statuses human-readable"""
+        if key == 'rotation':
+            return {
+                self.ROTATION_IDLE: 'idle',
+                self.ROTATION_UP: 'up',
+                self.ROTATION_DOWN: 'down',
+            }[val]
+        if key == 'calibration':
+            return {
+                self.CALIBRATION_NONE: 'none',
+                self.CALIBRATION_DONE: 'done',
+                self.CALIBRATION_IN_PROGRESS: 'in_progress',
+            }[val]
+        if key == 'azimuth':
+            if val == self.UNKNOWN_AZIMUTH:
+                return 'unknown'
+        return val
+
     def _refresh_status(self):
         """
         Implementation specific to Dome, because protocol 
@@ -146,7 +167,7 @@ class DomeController(CliMixin, BaseController):
         # send command:
         self._serial.write('status\n')
         # read first response line:
-        response = self._serial.readline().strip()  # expect: "status 3\n"
+        response = self._serial.readline().strip()  # expect: "ok 3\n"
         if not response:  # blank line
             response = self._serial.readline().strip()
         if not response.startswith('ok '):
@@ -245,7 +266,7 @@ def _main(args):
     assert isinstance(controller, DomeController)
 
     if args['status']:
-        print("MAIN STATUS")
+        controller._refresh_status()
         controller.pretty_status()
         exit(0)
 
