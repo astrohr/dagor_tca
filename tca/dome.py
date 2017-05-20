@@ -127,6 +127,13 @@ class DomeController(CliMixin, BaseController):
         print_('dome moving "down"', end='')
         self._dots_cli_handler(self._rotate_down, self._rotate_stop)
 
+    def rotate_stop(self):
+        """
+        CLI function to stop dome rotation".
+        """
+        print_('dome stopping.')
+        self._rotate_stop()
+
     # private members
 
     _default_status = {
@@ -164,40 +171,12 @@ class DomeController(CliMixin, BaseController):
         Implementation specific to Dome, because protocol 
         is not fully "common".
         """
-        # send command:
-        self._serial.write('status\n')
-        # read first response line:
-        response = self._serial.readline().strip()  # expect: "ok 3\n"
-        if not response:  # blank line
-            response = self._serial.readline().strip()
-        if not response.startswith('ok '):
-            if response.startswith('error '):
-                try:
-                    n = int(response[len('error '):])
-                    for _ in range(n):
-                        additional_response = self._serial.readline().strip()
-                        response = "{}\n{}".format(response,
-                                                   additional_response)
-                except:
-                    pass
-            raise CommunicationException(
-                'Controller doesnt acknowledge "status" command, instead '
-                'got: "{}"'.format(
-                    response))
-        # parse N (number of lines that follow):
-        try:
-            self._n = int(response[len('ok '):])
-        except ValueError:
-            raise CommunicationException(
-                'Expected int, got: "{}"'.format(response))
-        # read remaining response lines:
+        data = self._simple_command('status')
         new_status = {}
         keys = (k for k in
                 ('azimuth', 'rotation', 'calibration', 'unknown_key'))
-        for _ in range(self._n):
-            response = self._serial.readline().strip()
+        for value in data:
             key = next(keys)
-            value = response.strip()
             if key not in self._default_status:
                 raise CommunicationException(
                     'Got unknown status key: {}: {}'.format(key, value))
@@ -209,8 +188,7 @@ class DomeController(CliMixin, BaseController):
                 '{}\n'
                 'known keys:\n'
                 '{}'
-                    .format(new_status.keys(), self._default_status.keys()))
-
+                .format(new_status.keys(), self._default_status.keys()))
         self._status = new_status
 
     def _door_open(self):
@@ -257,6 +235,29 @@ def get_idle():
     :return: boolean 
     """
     return get_controller().idle
+
+
+def dome_up():
+ get_controller().rotate_up()
+
+
+def dome_down():
+    get_controller().rotate_down()
+
+
+def dome_stop():
+    controller = get_controller()
+    assert isinstance(controller, DomeController)
+    controller.rotate_stop()
+    controller.door_stop()
+
+
+def dome_open():
+    return get_controller().door_open()
+
+
+def dome_close():
+    return get_controller().door_close()
 
 
 def _main(args):

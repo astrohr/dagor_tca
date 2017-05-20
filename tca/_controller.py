@@ -99,14 +99,27 @@ class BaseController(object):
         response = self._serial.readline().strip()  # expect: "ok 0\n"
         if not response:  # blank line
             response = self._serial.readline().strip()
-        # TODO implement support for "ok <N>" and return the
-        # response to the function
-        data = []
-        if not response.startswith('ok 0'):
+
+        # TODO actually read error info from serial
+
+        # response, first line:
+        if not response.startswith('ok '):
             raise CommunicationException(
                 'Controller doesnt acknowledge "{}" command, instead got: "{}"'
                 .format(command, response)
             )
+
+        # response, next N lines:
+        data = []
+        try:
+            n = int(response[len('ok '):])
+        except ValueError:
+            raise CommunicationException(
+                'Expected int, got: "{}"'.format(response))
+        for _ in range(n):
+            line = self._serial.readline().strip()
+            data.append(line)
+
         return data
 
 

@@ -24,6 +24,7 @@ Usage:
   tca set celest <RA> <DE> [blind]
   tca set star <NAME> [blind]
   tca set cat <NAME> [(from <CATALOG>)] [blind]
+  tca dome (up | down | open | close | stop)
   tca lights [0 | 1 | 2 | 3]
   tca focus get
   tca focus set <N>
@@ -40,6 +41,7 @@ Commands:
   move to           move to coordinates precisely
   set               Sync current position with provided coordinates
   sync console      Position sync console, for fine position adjust using arrow keys.
+  dome              Controll dome rotation and door.
 
 Parameters:
   <HA>              Hour angle, 0 - 24
@@ -63,6 +65,7 @@ Options:
 from __future__ import division, print_function
 
 from os import sys, path
+
 sys.path.append(path.dirname(path.abspath(__file__)))
 
 from time import sleep
@@ -77,6 +80,7 @@ import motors as dagor_motors
 import track as dagor_track
 import path as dagor_path
 import focus as dagor_focus
+import dome as dagor_dome
 import lights as dagor_lights
 import sys
 #from common import exit_
@@ -299,6 +303,18 @@ def _main(args):
             dagor_motors.reset(args['ha'], args['de'])
         if args['status']:
             dagor_motors.status_str(args['ha'] or None, args['de'] or None)
+
+    if args['dome']:
+        if args['up']:
+            dagor_dome.dome_up()
+        if args['down']:
+            dagor_dome.dome_down()
+        if args['stop']:
+            dagor_dome.dome_stop()
+        if args['open']:
+            dagor_dome.dome_open()
+        if args['close']:
+            dagor_dome.dome_close()
 
     if args['lights']:
         n = None
