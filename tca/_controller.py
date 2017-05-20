@@ -98,34 +98,25 @@ class BaseController(object):
         # TODO fix serial protocol for dome
         raise NotImplementedError()
 
+    def _simple_command(self, command):
+        """Simple commands require no arguments are return `ok 0`"""
+        # send command:
+        self._serial.write('{}\n'.format(command))
+        # read first response line:
+        response = self._serial.readline().strip()  # expect: "ok 0\n"
+        if not response:  # blank line
+            response = self._serial.readline().strip()
+        # TODO implement support for "ok <N>" and return the
+        # response to the function
+        data = []
+        if not response.startswith('ok 0'):
+            raise CommunicationException(
+                'Controller doesnt acknowledge "{}" command, instead '
+                'got: "{}"'
+                    .format(command, response)
+            )
+        return data
 
-def simple_command(command):
-    """Simple commands require no arguments are return `ok 0`"""
-    def decorator(func):
-        """Actual decorator"""
-        @wraps(func)
-        def f(self, *args, **kwargs):
-            """Wrapper body, passes `response_data` into decorated func"""
-            # TODO wanna play with yield in the decorated func? "byref"
-            assert isinstance(self, BaseController)
-            self._refresh_status()
-            # send command:
-            self._serial.write('{}\n'.format(command))
-            # read first response line:
-            response = self._serial.readline().strip()  # expect: "ok 0\n"
-            if not response:  # blank line
-                response = self._serial.readline().strip()
-            # TODO implement support for "ok <N>" and return the response to the function
-            data = []
-            if not response.startswith('ok 0'):
-                raise CommunicationException(
-                    'Controller doesnt acknowledge "{}" command, instead '
-                    'got: "{}"'
-                        .format(command, response)
-                )
-            return func(self, response_data=data, *args, **kwargs)
-        return f
-    return decorator
 
 
 def simple_cli_handler(method_name, *method_args, **method_kwargs):

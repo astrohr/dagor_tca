@@ -38,20 +38,23 @@ Options:
 """
 
 from  __future__ import print_function, division, absolute_import
-from _controller import CommunicationException, StateException, \
-    simple_command, \
-    BaseController, simple_cli_handler
+from _controller import (
+    CommunicationException,
+    StateException,
+    BaseController,
+    simple_cli_handler,
+)
 from common import EnterAbort, _wait_for_time, print_, exit_
-from logging_conf import get_logger
 from local import dome_config
 
 from docopt import docopt
 import sys
 import time
 
+from logging_conf import get_logger
+
 logger = get_logger(__file__)
 
-RESET_DISABLED = True
 
 SERIAL = {
     'port': dome_config.PORT,
@@ -114,12 +117,13 @@ class DomeController(BaseController):
         print_("door stopped.")
         # TODO sense door closed, and implement dots while closing
 
-    #@cli_handler_with_top(start='_rotate_up', stop='_rotate_stop')
+    #@cli_handler_with_stop(start='_rotate_up', stop='_rotate_stop')
     def rotate_up(self):
         """
         CLI function with dots for rotating the dome "up".
         """
         # TODO abstract and extract CLI functions from hardware controller
+        # TODO verify that the dome is actually moving, abort if it stops
         try:
             retry = self._retries
             while retry:
@@ -151,6 +155,7 @@ class DomeController(BaseController):
         CLI function with dots for rotating the dome "down".
         """
         # TODO abstract and extract CLI functions from hardware controller
+        # TODO verify that the dome is actually moving, abort if it stops
         try:
             retry = self._retries
             while retry:
@@ -244,29 +249,28 @@ class DomeController(BaseController):
 
         self._status = new_status
 
-    @simple_command('door_open')
-    def _door_open(self, response_data):
-        pass
+    def _door_open(self):
+        self._simple_command('door_open')
 
-    @simple_command('door_close')
-    def _door_close(self, response_data):
-        pass
 
-    @simple_command('door_stop')
-    def _door_stop(self, response_data):
-        pass
+    def _door_close(self):
+        self._simple_command('door_close')
 
-    @simple_command('up')
-    def _rotate_up(self, response_data):
-        pass
 
-    @simple_command('down')
-    def _rotate_down(self, response_data):
-        pass
+    def _door_stop(self):
+        self._simple_command('door_stop')
 
-    @simple_command('stop')
-    def _rotate_stop(self, response_data):
-        pass
+
+    def _rotate_up(self):
+        self._simple_command('up')
+
+
+    def _rotate_down(self):
+        self._simple_command('down')
+
+
+    def _rotate_stop(self):
+        self._simple_command('stop')
 
 
 def get_controller():
