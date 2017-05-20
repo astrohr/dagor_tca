@@ -389,7 +389,6 @@ def goto(n):
 
 def _main(args):
     controller = get_controller()
-    assert isinstance(controller, FocuserController)
 
     if args['status']:
         controller.pretty_status()

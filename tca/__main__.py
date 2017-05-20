@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding=utf-8
 """Dagor central CLI interface 0.1
 
 Usage:
@@ -203,6 +204,7 @@ def _main(args):
                 # read stdin:
                 stellarium_ra_dec = None
                 TARGET_PREFIX = 'RA/Dec (on date): '
+                print("Paste object info from Stellarium then press Enter twice:")
                 while True:
                     input_ = raw_input().strip()
                     if input_ == '':
