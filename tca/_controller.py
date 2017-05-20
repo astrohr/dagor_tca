@@ -1,11 +1,9 @@
 # coding=utf-8
-from functools import wraps
 import serial
 import time
 
-from common import print_
+from common import EnterAbort, print_, _wait_for_time
 from tca.logging_conf import get_logger
-
 
 logger = get_logger(__file__)
 
@@ -69,8 +67,11 @@ class BaseController(object):
                 logger.debug("line: {}".format(line))
                 if line and line == 'ready':
                     pass
-                    # return  # TODO maybe wait for next readline to timeout, so we are sure this is the last data in serial pipe?
-            raise CommunicationException('Cannot establish serial communication: Arduino not reporting ready')
+                    # TODO maybe wait for next readline to timeout?
+                    # ...  so we are sure this is the last data in serial pipe
+            raise CommunicationException(
+                'Cannot establish serial communication:'
+                ' Arduino not reporting ready')
         else:  # self._RESET_DISABLED
             pass  # TODD send a "ready?" query?
 
@@ -83,7 +84,6 @@ class BaseController(object):
         """
         self._refresh_status()
         return self._status
-
 
     def _refresh_status(self):
         """Fetch status via serial and store it on `self._status`"""
@@ -104,9 +104,8 @@ class BaseController(object):
         data = []
         if not response.startswith('ok 0'):
             raise CommunicationException(
-                'Controller doesnt acknowledge "{}" command, instead '
-                'got: "{}"'
-                    .format(command, response)
+                'Controller doesnt acknowledge "{}" command, instead got: "{}"'
+                .format(command, response)
             )
         return data
 
@@ -127,19 +126,47 @@ class CliMixin(object):
         for key, val in self._status.iteritems():
             print('{}: {}'.format(key, val))
 
-    def _simple_cli_handler(self, func, *func_args, **func_kwargs):
+    def _simple_cli_handler(self, func):
         """Ruins a callable untill no exception, up to `self._retries` times"""
         retry = self._retries
         while retry:
             retry -= 1
             try:
-                returned = func(*func_args, **func_kwargs)
+                returned = func()
             except:
                 time.sleep(self._interval)
             else:
                 return returned
         if retry == 0:
             raise CommunicationException(
-                'Failed calling "{}(*{}, **{})" after {} retries'
-                .format(func, func_args, func_kwargs, self._retries)
+                'Failed calling "{}" after {} retries'
+                .format(func, self._retries)
             )
+
+    def _dots_cli_handler(self, func_start, func_stop=None):
+        if func_stop is None:
+            func_stop = lambda: None
+        try:
+            retry = self._retries
+            while retry:
+                retry -= 1
+                try:
+                    func_start()
+                except Exception as e:
+                    logger.info("stopping, caught {}".format(e))
+                    func_stop()
+                    time.sleep(self._interval)
+                else:
+                    break  # from while
+            if retry == 0:
+                raise CommunicationException(
+                    'Failed calling "{}" after {} retries'
+                    .format(func_start, self._retries)
+                )
+            while True:
+                _wait_for_time(self._interval, dots=True,
+                               enter_abort=True,
+                               end='')
+        except (KeyboardInterrupt, EnterAbort):
+            print('stoppingG')
+            func_stop()

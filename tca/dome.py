@@ -108,70 +108,22 @@ class DomeController(CliMixin, BaseController):
         print_("door stopped.")
         # TODO sense door closed, and implement dots while closing
 
-    #@cli_handler_with_stop(start='_rotate_up', stop='_rotate_stop')
     def rotate_up(self):
         """
         CLI function with dots for rotating the dome "up".
         """
-        # TODO abstract and extract CLI functions from hardware controller
         # TODO verify that the dome is actually moving, abort if it stops
-        try:
-            retry = self._retries
-            while retry:
-                retry -= 1
-                try:
-                    self._rotate_up()
-                except StateException:
-                    logger.info("not idle, stopping")
-                    self._rotate_stop()
-                    time.sleep(1)  # seconds
-                else:
-                    break  # from while
-            if retry == 0:
-                raise CommunicationException(
-                    'Failed "rotate_up" after {} retries'
-                        .format(self._retries)
-                )
-            print_('dome moving "up"', end='')
-            while True:
-                _wait_for_time(self._interval, dots=True,
-                               enter_abort=True,
-                               end='')
-        except (KeyboardInterrupt, EnterAbort):
-            print('stopping')
-            self._rotate_stop()
+
+        print_('dome moving "up"', end='')
+        self._dots_cli_handler(self._rotate_up, self._rotate_stop)
 
     def rotate_down(self):
         """
         CLI function with dots for rotating the dome "down".
         """
-        # TODO abstract and extract CLI functions from hardware controller
         # TODO verify that the dome is actually moving, abort if it stops
-        try:
-            retry = self._retries
-            while retry:
-                retry -= 1
-                try:
-                    self._rotate_down()
-                except StateException:
-                    logger.info("not idle, stopping")
-                    self._rotate_stop()
-                    time.sleep(1)  # seconds
-                else:
-                    break  # from while
-            if retry == 0:
-                raise CommunicationException(
-                    'Failed "rotate_down" after {} retries'
-                        .format(self._retries)
-                )
-            print_('dome moving "down"', end='')
-            while True:
-                _wait_for_time(self._interval, dots=True,
-                               enter_abort=True,
-                               end='')
-        except (KeyboardInterrupt, EnterAbort):
-            print('stopping')
-            self._rotate_stop()
+        print_('dome moving "down"', end='')
+        self._dots_cli_handler(self._rotate_down, self._rotate_stop)
 
     # private members
 
