@@ -24,7 +24,7 @@ Options:
     --version       Show version.
 """
 from __future__ import print_function, division, absolute_import
-from tca.common import EnterAbort, _wait_for_time, print_, exit_
+from tca.common import EnterAbort, wait_for_time, print_, exit_
 
 from docopt import docopt
 import serial
@@ -123,9 +123,9 @@ class FocuserController(object):
             on_target = False
             print_("positioning.", end='')
             while not on_target:
-                _wait_for_time(INTERVAL, dots=True,
-                               enter_abort=True,
-                               end='')
+                wait_for_time(INTERVAL, dots=True,
+                              enter_abort=True,
+                              end='')
                 self._refresh_status()
                 on_target = self._status['idle']
             print()
@@ -152,9 +152,9 @@ class FocuserController(object):
             on_target = False
             print_("positioning.", end='')
             while not on_target:
-                _wait_for_time(INTERVAL, dots=True,
-                               enter_abort=True,
-                               end='')
+                wait_for_time(INTERVAL, dots=True,
+                              enter_abort=True,
+                              end='')
                 self._refresh_status()
                 on_target = self._status['idle']
             print()
@@ -168,9 +168,9 @@ class FocuserController(object):
         self._refresh_status()
         idle = self._status['idle']
         while not idle:
-            _wait_for_time(INTERVAL, dots=True,
-                           enter_abort=False,
-                           end='')
+            wait_for_time(INTERVAL, dots=True,
+                          enter_abort=False,
+                          end='')
             self._refresh_status()
             idle = self._status['idle']
         print()

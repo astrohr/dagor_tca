@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-"""Dagor dome rotation interface version 1.3.
+"""Dagor dome rotation interface version 1.4.0
 
 Usage:
     dome.py server
@@ -17,7 +17,7 @@ Usage:
     dome.py --version
 
 Commands:
-    server         Start Flusk server.
+    server         Start Flask server.
     status         Dome status (azimuth \\n rotating or not \\n calibrated, 
     during calibration or uncalibrated).
     calibrate      Start calibration.
@@ -37,19 +37,17 @@ Options:
     --version      Show version.
 """
 
-from  __future__ import print_function, division, absolute_import
+from __future__ import print_function, division, absolute_import
 from _controller import (
     CommunicationException,
-    StateException,
     BaseController,
     CliMixin,
 )
-from common import EnterAbort, _wait_for_time, print_, exit_
+from common import print_, exit_
 from local.configuration import DOME_CONFIG
 
 from docopt import docopt
 import sys
-import time
 
 from logging_conf import get_logger
 
@@ -117,7 +115,10 @@ class DomeController(CliMixin, BaseController):
         # TODO verify that the dome is actually moving, abort if it stops
 
         print_('dome moving "up"', end='')
-        self._dots_cli_handler(self._rotate_up, self._rotate_stop)
+        self._dots_cli_handler(
+            self._rotate_up,
+            func_stop=self._rotate_stop,
+        )
 
     def rotate_down(self):
         """
@@ -125,7 +126,10 @@ class DomeController(CliMixin, BaseController):
         """
         # TODO verify that the dome is actually moving, abort if it stops
         print_('dome moving "down"', end='')
-        self._dots_cli_handler(self._rotate_down, self._rotate_stop)
+        self._dots_cli_handler(
+            self._rotate_down,
+            func_stop=self._rotate_stop,
+        )
 
     def rotate_stop(self):
         """
@@ -194,22 +198,17 @@ class DomeController(CliMixin, BaseController):
     def _door_open(self):
         self._simple_command('door_open')
 
-
     def _door_close(self):
         self._simple_command('door_close')
-
 
     def _door_stop(self):
         self._simple_command('door_stop')
 
-
     def _rotate_up(self):
         self._simple_command('up')
 
-
     def _rotate_down(self):
         self._simple_command('down')
-
 
     def _rotate_stop(self):
         self._simple_command('stop')
@@ -238,14 +237,17 @@ def get_idle():
 
 
 def dome_up():
- get_controller().rotate_up()
+    """Start dome rotation in "up" direction (right hand rule)."""
+    get_controller().rotate_up()
 
 
 def dome_down():
+    """Start dome rotation in "down" direction (right hand rule)."""
     get_controller().rotate_down()
 
 
 def dome_stop():
+    """Stop dome rotation."""
     controller = get_controller()
     assert isinstance(controller, DomeController)
     controller.rotate_stop()
@@ -253,10 +255,12 @@ def dome_stop():
 
 
 def dome_open():
+    """Open dome door."""
     return get_controller().door_open()
 
 
 def dome_close():
+    """Close dome door."""
     return get_controller().door_close()
 
 
@@ -267,7 +271,6 @@ def _main(args):
     assert isinstance(controller, DomeController)
 
     if args['status']:
-        controller._refresh_status()
         controller.pretty_status()
         exit(0)
 
@@ -294,7 +297,7 @@ def _main(args):
         exit(0)
 
     if args['stop']:
-        controller._rotate_stop()
+        controller.rotate_stop()
         exit(0)
 
     elif args['calibrate']:
@@ -317,13 +320,14 @@ def _main(args):
 
 if __name__ == '__main__':
     # CLI entry point
-    args = docopt(__doc__, version=__doc__.split('\n'[0]), options_first=True)
+    cli_args = docopt(
+        __doc__, version=__doc__.split('\n'[0]), options_first=True)
     if len(sys.argv) == 1:
         print(__doc__.strip())
         exit(0)
 
     try:
-        _main(args)
+        _main(cli_args)
     except Exception as e:
         logger.warning(e, exc_info=True)
         # raise
