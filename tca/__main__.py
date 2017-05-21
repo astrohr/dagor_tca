@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding=utf-8
 """Dagor central CLI interface 0.1
 
 Usage:
@@ -10,6 +11,7 @@ Usage:
   tca goto altaz <ALT> <AZ> [ce | cw | cc] [quick | track] [force]
   tca goto local <HA> <DE> [ce | cw | cc] [notrack [quick]] [force]
   tca goto celest <RA> <DE> [ce | cw | cc] [quick] [notrack] [force]
+  tca goto stellarium [-] [ce | cw | cc] [quick] [notrack] [force]
   tca goto internal <int_HA> <int_DE> [quick] [force]
   tca goto star <NAME> [ce | cw | cc] [quick] [notrack] [force]
   tca goto cat <NAME> [(from <CATALOG>)] [ce | cw | cc] [quick] [notrack] [force]
@@ -22,6 +24,7 @@ Usage:
   tca set celest <RA> <DE> [blind]
   tca set star <NAME> [blind]
   tca set cat <NAME> [(from <CATALOG>)] [blind]
+  tca dome (up | down | open | close | stop)
   tca lights [0 | 1 | 2 | 3]
   tca focus get
   tca focus set <N>
@@ -38,6 +41,7 @@ Commands:
   move to           move to coordinates precisely
   set               Sync current position with provided coordinates
   sync console      Position sync console, for fine position adjust using arrow keys.
+  dome              Controll dome rotation and door.
 
 Parameters:
   <HA>              Hour angle, 0 - 24
@@ -47,7 +51,7 @@ Parameters:
   ce | cw | cc      Chirality, side of pillar when pointing South
                     ce: East
                     cw: West
-                    cc: closest
+                    cc: Closest
                     default: keep same chirality
   <NAME>            Name of a start, capitalized, e.g. Vega
   force             Go directly to specified coordinates, disregarding safety constraints.
@@ -58,8 +62,10 @@ Options:
 
 """
 
-from __future__ import division
+from __future__ import division, print_function
+
 from os import sys, path
+
 sys.path.append(path.dirname(path.abspath(__file__)))
 
 from time import sleep
@@ -74,6 +80,7 @@ import motors as dagor_motors
 import track as dagor_track
 import path as dagor_path
 import focus as dagor_focus
+import dome as dagor_dome
 import lights as dagor_lights
 import sys
 #from common import exit_
@@ -129,7 +136,7 @@ def _main(args):
         elif args['chirality']:
             template = "{chirality}"
             values = {'chirality': dagor_position.get_chirality()}
-        print template.format(**values)
+        print(template.format(**values))
 
     if args['goto'] and not args['focus']:
         track = False
@@ -188,13 +195,35 @@ def _main(args):
                 local_end, chirality
             )
 
-        elif args['celest'] or args['cat'] or args['star']:
+        elif args['celest'] or args['stellarium'] or args['cat'] or args['star']:
 
             if args['celest']:
                 celest = {
                     'ra': parse_hours(args['<RA>']),
                     'de': parse_degrees(args['<DE>']),
                 }
+
+            elif args['stellarium']:
+                #print('Paste object data from Stellarium, empty line to submit')
+                # read stdin:
+                stellarium_ra_dec = None
+                TARGET_PREFIX = 'RA/Dec (on date): '
+                print("Paste object info from Stellarium then press Enter twice:")
+                while True:
+                    input_ = raw_input().strip()
+                    if input_ == '':
+                        break
+                    if input_.startswith(TARGET_PREFIX):
+                        stellarium_ra_dec = input_[len(TARGET_PREFIX):]
+                if not stellarium_ra_dec:
+                    sys.stderr.write('No line starts with "{}" in the pasted data.\n'.format(TARGET_PREFIX))
+                    exit(1)
+                stellarium_ra , stellarium_de = stellarium_ra_dec.split('/', 1)
+                celest = {
+                    'ra': parse_hours(stellarium_ra),
+                    'de': parse_degrees(stellarium_de),
+                }
+
             elif args['cat']:
                 celest = dagor_catalog.get_celest(args['<NAME>'],
                                                   args['<CATALOG>'])
@@ -275,6 +304,18 @@ def _main(args):
         if args['status']:
             dagor_motors.status_str(args['ha'] or None, args['de'] or None)
 
+    if args['dome']:
+        if args['up']:
+            dagor_dome.dome_up()
+        if args['down']:
+            dagor_dome.dome_down()
+        if args['stop']:
+            dagor_dome.dome_stop()
+        if args['open']:
+            dagor_dome.dome_open()
+        if args['close']:
+            dagor_dome.dome_close()
+
     if args['lights']:
         n = None
         if args['0']:
@@ -286,7 +327,7 @@ def _main(args):
         elif args['3']:
             n = 3
         if n is None:
-            print dagor_lights.get_lights()
+            print(dagor_lights.get_lights())
         else:
             dagor_lights.set_lights(n)
 
@@ -317,9 +358,9 @@ def move_to_local(local=None, celest=None, chirality=None, quick=False, track=Fa
     if quick:
         steps = [(0, 3000), ]
 
-    print "Moving"
+    print("Moving")
     dagor_motors.init()
-    print "path: {}".format(path)
+    print("path: {}".format(path))
     for position in path[1:]:
         for i, (difference, speed) in enumerate(steps):
             internal_now = dagor_position.get_internal()
@@ -336,10 +377,10 @@ def move_to_local(local=None, celest=None, chirality=None, quick=False, track=Fa
                 step_delta['ha'] -= difference / 15 * sign(step_delta['ha'])
             else:
                 step_delta['ha'] = None
-            print "position_delta: {}".format(position_delta)
+            print("position_delta: {}".format(position_delta))
             #print step_delta
             if step_delta['ha'] is None and step_delta['de'] is None:
-                print "no step delta, next"
+                print("no step delta, next")
                 continue
             speeds = {
                 'ha': speed,
@@ -355,7 +396,7 @@ def move_to_local(local=None, celest=None, chirality=None, quick=False, track=Fa
                     abs(speeds['ha'])
                 )
             speeds['ha'] += 0  # track_correction
-            print "speeds: {}".format(speeds)
+            print("speeds: {}".format(speeds))
             dagor_motors.move_by(step_delta, speeds)
             sys.stdout.write('moving')
             sys.stdout.flush()
@@ -373,7 +414,7 @@ if __name__ == '__main__':
     args = docopt(__doc__, version=__doc__.split("\n")[0], options_first=True)
 
     if len(sys.argv) == 1 or args['help']:
-        print __doc__.strip()
+        print(__doc__.strip())
         exit(0)
 
     try:

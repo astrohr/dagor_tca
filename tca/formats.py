@@ -21,11 +21,17 @@ import re
 
 
 def parse_hours(value):
+    """
+    Parse angle hours into float.
+    Not specific to RA (e.g, can be negative).
+    """
     h = 0
     m = 0
     s = 0
     value = '{}'.format(value).strip()
     sign = -1 if value[0] == '-' else 1
+    if value[0] == '+':
+        value = value[1:]
     form1_1 = re.compile(r'^-?(([0-9]{1,2})(\.[0-9]*)?)h?$')
     form1_2 = re.compile(r'^-?([0-9]{1,2})h((([0-9]{1,2})(\.[0-9]*)?)m?)$')
     form1_3 = re.compile(r'^-?([0-9]{1,2})h([0-9]{1,2})m((([0-9]{1,2})(\.[0-9]*)?)s?)$')
@@ -53,11 +59,17 @@ def parse_hours(value):
 
 
 def parse_degrees(value):
+    """Parse degrees into float"""
     d = 0
     m = 0
     s = 0
     value = '{}'.format(value).strip()
+    value = value.replace('°', ':')
+    value = value.replace('\'', ':')
+    value = value.replace('"', '')
     sign = -1 if value[0] == '-' else 1
+    if value[0] == '+':
+        value = value[1:]
     form1_1 = re.compile(ur'^-?(([0-9]{1,3})(\.[0-9]*)?):?$')
     form1_2 = re.compile(ur'^-?([0-9]{1,3}):((([0-9]{1,2})(\.[0-9]*)?):?)$')
     form1_3 = re.compile(ur'^-?([0-9]{1,3}):([0-9]{1,2}):(([0-9]{1,2})(\.[0-9]*)?)$')

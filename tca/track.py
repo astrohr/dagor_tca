@@ -29,7 +29,7 @@ from docopt import docopt
 from time import time, sleep
 import os
 import sys
-from common import NonBlockingConsole, BASE_PATH, EnterAbort, print_, _wait_for_time, sign, p_, _wait_for_stop
+from common import NonBlockingConsole, BASE_PATH, EnterAbort, print_, wait_for_time, sign, p_, _wait_for_stop
 from formats import format_hours, format_degrees, parse_degrees, parse_hours
 import motors as dagor_motors
 import path as dagor_path
@@ -280,7 +280,7 @@ def speed_tracking(manual_internal=None,
     on_target_since = None
     try:
         while True:
-            _wait_for_time(dagor_motors._TRACKING_CHECK_INTERVAL, dots=True, enter_abort=True, interval=dagor_motors._TRACKING_CHECK_INTERVAL / 10)
+            wait_for_time(dagor_motors._TRACKING_CHECK_INTERVAL, dots=True, enter_abort=True, interval=dagor_motors._TRACKING_CHECK_INTERVAL / 10)
 
             # Getting target coords, "internal" system.
             # Target priorities:

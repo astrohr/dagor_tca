@@ -1,9 +1,10 @@
 #!/usr/bin/env python
-"""Dagor dome rotation interface version 1.3.
+# coding=utf-8
+"""Dagor dome rotation interface version 1.4.0
 
 Usage:
     dome.py server
-    dome.py status [-v | --verbose]
+    dome.py status
     dome.py calibrate
     dome.py goto <azimuth>
     dome.py azimuth set <azimuth>
@@ -16,8 +17,9 @@ Usage:
     dome.py --version
 
 Commands:
-    server         Start Flusk server.
-    status         Dome status (azimuth \\n rotating or not \\n calibrated, during calibration or uncalibrated).
+    server         Start Flask server.
+    status         Dome status (azimuth \\n rotating or not \\n calibrated, 
+    during calibration or uncalibrated).
     calibrate      Start calibration.
     goto           Move dome to specified azimuth.
     azimuth set    Set specified azimuth as current position.
@@ -34,247 +36,299 @@ Options:
     -h --help      Show this screen.
     --version      Show version.
 """
-  
+
+from __future__ import print_function, division, absolute_import
+from _controller import (
+    CommunicationException,
+    BaseController,
+    CliMixin,
+)
+from common import print_, exit_
+from local.configuration import DOME_CONFIG
+
 from docopt import docopt
-import serial
 import sys
-from os import system
-import local.dome_config
-from flask import Flask
-from flask import request
 
-app = Flask(__name__)
+from logging_conf import get_logger
+
+logger = get_logger(__file__)
 
 
-PORT = local.dome_config.PORT
-BAUDRATE = 9600
-TIMEOUT = 2
+class DomeController(CliMixin, BaseController):
+    """ 
+    Controls the dome rotation and doors, responds to serial/USB 
+    communication.
 
+    Note: it always requests latest status from Arduino controller.
 
-def read_serial(ser):
-    """ Read data from serial port. Raise exception if error code is returned.
-    
-    @param ser: PySerial Serial() object
-    @return: Returned data
-    """
-    
-    raw_reply = ser.readline().strip()
-    
-    try:
-        status, lines = raw_reply.split(' ')
-    except ValueError:
-        status, lines = (raw_reply, 0)
-    
-    reply = [ser.readline().strip() for _ in range(int(lines))]
-    
-    if status=='ok':
-        return reply
-    else:
-        raise Exception(reply)
-    
+    .. Serial settings: 
+        9600 baud, newline line ending
 
-def write_serial(ser, str):
-    """ Write to serial port, and then parse return message.
-    
-    @param ser: PySerial Serial() object.
-    @param str: String to be sent.
-    @return: Parsed return message.
-    """
-    
-    ser.write(str + '\n')
-    return read_serial(ser)
-
-class operation:
-    def __init__(self):
-        self.status = False
-        self.status_verbose = False
-        self.calibrate = False
-        self.goto = False
-        self.goto_azimuth = 0
-        self.azimuth_set = False
-        self.azimuth_set_azimuth = 0
-        self.azimuth_get = False
-        self.park = False
-        self.door_open = False
-        self.door_close = False
-        self.door_stop = False
-        self.home_set = False
-        self.home_get = False
-        self.up = False
-        self.down = False
-        self.stop = False
-
-def execute_serial(operation):
-    """ Execute specified operation over serial and return info as string.
-
-    @param operation: operation to be executed.
-    @return String with any error or info messages parsed from serial port.
+    .. Protocol:
+         TODO describe protocol
     """
 
-    ser = serial.Serial()
-    ser.port = PORT
-    ser.baudrate = BAUDRATE
-    ser.timeout = TIMEOUT
+    ROTATION_IDLE = 0
+    ROTATION_UP = -1
+    ROTATION_DOWN = 1
 
-    ser.open()
-    
-    return_str = ""
-    
-    if operation.status:
-        reply = write_serial(ser, 'status')
-        if operation.status_verbose:
-            position, rotation, calibration = reply
-            return_str =  'Azimuth: ' + str(position) + "\n" + 'Rotation: ' + {'0': 'Stop', '1': 'Down', '-1': 'Up'}[rotation] + "\n" + 'Calibration: ' + {'0': 'In progress', '1': 'Done', '-1': 'Not calibrated'}[calibration]
-        else:
-            return_str =  '|'.join(reply)
-    elif operation.calibrate:
-        write_serial(ser, 'calibrate')
-    elif operation.goto:
-        write_serial(ser, 'goto' + operation.goto_azimuth)
-    elif operation.azimuth_set:
-        write_serial(ser, 'force' + operation.azimuth_set_azimuth)
-    elif operation.azimuth_get:
-        return_str =  '\n'.join(write_serial(ser, 'current_azimuth'))
-    elif operation.park:
-        write_serial(ser, 'park')
-    elif operation.door_open:
-        write_serial(ser, 'door_open')
-    elif operation.door_stop:
-        write_serial(ser, 'door_stop')
-    elif operation.door_close:
-        write_serial(ser, 'door_close')
-    elif operation.home_set:
-        write_serial(ser, 'set_as_home')
-    elif operation.home_get:
-        return_str =  '\n'.join(write_serial(ser, 'home_azimuth'))
-    elif operation.up:
-        write_serial(ser, 'up')
-    elif operation.down:
-        write_serial(ser, 'down')
-    elif operation.stop:
-        write_serial(ser, 'stop')
-    
-    ser.close()
-    
-    return return_str
+    CALIBRATION_NONE = -1
+    CALIBRATION_DONE = 1
+    CALIBRATION_IN_PROGRESS = 0
 
-def _parse_args(args):
-    """ Parse command line arguments, and call execute_serial()
+    UNKNOWN_AZIMUTH = 500.0
 
-    @param args: docopt array of command line arguments
-    @return: String returned from excute_serial()
+    # public API
+
+    @property
+    def idle(self):
+        self._refresh_status()
+        return self._status['rotation'] == self.ROTATION_IDLE
+
+    @property
+    def azimuth(self):
+        self._refresh_status()
+        return self._status['azimuth']
+
+    def door_open(self):
+        """CLI handler with retries"""
+        self._simple_cli_handler(self._door_open)
+        print_("door opening.")
+        # TODO sense door closed, and implement dots while closing
+
+    def door_close(self):
+        """CLI handler with retries"""
+        self._simple_cli_handler(self._door_close)
+        print_("door closing.")
+        # TODO sense door closed, and implement dots while closing
+
+    def door_stop(self):
+        """CLI handler with retries"""
+        self._simple_cli_handler(self._door_stop)
+        print_("door stopped.")
+        # TODO sense door closed, and implement dots while closing
+
+    def rotate_up(self):
+        """
+        CLI function with dots for rotating the dome "up".
+        """
+        # TODO verify that the dome is actually moving, abort if it stops
+
+        print_('dome moving "up"', end='')
+        self._dots_cli_handler(
+            self._rotate_up,
+            func_stop=self._rotate_stop,
+        )
+
+    def rotate_down(self):
+        """
+        CLI function with dots for rotating the dome "down".
+        """
+        # TODO verify that the dome is actually moving, abort if it stops
+        print_('dome moving "down"', end='')
+        self._dots_cli_handler(
+            self._rotate_down,
+            func_stop=self._rotate_stop,
+        )
+
+    def rotate_stop(self):
+        """
+        CLI function to stop dome rotation".
+        """
+        print_('dome stopping.')
+        self._rotate_stop()
+
+    # private members
+
+    _default_status = {
+        'rotation': ROTATION_IDLE,
+        'azimuth': 0,
+        'calibration': CALIBRATION_NONE,
+    }
+    _default_status_type = {
+        'rotation': int,
+        'azimuth': float,
+        'calibration': int,
+    }
+
+    def prettify_val(self, key, val):
+        """Make statuses human-readable"""
+        if key == 'rotation':
+            return {
+                self.ROTATION_IDLE: 'idle',
+                self.ROTATION_UP: 'up',
+                self.ROTATION_DOWN: 'down',
+            }[val]
+        if key == 'calibration':
+            return {
+                self.CALIBRATION_NONE: 'none',
+                self.CALIBRATION_DONE: 'done',
+                self.CALIBRATION_IN_PROGRESS: 'in_progress',
+            }[val]
+        if key == 'azimuth':
+            if val == self.UNKNOWN_AZIMUTH:
+                return 'unknown'
+        return val
+
+    def _refresh_status(self):
+        """
+        Implementation specific to Dome, because protocol 
+        is not fully "common".
+        """
+        data = self._simple_command('status')
+        new_status = {}
+        keys = (k for k in
+                ('azimuth', 'rotation', 'calibration', 'unknown_key'))
+        for value in data:
+            key = next(keys)
+            if key not in self._default_status:
+                raise CommunicationException(
+                    'Got unknown status key: {}: {}'.format(key, value))
+            new_status[key] = self._default_status_type[key](value)
+        if len(new_status) != len(self._default_status):
+            raise CommunicationException(
+                'Mismatched status keys:\n'
+                'new_status:\n'
+                '{}\n'
+                'known keys:\n'
+                '{}'
+                .format(new_status.keys(), self._default_status.keys()))
+        self._status = new_status
+
+    def _door_open(self):
+        self._simple_command('door_open')
+
+    def _door_close(self):
+        self._simple_command('door_close')
+
+    def _door_stop(self):
+        self._simple_command('door_stop')
+
+    def _rotate_up(self):
+        self._simple_command('up')
+
+    def _rotate_down(self):
+        self._simple_command('down')
+
+    def _rotate_stop(self):
+        self._simple_command('stop')
+
+
+def get_controller():
     """
+    Get controller singleton
+    :return: DomeController
+    """
+    return DomeController.get_instance(DOME_CONFIG)
 
-    op = operation()
+
+def get_status():
+    """
+    :return: dict
+    """
+    return get_controller().status
+
+
+def get_idle():
+    """
+    :return: boolean 
+    """
+    return get_controller().idle
+
+
+def dome_up():
+    """Start dome rotation in "up" direction (right hand rule)."""
+    get_controller().rotate_up()
+
+
+def dome_down():
+    """Start dome rotation in "down" direction (right hand rule)."""
+    get_controller().rotate_down()
+
+
+def dome_stop():
+    """Stop dome rotation."""
+    controller = get_controller()
+    assert isinstance(controller, DomeController)
+    controller.rotate_stop()
+    controller.door_stop()
+
+
+def dome_open():
+    """Open dome door."""
+    return get_controller().door_open()
+
+
+def dome_close():
+    """Close dome door."""
+    return get_controller().door_close()
+
+
+def _main(args):
+    """CLI main branching"""
+
+    controller = get_controller()
+    assert isinstance(controller, DomeController)
 
     if args['status']:
-        op.status = True
-        if args['-v'] or args['--verbose']:
-            op.status_verbose = True
+        controller.pretty_status()
+        exit(0)
+
+    if args['door']:
+
+        if args['open']:
+            controller.door_open()
+            exit(0)
+
+        if args['stop']:
+            controller.door_stop()
+            exit(0)
+
+        if args['close']:
+            controller.door_close()
+            exit(0)
+
+    if args['up']:
+        controller.rotate_up()
+        exit(0)
+
+    if args['down']:
+        controller.rotate_down()
+        exit(0)
+
+    if args['stop']:
+        controller.rotate_stop()
+        exit(0)
+
     elif args['calibrate']:
-        op.calibrate = True
+        raise NotImplementedError()
     elif args['goto']:
-        op.goto = True
-        op.goto_azimuth = args['<azimuth>']
+        raise NotImplementedError()
     elif args['azimuth']:
         if args['set']:
-            op.azimuth_set = True
-            op.azimuth_set_azimuth = args['<azimuth>']
+            raise NotImplementedError()
         elif args['get']:
-            op.azimuth_get = False
-        else:
-            _unknown_command()
+            raise NotImplementedError()
     elif args['park']:
-        op.park = True
-    elif args['door']:
-        if args['open']:
-            op.door_open = True
-        elif args['stop']:
-            op.door_stop = True
-        elif args['close']:
-            op.door_close = True
-        else:
-            _unknown_command()
+        raise NotImplementedError()
     elif args['home']:
         if args['set']:
-            op.home_set = True
+            raise NotImplementedError()
         elif args['get']:
-            op.home_get = True
-        else:
-            _unknown_command()
-    elif args['up']:
-        op.up = True
-    elif args['down']:
-        op.down = True
-    elif args['stop']:
-        op.stop = True
-    else:
-        _unknown_command()
-
-    return execute_serial(op)
-    
-def _unknown_command():
-    print __doc__
-    sys.exit(1)
-    
-@app.route('/dome', methods=['GET', 'POST'])
-def _parse_http():
-    """ Parse HTTP request (GET or POST), and call execute_serial()
-
-    @return: String returned from excute_serial()
-    """
-
-    op = operation()
-
-    if request.method == 'GET':
-        if 'status' in request.args:
-            op.status = True
-            if request.args['status'] == 'verbose':
-                op.status_verbose = True
-        elif 'azimuth' in request.args:
-            op.azimuth_get = True
-        elif 'home' in request.args:
-            op.home_get = True
-    elif request.method == 'POST':
-        if 'calibrate' in request.json:
-            op.calibrate = True
-        elif 'goto' in request.json:
-            op.goto = True
-            op.goto_azimuth = request.json['goto']
-        elif 'azimuth' in request.json:
-            op.azimuth_set = True
-            op.azimuth_set_azimuth = request.json['azimuth']
-        elif 'park' in request.json:
-            op.park = True
-        elif 'door' in request.json:
-            if request.json['door'] == 'open':
-                op.door_open = True
-            elif request.json['door'] == 'stop':
-                op.door_stop = True
-            elif request.json['door'] == 'close':
-                op.door_close = True
-        elif 'home' in request.json:
-            op.home_set = True
-        elif 'up' in request.json:
-            op.up = True
-        elif 'down' in request.json:
-            op.down = True
-        elif 'stop' in request.json:
-            op.stop = True
-
-    str = execute_serial(op)
-    return str
+            raise NotImplementedError()
 
 
 if __name__ == '__main__':
-    args = docopt(__doc__, version=__doc__.split('\n'[0]))
-    
-    if(args['server']):
-        app.run(host='0.0.0.0', port=4242)
-    else:
-        try:
-            print _parse_args(args)
-            sys.exit(0)
-        except Exception as e:
-            print(e)
-            sys.exit(1)
+    # CLI entry point
+    cli_args = docopt(
+        __doc__, version=__doc__.split('\n'[0]), options_first=True)
+    if len(sys.argv) == 1:
+        print(__doc__.strip())
+        exit(0)
+
+    try:
+        _main(cli_args)
+    except Exception as e:
+        logger.warning(e, exc_info=True)
+        # raise
+        exit_('ERROR')
