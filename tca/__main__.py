@@ -4,6 +4,7 @@
 
 Usage:
   tca configure
+  tca api run
   tca get [float] (celest | local | altaz)
   tca get chirality
   tca goto home [ce]
@@ -33,6 +34,7 @@ Usage:
   tca --version
 
 Commands:
+  api run           Stat HTTP api, used by ASCOM drivrs.
   configure         Configure motor drivers before first use and write configuration to EEPROM and Flash memory.
   get               Display current encoder readout.
                     celest: celestial coordinates (right ascension and declination)
@@ -76,6 +78,7 @@ from common import print_, _wait_for_stop, sign
 from formats import parse_hours, parse_degrees, format_hours, format_degrees
 import position as dagor_position
 import cat as dagor_catalog
+import api
 import motors as dagor_motors
 import track as dagor_track
 import path as dagor_path
@@ -96,6 +99,10 @@ def stepped_move_by(delta_local):
 # Run as CLI client
 
 def _main(args):
+
+    if args['api']:
+        if args['run']:
+            api.run()
 
     if args['configure']:
         dagor_motors.init()
