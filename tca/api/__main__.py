@@ -17,11 +17,13 @@ Options:
     --version    Show version.
 """
 import os
+import sys
 from docopt import docopt
 from collections import OrderedDict
 from flask.ext.api.decorators import set_renderers
 from flask.ext.api.renderers import JSONRenderer
 from flask_api import FlaskAPI
+
 
 # mock early, before first import:
 if __name__ == '__main__':
@@ -83,6 +85,9 @@ def _run():
 
 
 if __name__ == '__main__':
+    API_DIR = os.path.dirname(__file__)
+    BASE_DIR = os.path.dirname(API_DIR)
+    sys.path.append(BASE_DIR)
     args = docopt(__doc__, version=__doc__.strip().split('\n')[0])
     if args['run']:
         _run()
