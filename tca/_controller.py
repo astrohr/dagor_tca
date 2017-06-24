@@ -99,6 +99,7 @@ class BaseController(object):
         new_status = {}
         for line in data:
             key, value = line.split(' ')
+            key = key.strip().strip(':')
             if key not in self._default_status:
                 raise CommunicationException(
                     'Got unknown status key: {}: {}'.format(key, value))
