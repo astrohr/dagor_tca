@@ -27,6 +27,7 @@ Usage:
   tca set cat <NAME> [(from <CATALOG>)] [blind]
   tca dome (up | down | open | close | stop)
   tca lights [0 | 1 | 2 | 3]
+  tca fans [0 | 1 | 2]
   tca focus get
   tca focus set <N>
   tca focus goto <N>
@@ -43,7 +44,10 @@ Commands:
   move to           move to coordinates precisely
   set               Sync current position with provided coordinates
   sync console      Position sync console, for fine position adjust using arrow keys.
-  dome              Controll dome rotation and door.
+  dome              Control dome rotation and door.
+  fans              Control fans on primary mirror.
+                    0: stop, 1: half-speed, 2: full-speed
+                    empty: get current speed
 
 Parameters:
   <HA>              Hour angle, 0 - 24
@@ -83,6 +87,7 @@ import motors as dagor_motors
 import track as dagor_track
 import path as dagor_path
 import focus as dagor_focus
+import fans as dagor_fans
 import dome as dagor_dome
 import lights as dagor_lights
 import sys
@@ -337,6 +342,19 @@ def _main(args):
             print(dagor_lights.get_lights())
         else:
             dagor_lights.set_lights(n)
+
+    if args['fans']:
+        n = None
+        if args['0']:
+            n = 0
+        elif args['1']:
+            n = 1
+        elif args['2']:
+            n = 2
+        if n is None:
+            print(dagor_fans.get_fan(1))
+        else:
+            dagor_fans.set_fan(1, n)
 
 
 def move_to_local(local=None, celest=None, chirality=None, quick=False, track=False):
