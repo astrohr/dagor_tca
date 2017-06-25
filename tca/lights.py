@@ -20,14 +20,15 @@ from __future__ import print_function, division, absolute_import
 import sys
 from docopt import docopt
 import tca.switches as dagor_switches
-from tca.local import lights_config
+from tca.local.configuration import LIGHTS_CONFIG
+
 
 CommunicationException = dagor_switches.CommunicationException
 
 
 class LightsController(dagor_switches.SwitchController):
-    PORT = lights_config.PORT
-    RESET_DISABLED = True
+    PORT = LIGHTS_CONFIG['port']
+    RESET_DISABLED = LIGHTS_CONFIG['reset_disabled']
 
     def __init__(self):
         super(LightsController, self).__init__()  # Just keeping PEP8 happy...

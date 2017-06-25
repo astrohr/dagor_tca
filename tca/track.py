@@ -25,6 +25,8 @@ from __future__ import division
 from collections import OrderedDict
 
 from datetime import datetime
+import random
+
 from docopt import docopt
 from time import time, sleep
 import os
@@ -35,6 +37,7 @@ import motors as dagor_motors
 import path as dagor_path
 import position as dagor_position
 import cat as dagor_catalog
+from local.configuration import TRACKING
 
 TRACKING_COORDINATES_FILE = os.path.join(BASE_PATH, 'coords.txt')
 TRACKING_CORRECTIONS_FILE = os.path.join(BASE_PATH, 'tracking_corrections.txt')
@@ -258,6 +261,14 @@ def speed_tracking(manual_internal=None,
         _wait_for_stop(dagor_motors._ha, dots=True)
         _wait_for_stop(dagor_motors._de, dots=True)
 
+    def rnd_track_interval(average_time):
+        if not TRACKING['enable_rnd']:
+            return average_time
+        rnd_interval = average_time / 1.1
+        start = average_time - rnd_interval
+        end = average_time + rnd_interval
+        return random.uniform(start, end)
+
 
     dagor_motors.init()
     if dagor_motors._ha.OperationMode != dagor_motors.OP_MODE_SPEED:
@@ -280,7 +291,12 @@ def speed_tracking(manual_internal=None,
     on_target_since = None
     try:
         while True:
-            wait_for_time(dagor_motors._TRACKING_CHECK_INTERVAL, dots=True, enter_abort=True, interval=dagor_motors._TRACKING_CHECK_INTERVAL / 10)
+            wait_for_time(
+                rnd_track_interval(dagor_motors._TRACKING_CHECK_INTERVAL),
+                dots=True,
+                enter_abort=True,
+                interval=dagor_motors._TRACKING_CHECK_INTERVAL / 10,
+            )
 
             # Getting target coords, "internal" system.
             # Target priorities:
