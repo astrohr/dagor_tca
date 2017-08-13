@@ -1,8 +1,13 @@
 # coding=utf-8
 
 
+STELLARIUM_MODE_DATE = 'on date'
+STELLARIUM_MODE_J2000 = 'J2000.0'
+
+
 TRACKING = {
-    'enable_rnd' : True,
+    'enable_rnd': True,
+    'stellarium_mode': STELLARIUM_MODE_J2000,
 }
 
 
@@ -36,3 +41,4 @@ LIGHTS_CONFIG = {
     'port': "/dev/dagor_lights",
     'reset_disabled': True,
 }
+

@@ -25,15 +25,15 @@ import sys
 
 from docopt import docopt
 import tca.switches_analogue as dagor_analogue_switches
-from tca.local import fans_config
+from tca.local.configuration import FANS_CONFIG
 
 
 CommunicationException = dagor_analogue_switches.CommunicationException
 
 
 class FansController(dagor_analogue_switches.AnalogueSwitchController):
-    PORT = fans_config.PORT
-    RESET_DISABLED = True
+    PORT = FANS_CONFIG['port']
+    RESET_DISABLED = FANS_CONFIG['reset_disabled']
 
     def __init__(self):
         super(FansController, self).__init__()  # Just keeping PEP8 happy...
