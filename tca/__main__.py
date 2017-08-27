@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-"""Dagor central CLI interface 0.1
+"""Dagor central CLI interface 0.1.2
 
 Usage:
   tca configure
