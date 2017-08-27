@@ -5,7 +5,7 @@
 Usage:
   tca configure
   tca api run
-  tca get [float] (celest | local | altaz)
+  tca get [float] [human] (celest | local | altaz)
   tca get chirality
   tca goto home [ce]
   tca goto home2 [cw]
@@ -114,7 +114,10 @@ def _main(args):
         values = {}
         template = ''
         if args['celest']:
-            template = "ra={ra}\nde={de}"
+            if args['human']:
+                template = "ra={ra}\nde={de}"
+            else:
+                template = "{ra} {de}"
             values = dagor_position.get_celest()
             if not args['float']:
                 values = {
@@ -122,7 +125,10 @@ def _main(args):
                     'de': format_degrees(values['de']),
                 }
         elif args['local']:
-            template = "ha={ha}\nde={de}"
+            if args['human']:
+                template = "ha={ha}\nde={de}"
+            else:
+                template = "{ha} {de}"
             values = dagor_position.get_local()
             if not args['float']:
                 values = {
@@ -130,7 +136,10 @@ def _main(args):
                     'de': format_degrees(values['de']),
                 }
         elif args['altaz']:
-            template = "alt={alt}\naz={az}"
+            if args['human']:
+                template = "alt={alt}\naz={az}"
+            else:
+                template = "{alt} {az}"
             values = dagor_position.get_altaz()
             if not args['float']:
                 values = {
