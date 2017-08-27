@@ -1,5 +1,5 @@
 # POSITION correction
 # first line: HA, format: decimal hour
 # second line: DE, format: decimal angle
-0.0931775800033
-0.000269234900337
+0.120857930856
+0.159198106692
