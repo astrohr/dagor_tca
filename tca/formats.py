@@ -33,8 +33,8 @@ def parse_hours(value):
     if value[0] == '+':
         value = value[1:]
     form1_1 = re.compile(r'^-?(([0-9]{1,2})(\.[0-9]*)?)h?$')
-    form1_2 = re.compile(r'^-?([0-9]{1,2})h((([0-9]{1,2})(\.[0-9]*)?)m?)$')
-    form1_3 = re.compile(r'^-?([0-9]{1,2})h([0-9]{1,2})m((([0-9]{1,2})(\.[0-9]*)?)s?)$')
+    form1_2 = re.compile(r'^-?([0-9]{1,2})h ?((([0-9]{1,2})(\.[0-9]*)?)m?)$')
+    form1_3 = re.compile(r'^-?([0-9]{1,2})h ?([0-9]{1,2})m ?((([0-9]{1,2})(\.[0-9]*)?)s?)$')
     match = form1_1.match(value)
     if match:
         h = float(match.group(1))
@@ -71,8 +71,8 @@ def parse_degrees(value):
     if value[0] == '+':
         value = value[1:]
     form1_1 = re.compile(ur'^-?(([0-9]{1,3})(\.[0-9]*)?):?$')
-    form1_2 = re.compile(ur'^-?([0-9]{1,3}):((([0-9]{1,2})(\.[0-9]*)?):?)$')
-    form1_3 = re.compile(ur'^-?([0-9]{1,3}):([0-9]{1,2}):(([0-9]{1,2})(\.[0-9]*)?)$')
+    form1_2 = re.compile(ur'^-?([0-9]{1,3}): ?((([0-9]{1,2})(\.[0-9]*)?):?)$')
+    form1_3 = re.compile(ur'^-?([0-9]{1,3}): ?([0-9]{1,2}): ?(([0-9]{1,2})(\.[0-9]*)?)$')
     match = form1_1.match(value)
     if match:
         d = float(match.group(1))

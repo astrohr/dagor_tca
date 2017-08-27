@@ -22,6 +22,7 @@ Usage:
   tca motors [ha | de] status
   tca motors [ha | de] reset
   tca sync console
+  tca set celest <RA_DE> [blind]
   tca set celest <RA> <DE> [blind]
   tca set star <NAME> [blind]
   tca set cat <NAME> [(from <CATALOG>)] [blind]
@@ -291,8 +292,20 @@ def _main(args):
 
     if args['set']:
         if args['celest']:
-            ra = parse_hours(args['<RA>'])
-            de = parse_degrees(args['<DE>'])
+            print('RADE: {}'.format(args))
+            print('---')
+            if args['<RA_DE>']:
+                rade = args['<RA_DE>']
+                try:
+                    rade = rade.replace('RA ', '').replace('  Dec ', '')
+                    arg_ra, arg_de = rade.split(',')
+                except:
+                    raise ValueError('Cannot parse format')
+            else:
+                arg_ra = args['<RA>']
+                arg_de = args['<DE>']
+            ra = parse_hours(arg_ra)
+            de = parse_degrees(arg_de)
             dagor_position.set_internal(dagor_position.celest_to_internal({'ra': ra, 'de': de}), args['blind'])
         elif args['star']:
             star = ephem.star(args['<NAME>'])
