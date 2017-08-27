@@ -295,7 +295,7 @@ def speed_tracking(manual_internal=None,
                 rnd_track_interval(dagor_motors._TRACKING_CHECK_INTERVAL),
                 dots=True,
                 enter_abort=True,
-                interval=dagor_motors._TRACKING_CHECK_INTERVAL / 10,
+                interval=dagor_motors._TRACKING_CHECK_INTERVAL / 100,
             )
 
             # Getting target coords, "internal" system.
