@@ -14,7 +14,7 @@ Usage:
   tca goto local <HA> <DE> [ce | cw | cc] [notrack [quick]] [force]
   tca goto celest <RA> <DE> [ce | cw | cc] [quick] [notrack] [force]
   tca goto stellarium [-] [ce | cw | cc] [quick] [notrack] [force]
-  tca goto internal <int_HA> <int_DE> [quick] [force]
+  tca goto internal <int_HA> <int_DE> [quick | track] [force]
   tca goto star <NAME> [ce | cw | cc] [quick] [notrack] [force]
   tca goto cat <NAME> [(from <CATALOG>)] [ce | cw | cc] [quick] [notrack] [force]
   tca goto this
@@ -271,7 +271,7 @@ def _main(args):
                 'ha': args['<int_HA>'],
                 'de': args['<int_DE>'],
             }
-            track = False
+            track = True if args['track'] else False
             stop_on_target = True
 
         elif args['this']:
