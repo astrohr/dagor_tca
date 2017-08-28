@@ -92,6 +92,11 @@ HOME_ALTAZ = {
     'az': 172,
 }
 HOME_CHIRALITY = CHIRAL_W
+PARK_ALTAZ = {
+    'alt': 90,
+    'az': 0,
+}
+PARK_CHIRALITY = CHIRAL_W
 
 HOME_N_ALTAZ = {
     'alt': 15,

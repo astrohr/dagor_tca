@@ -8,6 +8,7 @@ Usage:
   tca get [float] (celest | local | altaz)
   tca get chirality
   tca goto home [ce]
+  tca goto park [ce]
   tca goto home2 [cw]
   tca goto altaz <ALT> <AZ> [ce | cw | cc] [quick | track] [force]
   tca goto local <HA> <DE> [ce | cw | cc] [notrack [quick]] [force]
@@ -179,6 +180,16 @@ def _main(args):
                 chirality = dagor_position.CHIRAL_W
             internal_end = dagor_position.altaz_to_internal(
                 dagor_position.HOME_N_ALTAZ,
+                chirality)
+            quick = True
+            stop_on_target = True
+
+        if args['park']:
+            chirality = dagor_position.PARK_CHIRALITY
+            if args['ce']:
+                chirality = dagor_position.CHIRAL_E
+            internal_end = dagor_position.altaz_to_internal(
+                dagor_position.PARK_ALTAZ,
                 chirality)
             quick = True
             stop_on_target = True
