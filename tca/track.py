@@ -269,6 +269,20 @@ def speed_tracking(manual_internal=None,
         end = average_time + rnd_interval
         return random.uniform(start, end)
 
+    def check_space(current_internal, hence_sec=0):
+        current_internal = {
+            'ha': current_internal['ha'] + hence_sec / 3600,
+            'de': current_internal['de'],
+        }
+        park_internal = dagor_position.altaz_to_internal(
+            dagor_position.PARK_ALTAZ,
+            dagor_position.get_chirality(),
+        )
+        try:
+            dagor_path.get_path(current_internal, park_internal)
+        except dagor_path.NoPath:
+            return False
+        return True
 
     dagor_motors.init()
     if dagor_motors._ha.OperationMode != dagor_motors.OP_MODE_SPEED:
@@ -288,6 +302,7 @@ def speed_tracking(manual_internal=None,
     target_interal = None
     file_celest = None
 
+    on_target = False
     on_target_since = None
     try:
         while True:
@@ -336,6 +351,10 @@ def speed_tracking(manual_internal=None,
 
             t_now = time()
             internal_now = dagor_position.get_internal()
+            hence_sec = 10 if on_target else 0
+            if not force and not check_space(internal_now, hence_sec):
+                print_('End of allowed space!')
+                raise EnterAbort()
             ha_now, de_now = internal_now['ha'] + manual_corrections['ha_offset'], internal_now['de'] + manual_corrections['de_offset']
 
             ha_err = ha_now - target.ha

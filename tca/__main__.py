@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-"""Dagor central CLI interface 0.1.2
+"""Dagor central CLI interface 0.1.3
 
 Usage:
   tca configure
@@ -8,12 +8,13 @@ Usage:
   tca get [float] [human] (celest | local | altaz)
   tca get chirality
   tca goto home [ce]
+  tca goto park [ce]
   tca goto home2 [cw]
   tca goto altaz <ALT> <AZ> [ce | cw | cc] [quick | track] [force]
   tca goto local <HA> <DE> [ce | cw | cc] [notrack [quick]] [force]
   tca goto celest <RA> <DE> [ce | cw | cc] [quick] [notrack] [force]
   tca goto stellarium [-] [ce | cw | cc] [quick] [notrack] [force]
-  tca goto internal <int_HA> <int_DE> [quick] [force]
+  tca goto internal <int_HA> <int_DE> [quick | track] [force]
   tca goto this
   tca stop
   tca manual
@@ -184,6 +185,16 @@ def _main(args):
             quick = True
             stop_on_target = True
 
+        if args['park']:
+            chirality = dagor_position.PARK_CHIRALITY
+            if args['ce']:
+                chirality = dagor_position.CHIRAL_E
+            internal_end = dagor_position.altaz_to_internal(
+                dagor_position.PARK_ALTAZ,
+                chirality)
+            quick = True
+            stop_on_target = True
+
         elif args['altaz']:
             track = True if args['track'] else False
             stop_on_target = not track
@@ -251,7 +262,7 @@ def _main(args):
                 'ha': args['<int_HA>'],
                 'de': args['<int_DE>'],
             }
-            track = False
+            track = True if args['track'] else False
             stop_on_target = True
 
         elif args['this']:

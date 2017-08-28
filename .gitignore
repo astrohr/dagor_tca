@@ -23,3 +23,6 @@ hardware/dagor_fans/firmware/.travis.yml
 hardware/dagor_fans/firmware/platformio.ini
 .flow
 tca/.idea
+hardware/switches/.pioenvs
+.clang_complete
+.gcc-flags.json
