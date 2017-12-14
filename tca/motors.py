@@ -43,6 +43,8 @@ from time import sleep
 import sys
 
 from position import _HA_SLOPE, _DE_SLOPE
+import local.configuration as config
+
 
 _DE_MOTOR_TO_ENCODER_RATIO = 97.6185
 _HA_MOTOR_TO_ENCODER_RATIO = 303.355
@@ -58,7 +60,9 @@ FULL2 = FULL**2
 FULL2_MAXI = FULL2 / 2 - 1
 FULL2_MINI = FULL2 / -2
 MAX_TASKS = 2
-SPEED_LIMIT = 3000
+
+SPEED_LIMIT = config.MOTORS['speed_limit']
+
 MAX_SPEED_DE = 1.456  # deg/sec
 MAX_SPEED_HA = 3.075e-2  # h/sec
 ACC_RAMP = 7000

@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # coding=utf-8
-"""Dagor central CLI interface 0.1.2
+"""Dagor central CLI interface 0.1.3
 
 Usage:
   tca configure
   tca api run
-  tca get [float] (celest | local | altaz)
+  tca get [float] [human] (celest | local | altaz)
   tca get chirality
   tca goto home [ce]
   tca goto park [ce]
@@ -15,17 +15,14 @@ Usage:
   tca goto celest <RA> <DE> [ce | cw | cc] [quick] [notrack] [force]
   tca goto stellarium [-] [ce | cw | cc] [quick] [notrack] [force]
   tca goto internal <int_HA> <int_DE> [quick | track] [force]
-  tca goto star <NAME> [ce | cw | cc] [quick] [notrack] [force]
-  tca goto cat <NAME> [(from <CATALOG>)] [ce | cw | cc] [quick] [notrack] [force]
   tca goto this
   tca stop
   tca manual
   tca motors [ha | de] status
   tca motors [ha | de] reset
   tca sync console
+  tca set celest <RA_DE> [blind]
   tca set celest <RA> <DE> [blind]
-  tca set star <NAME> [blind]
-  tca set cat <NAME> [(from <CATALOG>)] [blind]
   tca dome (up | down | open | close | stop)
   tca lights [0 | 1 | 2 | 3]
   tca fans [0 | 1 | 2]
@@ -60,7 +57,6 @@ Parameters:
                     cw: West
                     cc: Closest
                     default: keep same chirality
-  <NAME>            Name of a start, capitalized, e.g. Vega
   force             Go directly to specified coordinates, disregarding safety constraints.
                     Use very carefully!
 
@@ -77,12 +73,10 @@ sys.path.append(path.dirname(path.abspath(__file__)))
 
 from time import sleep
 from docopt import docopt
-import ephem
-import math
 from common import print_, _wait_for_stop, sign
+from local import configuration
 from formats import parse_hours, parse_degrees, format_hours, format_degrees
 import position as dagor_position
-import cat as dagor_catalog
 import api
 import motors as dagor_motors
 import track as dagor_track
@@ -92,7 +86,6 @@ import fans as dagor_fans
 import dome as dagor_dome
 import lights as dagor_lights
 import sys
-#from common import exit_
 
 #   docopt    http://docopt.org/
 #   astar     https://github.com/elemel/python-astar2
@@ -123,7 +116,10 @@ def _main(args):
         values = {}
         template = ''
         if args['celest']:
-            template = "ra={ra}\nde={de}"
+            if args['human']:
+                template = "ra={ra}\nde={de}"
+            else:
+                template = "{ra} {de}"
             values = dagor_position.get_celest()
             if not args['float']:
                 values = {
@@ -131,7 +127,10 @@ def _main(args):
                     'de': format_degrees(values['de']),
                 }
         elif args['local']:
-            template = "ha={ha}\nde={de}"
+            if args['human']:
+                template = "ha={ha}\nde={de}"
+            else:
+                template = "{ha} {de}"
             values = dagor_position.get_local()
             if not args['float']:
                 values = {
@@ -139,7 +138,10 @@ def _main(args):
                     'de': format_degrees(values['de']),
                 }
         elif args['altaz']:
-            template = "alt={alt}\naz={az}"
+            if args['human']:
+                template = "alt={alt}\naz={az}"
+            else:
+                template = "{alt} {az}"
             values = dagor_position.get_altaz()
             if not args['float']:
                 values = {
@@ -218,7 +220,7 @@ def _main(args):
                 local_end, chirality
             )
 
-        elif args['celest'] or args['stellarium'] or args['cat'] or args['star']:
+        elif args['celest'] or args['stellarium']:
 
             if args['celest']:
                 celest = {
@@ -230,7 +232,7 @@ def _main(args):
                 #print('Paste object data from Stellarium, empty line to submit')
                 # read stdin:
                 stellarium_ra_dec = None
-                TARGET_PREFIX = 'RA/Dec (on date): '
+                TARGET_PREFIX = "RA/Dec ({}): ".format(configuration.TRACKING["stellarium_mode"])
                 print("Paste object info from Stellarium then press Enter twice:")
                 while True:
                     input_ = raw_input().strip()
@@ -247,16 +249,6 @@ def _main(args):
                     'de': parse_degrees(stellarium_de),
                 }
 
-            elif args['cat']:
-                celest = dagor_catalog.get_celest(args['<NAME>'],
-                                                  args['<CATALOG>'])
-            elif args['star']:
-                star = ephem.star(args['<NAME>'])
-                star.compute(dagor_position.tican())
-                celest = {
-                    'ra': parse_hours(star.ra / math.pi * 12),
-                    'de': parse_degrees(star.dec / math.pi * 180),
-                }
             else:
                 celest = None  # should not be possible to reach
 
@@ -302,16 +294,21 @@ def _main(args):
 
     if args['set']:
         if args['celest']:
-            ra = parse_hours(args['<RA>'])
-            de = parse_degrees(args['<DE>'])
+            print('RADE: {}'.format(args))
+            print('---')
+            if args['<RA_DE>']:
+                rade = args['<RA_DE>']
+                try:
+                    rade = rade.replace('RA ', '').replace('  Dec ', '')
+                    arg_ra, arg_de = rade.split(',')
+                except:
+                    raise ValueError('Cannot parse format')
+            else:
+                arg_ra = args['<RA>']
+                arg_de = args['<DE>']
+            ra = parse_hours(arg_ra)
+            de = parse_degrees(arg_de)
             dagor_position.set_internal(dagor_position.celest_to_internal({'ra': ra, 'de': de}), args['blind'])
-        elif args['star']:
-            star = ephem.star(args['<NAME>'])
-            star.compute(dagor_position.tican())
-            dagor_position.set_internal(dagor_position.celest_to_internal({'ra': star.ra / math.pi * 12, 'de': star.dec / math.pi * 180}), args['blind'])
-        elif args['cat']:
-            celest = dagor_catalog.get_celest(args['<NAME>'], args['<CATALOG>'])
-            dagor_position.set_internal(dagor_position.celest_to_internal(celest), args['blind'])
 
     if args['focus']:
         if args['get']:
