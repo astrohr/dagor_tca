@@ -19,7 +19,6 @@ Options:
   -h --help         Show this screen.
   --quiet           Only data on stdout
 
-
 """
 from __future__ import division
 from collections import OrderedDict
@@ -37,7 +36,7 @@ import motors as dagor_motors
 import path as dagor_path
 import position as dagor_position
 import cat as dagor_catalog
-from local.configuration import TRACKING
+import local.configuration as conf
 
 TRACKING_COORDINATES_FILE = os.path.join(BASE_PATH, 'coords.txt')
 TRACKING_CORRECTIONS_FILE = os.path.join(BASE_PATH, 'tracking_corrections.txt')
@@ -262,7 +261,7 @@ def speed_tracking(manual_internal=None,
         _wait_for_stop(dagor_motors._de, dots=True)
 
     def rnd_track_interval(average_time):
-        if not TRACKING['enable_rnd']:
+        if not conf.TRACKING['enable_rnd']:
             return average_time
         rnd_interval = average_time / 1.1
         start = average_time - rnd_interval
@@ -369,17 +368,23 @@ def speed_tracking(manual_internal=None,
                 ha_speed = (9 * speeds['speed_ha'] * abs(ha_err) ** 2 / 200) ** (1 / 3)
             else:
                 ha_speed = (9 * speeds['speed_ha'] * abs(ha_err) ** 2 / 400) ** (1 / 3)
-            ha_speed = ha_speed * dagor_motors.SPEED_LIMIT / dagor_motors.MAX_SPEED_HA
-            ha_speed = min(ha_speed - (27 if sign(ha_err) == 1 else -27), dagor_motors.SPEED_LIMIT * speeds['speed_ha'] / dagor_motors.MAX_SPEED_HA)
+            ha_speed = ha_speed * conf.MOTORS['speed_limit'] / dagor_motors.MAX_SPEED_HA
+            ha_speed = min(ha_speed - (27 if sign(ha_err) == 1 else -27), conf.MOTORS['speed_limit'] * speeds['speed_ha'] / dagor_motors.MAX_SPEED_HA)
             ha_speed = int(ha_speed * sign(ha_err))
 
             if rough:
                 de_speed = (9 * speeds['speed_de'] * abs(de_err) ** 2 / 200) ** (1 / 3)
             else:
                 de_speed = (9 * speeds['speed_de'] * abs(de_err) ** 2 / 400) ** (1 / 3)
-            de_speed = de_speed * dagor_motors.SPEED_LIMIT / dagor_motors.MAX_SPEED_DE
-            de_speed = min(de_speed, dagor_motors.SPEED_LIMIT * speeds['speed_de'] / dagor_motors.MAX_SPEED_DE)
+            de_speed = de_speed * conf.MOTORS['speed_limit'] / dagor_motors.MAX_SPEED_DE
+            de_speed = min(de_speed, conf.MOTORS['speed_limit'] * speeds['speed_de'] / dagor_motors.MAX_SPEED_DE)
             de_speed = int(de_speed * sign(de_err))
+
+            sum_speed = abs(ha_speed) + abs(de_speed)
+            if sum_speed > conf.TRACKING['total_speed_limit']:
+                correct_factor = conf.TRACKING['total_speed_limit'] / sum_speed
+                ha_speed *= correct_factor
+                de_speed *= correct_factor
 
             if rough:
                 if abs(ha_err) < TRACKING_ROUGH_TARGET_ZONE_HA and abs(de_err) < TRACKING_ROUGH_TARGET_ZONE_DE:

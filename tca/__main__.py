@@ -74,6 +74,7 @@ sys.path.append(path.dirname(path.abspath(__file__)))
 from time import sleep
 from docopt import docopt
 from common import print_, _wait_for_stop, sign
+from local import configuration
 from formats import parse_hours, parse_degrees, format_hours, format_degrees
 import position as dagor_position
 import api
@@ -219,7 +220,7 @@ def _main(args):
                 local_end, chirality
             )
 
-        elif args['celest'] or args['stellarium'] or args['cat'] or args['star']:
+        elif args['celest'] or args['stellarium']:
 
             if args['celest']:
                 celest = {
@@ -231,7 +232,7 @@ def _main(args):
                 #print('Paste object data from Stellarium, empty line to submit')
                 # read stdin:
                 stellarium_ra_dec = None
-                TARGET_PREFIX = 'RA/Dec (on date): '
+                TARGET_PREFIX = "RA/Dec ({}): ".format(configuration.TRACKING["stellarium_mode"])
                 print("Paste object info from Stellarium then press Enter twice:")
                 while True:
                     input_ = raw_input().strip()
