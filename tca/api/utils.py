@@ -1,15 +1,24 @@
 # coding=utf-8
 import os
+from functools import wraps
 
-from flask.ext.api import renderers, parsers, exceptions, status as status_http
+from retrying import retry
+
+from flask.ext.api import renderers, parsers, exceptions, status as http_status
 from flask.ext.api.decorators import set_renderers
 from flask.ext.api.renderers import BrowsableAPIRenderer, dedent, html_escape
+from flask_api.exceptions import ParseError
 from flask_api.mediatypes import MediaType
 from flask_api.compat import apply_markdown
 from flask import request, render_template, current_app
 # noinspection PyProtectedMember
 from flask.globals import _request_ctx_stack
 from werkzeug.routing import BaseConverter
+
+from tca.logging_conf import get_logger
+
+
+logger = get_logger('api.utils')
 
 
 class RegexConverter(BaseConverter):
@@ -155,7 +164,7 @@ def render_error(message):
     """ Render errors in JSON. Also make sure JSONRenderer is set."""
     return {
        'message': '{}'.format(message),
-    }, status_http.HTTP_400_BAD_REQUEST
+    }, http_status.HTTP_400_BAD_REQUEST
 
 
 def set_mock_var():
@@ -164,3 +173,54 @@ def set_mock_var():
 
 def read_mock_var():
     return os.environ.get('DAGOR_API_MOCK')
+
+
+# decorators
+
+
+def set_logger(logger):
+
+    def _set_logger(func):
+        func.logger = logger
+        return func
+
+    return _set_logger
+
+
+def check_connectivity(func):
+    @wraps(func)
+    def func_wrapper(*args_, **kwargs_):
+        try:
+            return func(*args_, **kwargs_)
+        except Exception as e:
+            logger.exception('API - connection failure')
+            return {
+                'ready': False,
+                'message': '{}'.format(e),
+            }, http_status.HTTP_503_SERVICE_UNAVAILABLE
+    return func_wrapper
+
+
+def handle_request_errors(func):
+    @wraps(func)
+    def func_wrapper(*args_, **kwargs_):
+        try:
+            return func(*args_, **kwargs_)
+        except ParseError as e:
+            return render_error(e)
+    return func_wrapper
+
+
+def yes_just_log_it(exc):
+    if isinstance(exc, KeyboardInterrupt):
+        logger.debug('API - interrupted, {}'.format(repr(exc)))
+        return False
+    logger.warning('API - retrying, {}'.format(repr(exc)))
+    return True
+
+
+retry_serial = retry(
+    wait_fixed=20,  # ms
+    stop_max_delay=300,  # ms
+    retry_on_exception=yes_just_log_it,
+)
