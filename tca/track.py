@@ -268,9 +268,9 @@ def speed_tracking(manual_internal=None,
         end = average_time + rnd_interval
         return random.uniform(start, end)
 
-    def check_space(current_internal, hence_sec=0):
+    def check_space(current_internal, hence_sec_=0):
         current_internal = {
-            'ha': current_internal['ha'] + hence_sec / 3600,
+            'ha': current_internal['ha'] + hence_sec_ / 3600,
             'de': current_internal['de'],
         }
         park_internal = dagor_position.altaz_to_internal(
