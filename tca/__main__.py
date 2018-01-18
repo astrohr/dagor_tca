@@ -7,9 +7,9 @@ Usage:
   tca api run
   tca get [float] [human] (celest | local | altaz)
   tca get chirality
-  tca goto home [ce]
-  tca goto park [ce]
-  tca goto home2 [cw]
+  tca goto home [ce] [force]
+  tca goto park [ce] [force]
+  tca goto home2 [cw] [force]
   tca goto altaz <ALT> <AZ> [ce | cw | cc] [quick | track] [force]
   tca goto local <HA> <DE> [ce | cw | cc] [notrack [quick]] [force]
   tca goto celest <RA> <DE> [ce | cw | cc] [quick] [notrack] [force]
