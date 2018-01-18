@@ -408,7 +408,9 @@ def speed_tracking(manual_internal=None,
 
             od = OrderedDict()
             od['ha_speed'] = ha_speed
-            od['ha_err'] = ha_err
+            od['ha_err'] = format_hours(ha_err)
+            od['ha_err_d'] = format_degrees(ha_err * 15)
+            od['ha_err_'] = ha_err
             od['de_speed'] = de_speed
             od['de_err'] = de_err
             od['mode'] = 'precise' if not rough else 'rough'
