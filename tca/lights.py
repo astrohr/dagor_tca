@@ -30,9 +30,6 @@ class LightsController(dagor_switches.SwitchController):
     PORT = LIGHTS_CONFIG['port']
     RESET_DISABLED = LIGHTS_CONFIG['reset_disabled']
 
-    def __init__(self):
-        super(LightsController, self).__init__()  # Just keeping PEP8 happy...
-
 
 def get_light(n):
     controller = LightsController()
