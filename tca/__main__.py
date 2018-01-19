@@ -73,7 +73,7 @@ sys.path.append(path.dirname(path.abspath(__file__)))
 
 from time import sleep
 from docopt import docopt
-from common import print_, _wait_for_stop, sign
+from common import print_, wait_for_stop, sign
 from local import configuration
 from formats import parse_hours, parse_degrees, format_hours, format_degrees
 import position as dagor_position
@@ -190,7 +190,7 @@ def _main(args):
             chirality = dagor_position.PARK_CHIRALITY
             if args['ce']:
                 chirality = dagor_position.CHIRAL_E
-            internal_end = dagor_position.altaz_to_internal(
+            target_celest = dagor_position.altaz_to_celest(
                 dagor_position.PARK_ALTAZ,
                 chirality)
             quick = True
@@ -205,9 +205,7 @@ def _main(args):
             }
             if chirality is None:
                 chirality = dagor_position.CHIRAL_CLOSEST
-            internal_end = dagor_position.altaz_to_internal(
-                altaz_end, chirality
-            )
+            target_celest = dagor_position.altaz_to_celest(altaz_end)
 
         elif args['local']:
             track = False if args['notrack'] else True
@@ -216,14 +214,12 @@ def _main(args):
                 'ha': parse_hours(args['<HA>']),
                 'de': parse_degrees(args['<DE>']),
             }
-            internal_end = dagor_position.local_to_internal(
-                local_end, chirality
-            )
+            target_celest = dagor_position.local_to_celest(local_end)
 
         elif args['celest'] or args['stellarium']:
 
             if args['celest']:
-                celest = {
+                target_celest = {
                     'ra': parse_hours(args['<RA>']),
                     'de': parse_degrees(args['<DE>']),
                 }
@@ -244,39 +240,35 @@ def _main(args):
                     sys.stderr.write('No line starts with "{}" in the pasted data.\n'.format(TARGET_PREFIX))
                     exit(1)
                 stellarium_ra , stellarium_de = stellarium_ra_dec.split('/', 1)
-                celest = {
+                target_celest = {
                     'ra': parse_hours(stellarium_ra),
                     'de': parse_degrees(stellarium_de),
                 }
 
-            else:
-                celest = None  # should not be possible to reach
-
             track = False if args['notrack'] else True
             stop_on_target = not track
-            internal_end = dagor_position.celest_to_internal(
-                celest, chirality
-            )
 
         elif args['internal']:
             internal_end = {
                 'ha': args['<int_HA>'],
                 'de': args['<int_DE>'],
             }
+            target_celest = dagor_position.internal_to_celest(internal_end)
             track = True if args['track'] else False
             stop_on_target = True
 
         elif args['this']:
             # stat tracking current coordinates
-            internal_end = None
             track = True
             stop_on_target = False
             quick = False
+            target_celest = None
 
         # start track console:
         dagor_track.speed_tracking(
-            internal_end,
-            static_target=not track,
+            target_celest,
+            chirality=chirality,
+            target_is_static=not track,
             stop_on_target=stop_on_target,
             rough=quick,
             force=args['force'],
@@ -435,11 +427,12 @@ def move_to_local(local=None, celest=None, chirality=None, quick=False, track=Fa
             sys.stdout.flush()
             sleep(0.2)
             while dagor_motors.moving():
-                _wait_for_stop(dagor_motors._ha, dots=True, skip_dots=3, enter_abort=True)
-                _wait_for_stop(dagor_motors._de, dots=True, skip_dots=3, enter_abort=True)
+                wait_for_stop(dagor_motors._ha, dots=True, skip_dots=3, enter_abort=True)
+                wait_for_stop(dagor_motors._de, dots=True, skip_dots=3, enter_abort=True)
         if track:
             if celest:
-                dagor_track.speed_tracking(internal_end)
+                raise NotImplementedError()
+                # dagor_track.speed_tracking(internal_end)
 
 
 if __name__ == '__main__':

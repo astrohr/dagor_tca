@@ -35,6 +35,7 @@ Options:
 """
 
 from __future__ import division
+from datetime import datetime
 import os
 import sys
 from docopt import docopt
@@ -47,6 +48,7 @@ import cat as dagor_catalog
 #   astar     https://github.com/elemel/python-astar2
 from common import BASE_PATH
 from formats import format_hours, format_degrees
+from path import get_path, NoPath
 
 
 LATITUDE = 45.290871
@@ -59,6 +61,8 @@ def tican():
     observer.lat = math.radians(LATITUDE)
     observer.lon = math.radians(LONGITUDE)
     observer.elevation = ALTITUDE
+    # need to update date manually to get precision greater then 1s:
+    observer.date = ephem.Date(datetime.utcnow())
     return observer
 
 
@@ -457,6 +461,22 @@ def internal_to_celest(internal):
     return local_to_celest(internal_to_local(internal))
 
 
+def check_space(internal, ha_offset_sec=0):
+    internal = {
+        'ha': internal['ha'] + ha_offset_sec / 3600,
+        'de': internal['de'],
+    }
+    park_internal = altaz_to_internal(
+        PARK_ALTAZ,
+        get_chirality(),
+    )
+    try:
+        get_path(internal, park_internal)
+    except NoPath:
+        return False
+    return True
+
+
 # Run as CLI client
 
 def _main(args):
@@ -502,6 +522,7 @@ def _main(args):
         elif args['cat']:
             celest = dagor_catalog.get_celest(args['<NAME>'], args['<CATALOG>'])
             set_internal(celest_to_internal(celest), args['blind'])
+
 
 if __name__ == '__main__':
 

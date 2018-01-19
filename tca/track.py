@@ -3,7 +3,6 @@
 
 Usage:
   track.py start
-  track.py speed
   track.py sync_console
   track.py sync
   motors.py [-h | --help | help]
@@ -30,7 +29,7 @@ from docopt import docopt
 from time import time, sleep
 import os
 import sys
-from common import NonBlockingConsole, BASE_PATH, EnterAbort, print_, wait_for_time, sign, p_, _wait_for_stop
+from common import NonBlockingConsole, BASE_PATH, EnterAbort, print_, wait_for_time, sign, p_, wait_for_stop
 from formats import format_hours, format_degrees, parse_degrees, parse_hours
 import motors as dagor_motors
 import path as dagor_path
@@ -106,19 +105,6 @@ def read_corrections_file():
         manual_corrections['ha_offset'] = parse_hours(lines[0])
         manual_corrections['de_offset'] = parse_degrees(lines[1])
     return manual_corrections
-
-
-def adjust_speed(ha_err, de_err, max_ha, max_de):
-    """ Adjust speeds to equalize travel time """
-    t_ha = abs(ha_err) / max_ha
-    t_de = abs(de_err) / max_de
-    t = max(t_ha, t_de)
-    max_ha = min(t_ha / t * max_ha, max_ha)
-    max_de = min(t_de / t * max_de, max_de)
-    return {
-        'speed_ha': max_ha,
-        'speed_de': max_de,
-    }
 
 
 def sync_console():
@@ -239,13 +225,245 @@ def sync_console():
                     write_coordinates_file(celest)
 
 
-def speed_tracking(manual_internal=None,
-                   static_target=False,
-                   stop_on_target=False,
-                   rough=False,
-                   force=False):
+class Target(object):
+    TYPES = ('celest', 'altaz', )
+    STATIC_DEFAULTS = {
+        'celest': False,
+        'altaz': True,
+    }
 
-    def console_header():
+    def __init__(self, coords, coords_type, static=None):
+        self._celest = None
+        self._altaz = None
+        if coords_type not in self.TYPES:
+            raise ValueError('{} not in Target.TYPES'.format(coords_type))
+        if static is None:
+            static = self.STATIC_DEFAULTS[coords_type]
+        if static:
+            if coords_type == 'celest':
+                coords = dagor_position.celest_to_altaz(coords)
+            self._altaz = coords
+        else:
+            if coords_type == 'altaz':
+                coords = dagor_position.altaz_to_celest(coords)
+            self._celest = coords
+
+    def celest(self):
+        if self._altaz:
+            return dagor_position.altaz_to_celest(self._altaz)
+        else:
+            return self._celest
+
+
+class Tracking(object):
+
+    def __init__(self,
+                 target_celest=None,
+                 chirality=None,
+                 target_is_static=False,
+                 stop_on_target=False,
+                 rough=False,
+                 force=False):
+        self.current = {}
+        target_celest = target_celest or dagor_position.get_celest()
+        self.config = {
+            'target': Target(target_celest, 'celest', target_is_static),
+            'target_is_static': target_is_static,
+            'chirality': chirality or dagor_position.CHIRAL_CLOSEST,
+            'stop_on_target': stop_on_target,
+        }
+        self.tracking_check_interval = conf.TRACKING['tracking_check_interval']
+        self.force = force
+        self.rough = rough
+
+    def init_motors(self):
+        dagor_motors.init()
+        dagor_motors.require_stopped('ha')
+        dagor_motors.require_stopped('de')
+        dagor_motors.enable('ha')
+        dagor_motors.enable('de')
+        dagor_motors.set_speed('ha', 0)
+        dagor_motors.set_speed('de', 0)
+
+    def adjust_speeds(self, ha_err, de_err, max_ha, max_de):
+        """
+        Calculate max possible speeds to equalize travel time.
+        """
+        t_ha = abs(ha_err) / max_ha
+        t_de = abs(de_err) / max_de
+        t = max(t_ha, t_de)
+        max_ha = min(t_ha / t * max_ha, max_ha)
+        max_de = min(t_de / t * max_de, max_de)
+        return {
+            'speed_ha': max_ha,
+            'speed_de': max_de,
+        }
+
+    def slope(self, speed, err, a=9, b=400):
+        """Calculate real speed given position error."""
+        return (a * speed * abs(err) ** 2 / b) ** (1 / 3)
+
+    def speed_real_to_motor(self, speed, limit):
+        """Translate from real speed (deg/s or h/sec) to motor speed units."""
+        factor = conf.MOTORS['speed_limit'] / limit
+        return speed * factor
+
+    def rnd_track_interval(self):
+        """seconds to wait"""
+        if not conf.TRACKING['enable_rnd']:
+            return self.tracking_check_interval
+        rnd_interval = self.tracking_check_interval / 1.1
+        start = self.tracking_check_interval - rnd_interval
+        end = self.tracking_check_interval + rnd_interval
+        return random.uniform(start, end)
+
+    def stop_tracking(self):
+        print_("Stopping")
+        dagor_motors.stop()
+        wait_for_stop(dagor_motors.get_motor('ha'), dots=True)
+        wait_for_stop(dagor_motors.get_motor('de'), dots=True)
+
+    def update_path(self, path, current_internal):
+        """Remove the first point if we are close enough to it"""
+        if len(path) > 2:
+            if dagor_position.angular_distance(
+                    current_internal,
+                    {'ha': path[1].ha, 'de': path[1].de}
+            ) < 0.8:
+                del path[1]
+        return path
+
+    def track(self):
+        self.init_motors()
+
+        # start:
+
+        self.current['on_target'] = False
+        self.current['on_target_since'] = None
+        try:
+            while True:
+                waiting_interval = self.rnd_track_interval()
+                wait_for_time(
+                    waiting_interval,
+                    dots=True,
+                    enter_abort=True,
+                    interval=self.tracking_check_interval / 100,
+                )
+                self.config['target_internal'] = dagor_position.celest_to_internal(
+                    self.config['target'].celest(),
+                    self.config['chirality'],
+                )
+                self.current['internal'] = dagor_position.get_internal()
+                t_now = time()
+                tracking_offset = read_corrections_file()
+                self.current['path'] = dagor_path.get_path(
+                    self.current['internal'],
+                    self.config['target_internal'],
+                    force=self.force,
+                )
+                self.current['path'] = self.update_path(
+                    self.current['path'], self.current['internal'])
+                target = self.current['path'][1]
+
+                hence_sec = 10 if self.current['on_target'] else 0
+
+                if self.force:
+                    space_ok = True
+                else:
+                    space_ok = dagor_position.check_space(
+                        self.current['internal'],
+                        hence_sec,
+                    )
+                if not space_ok:
+                    print_('End of allowed space!')
+                    raise EnterAbort()
+
+                ha_now = self.current['internal']['ha'] + tracking_offset['ha_offset']
+                de_now = self.current['internal']['de'] + tracking_offset['de_offset']
+                self.current['ha_err'] = ha_now - target.ha
+                self.current['de_err'] = de_now - target.de
+
+                # TODO get rid of dagor_motors.MAX_SPEED_HA and use conf.MOTORS['speed_limit'] instead
+                speeds = self.adjust_speeds(
+                    self.current['ha_err'],
+                    self.current['de_err'],
+                    dagor_motors.MAX_SPEED_HA,
+                    dagor_motors.MAX_SPEED_DE,
+                )
+
+                b = 200 if self.rough else 400
+                ha_speed = self.slope(
+                    speeds['speed_ha'], self.current['ha_err'], b=b)
+                ha_speed = self.speed_real_to_motor(
+                    ha_speed, dagor_motors.MAX_SPEED_HA)
+                ha_speed = min(
+                    ha_speed,
+                    conf.MOTORS['speed_limit'] * speeds['speed_ha'] / dagor_motors.MAX_SPEED_HA)
+                ha_speed = int(ha_speed * sign(self.current['ha_err']))
+                if not self.config['target_is_static']:
+                    ha_speed += dagor_motors.TRACKING_SPEED
+
+                de_speed = self.slope(speeds['speed_de'], self.current['de_err'], b=b)
+                factor = conf.MOTORS['speed_limit'] / dagor_motors.MAX_SPEED_DE
+                de_speed *= factor
+                de_speed = min(
+                    de_speed,
+                    conf.MOTORS['speed_limit'] * speeds['speed_de'] / dagor_motors.MAX_SPEED_DE)
+                de_speed = int(de_speed * sign(self.current['de_err']))
+
+                sum_speed = abs(ha_speed) + abs(de_speed)
+                if sum_speed > conf.TRACKING['total_speed_limit']:
+                    correct_factor = conf.TRACKING['total_speed_limit'] / sum_speed
+                    ha_speed *= correct_factor
+                    de_speed *= correct_factor
+
+                self.current.update(ha_speed=ha_speed, de_speed=de_speed)
+
+                if self.rough:
+                    if abs(self.current['ha_err']) < TRACKING_ROUGH_TARGET_ZONE_HA and abs(self.current['de_err']) < TRACKING_ROUGH_TARGET_ZONE_DE:
+                        if not self.current['on_target_since']:
+                            self.current['on_target_since'] = t_now
+                    else:
+                        self.current['on_target_since'] = None
+                elif self.config['target_is_static']:
+                    if abs(self.current['ha_err']) < STATIC_OK_TARGET_ZONE_HA and abs(self.current['de_err']) < STATIC_OK_TARGET_ZONE_DE:
+                        if not self.current['on_target_since']:
+                            self.current['on_target_since'] = t_now
+                    else:
+                        self.current['on_target_since'] = None
+                else:
+                    if abs(self.current['ha_err']) < TRACKING_OK_TARGET_ZONE_HA and abs(self.current['de_err']) < TRACKING_OK_TARGET_ZONE_DE:
+                        if not self.current['on_target_since']:
+                            self.current['on_target_since'] = t_now
+                    else:
+                        self.current['on_target_since'] = None
+                self.current['on_target'] = time() - self.current['on_target_since'] > 3 if self.current['on_target_since'] else False
+
+                self.print_console_header()
+                self.print_stats()
+
+                dagor_motors.set_speed('ha', self.current['ha_speed'])
+                dagor_motors.set_speed('de', self.current['de_speed'])
+                if self.config['stop_on_target'] and self.current['on_target']:
+                    raise EnterAbort()
+
+        except dagor_path.NoPath as e:
+            print_("No path: {}".format(e))
+            print_(self.config['target'].celest())
+
+        except (EnterAbort, KeyboardInterrupt):
+            # Note: KeyboardInterrupt will sometimes not get caught here, it's a thing
+            print("")
+
+        except Exception as e:
+            print_(e.message)
+            print_("Exception info:\n")
+            raise
+
+        finally:
+            self.stop_tracking()
+
+    def print_console_header(self):
         print_("\x1b[2J\x1b[0;0H")
         print_('DAGOR GOTO')
         print_(datetime.now())
@@ -253,204 +471,48 @@ def speed_tracking(manual_internal=None,
         print_("Press Enter to stop at any time")
         print_("")
 
-    def stop_tracking():
-        print_("Stopping")
-        dagor_motors._ha.SetSpeed = 0
-        dagor_motors._de.SetSpeed = 0
-        _wait_for_stop(dagor_motors._ha, dots=True)
-        _wait_for_stop(dagor_motors._de, dots=True)
+    def print_stats(self):
 
-    def rnd_track_interval(average_time):
-        if not conf.TRACKING['enable_rnd']:
-            return average_time
-        rnd_interval = average_time / 1.1
-        start = average_time - rnd_interval
-        end = average_time + rnd_interval
-        return random.uniform(start, end)
-
-    def check_space(current_internal, hence_sec_=0):
-        current_internal = {
-            'ha': current_internal['ha'] + hence_sec_ / 3600,
-            'de': current_internal['de'],
-        }
-        park_internal = dagor_position.altaz_to_internal(
-            dagor_position.PARK_ALTAZ,
-            dagor_position.get_chirality(),
+        od = OrderedDict()
+        od['speeds'] = '{:>13}  {:>13}'.format(
+            self.current['ha_speed'], self.current['de_speed'])
+        od['errors'] = '{:>13}  {:>13}'.format(
+            format_degrees(self.current['ha_err'] * 15),
+            format_degrees(self.current['de_err']),
         )
-        try:
-            dagor_path.get_path(current_internal, park_internal)
-        except dagor_path.NoPath:
-            return False
-        return True
+        celest = dagor_position.get_celest()
+        od['celest'] = '{:>13}  {:>13}'.format(
+            format_hours(celest['ra']), format_degrees(celest['de']))
+        altaz = dagor_position.get_altaz()
+        od['altaz '] = '{:>13}  {:>13}'.format(
+            format_degrees(altaz['alt']), format_degrees(altaz['az']))
+        od['mode  '] = 'precise' if not self.rough else 'quick'
+        od['target'] = 'static' if self.config['target_is_static'] else 'sky'
+        od['inter.'] = '{:0<13}  {:0<13}'.format(
+            self.current['internal']['ha'],
+            self.current['internal']['de'])
+        for i, point in enumerate(self.current['path'][1:], start=1):
+            od['path_{}'.format(i)] = '{:0<13}  {:0<13}'.format(
+                point.ha, point.de)
+        od['on_target'] = self.current['on_target']
+        p_(od)
 
-    dagor_motors.init()
-    if dagor_motors._ha.OperationMode != dagor_motors.OP_MODE_SPEED:
-        dagor_motors.require_stopped(dagor_motors._ha)
-    dagor_motors.require_stopped(dagor_motors._de)
-    dagor_motors._ha.enable()
-    dagor_motors._de.enable()
-    dagor_motors._ha.OperationMode = dagor_motors.OP_MODE_SPEED
-    dagor_motors._de.OperationMode = dagor_motors.OP_MODE_SPEED
-    dagor_motors._de.SetSpeed = 0
 
-    # start:
-
-    t_start = time()  #@TODO make sure this behaves well on leap seconds
-
-    start_internal = dagor_position.get_internal()
-    target_interal = None
-    file_celest = None
-
-    on_target = False
-    on_target_since = None
-    try:
-        while True:
-            wait_for_time(
-                rnd_track_interval(dagor_motors._TRACKING_CHECK_INTERVAL),
-                dots=True,
-                enter_abort=True,
-                interval=dagor_motors._TRACKING_CHECK_INTERVAL / 100,
-            )
-
-            # Getting target coords, "internal" system.
-            # Target priorities:
-            #   1) manual_internal
-            #   2) coords file
-            #   3) current position
-            if not target_interal:  # first loop run
-                reset_coordinates_file()
-                target_interal = manual_internal if manual_internal else start_internal
-                path = dagor_path.get_path(
-                    dagor_position.get_internal(),
-                    target_interal,
-                    force=force,
-                )
-            else:  # after first loop run
-                if not manual_internal:
-                    old_file_coords = file_celest
-                    file_celest = read_coordinates_file()
-                    if file_celest and file_celest != old_file_coords:
-                        target_interal = dagor_position.celest_to_internal(file_celest, chirality=dagor_position.CHIRAL_CLOSEST)
-                        t_start = time()
-                        print "target_interal: {}".format(target_interal)
-                        try:
-                            path = dagor_path.get_path(dagor_position.get_internal(), target_interal)
-                        except dagor_path.NoPath:
-                            target_interal = dagor_position.get_internal()
-
-            if len(path) > 2:
-                if dagor_position.angular_distance(dagor_position.get_internal(),
-                            {'ha': path[1].ha, 'de': path[1].de}) < 0.8:
-                    del path[1]
-                target = path[1]
-            else:
-                target = dagor_path.Position(ha=target_interal['ha'], de=target_interal['de'])
-
-            manual_corrections = read_corrections_file()
-
-            t_now = time()
-            internal_now = dagor_position.get_internal()
-            hence_sec = 10 if on_target else 0
-            if not force and not check_space(internal_now, hence_sec):
-                print_('End of allowed space!')
-                raise EnterAbort()
-            ha_now, de_now = internal_now['ha'] + manual_corrections['ha_offset'], internal_now['de'] + manual_corrections['de_offset']
-
-            ha_err = ha_now - target.ha
-            if not static_target:
-                ha_err -= (t_now - t_start) / 60 / 60 / 0.99726958  # sidereal day
-
-            de_err = (de_now - target.de)
-
-            speeds = adjust_speed(ha_err, de_err, dagor_motors.MAX_SPEED_HA, dagor_motors.MAX_SPEED_DE)
-
-            if rough:
-                ha_speed = (9 * speeds['speed_ha'] * abs(ha_err) ** 2 / 200) ** (1 / 3)
-            else:
-                ha_speed = (9 * speeds['speed_ha'] * abs(ha_err) ** 2 / 400) ** (1 / 3)
-            ha_speed = ha_speed * conf.MOTORS['speed_limit'] / dagor_motors.MAX_SPEED_HA
-            ha_speed = min(ha_speed - (27 if sign(ha_err) == 1 else -27), conf.MOTORS['speed_limit'] * speeds['speed_ha'] / dagor_motors.MAX_SPEED_HA)
-            ha_speed = int(ha_speed * sign(ha_err))
-
-            if rough:
-                de_speed = (9 * speeds['speed_de'] * abs(de_err) ** 2 / 200) ** (1 / 3)
-            else:
-                de_speed = (9 * speeds['speed_de'] * abs(de_err) ** 2 / 400) ** (1 / 3)
-            de_speed = de_speed * conf.MOTORS['speed_limit'] / dagor_motors.MAX_SPEED_DE
-            de_speed = min(de_speed, conf.MOTORS['speed_limit'] * speeds['speed_de'] / dagor_motors.MAX_SPEED_DE)
-            de_speed = int(de_speed * sign(de_err))
-
-            sum_speed = abs(ha_speed) + abs(de_speed)
-            if sum_speed > conf.TRACKING['total_speed_limit']:
-                correct_factor = conf.TRACKING['total_speed_limit'] / sum_speed
-                ha_speed *= correct_factor
-                de_speed *= correct_factor
-
-            if rough:
-                if abs(ha_err) < TRACKING_ROUGH_TARGET_ZONE_HA and abs(de_err) < TRACKING_ROUGH_TARGET_ZONE_DE:
-                    if not on_target_since:
-                        on_target_since = time()
-                else:
-                    on_target_since = None
-            elif static_target:
-                if abs(ha_err) < STATIC_OK_TARGET_ZONE_HA and abs(de_err) < STATIC_OK_TARGET_ZONE_DE:
-                    if not on_target_since:
-                        on_target_since = time()
-                else:
-                    on_target_since = None
-            else:
-                if abs(ha_err) < TRACKING_OK_TARGET_ZONE_HA and abs(de_err) < TRACKING_OK_TARGET_ZONE_DE:
-                    if not on_target_since:
-                        on_target_since = time()
-                else:
-                    on_target_since = None
-            on_target = time() - on_target_since > 3 if on_target_since else False
-
-            od = OrderedDict()
-            od['ha_speed'] = ha_speed
-            od['ha_err'] = format_hours(ha_err)
-            od['ha_err_d'] = format_degrees(ha_err * 15)
-            od['ha_err_'] = ha_err
-            od['de_speed'] = de_speed
-            od['de_err'] = de_err
-            od['mode'] = 'precise' if not rough else 'rough'
-            od['target'] = 'static' if static_target else 'sky'
-            celest = dagor_position.get_celest()
-            od['ra'] = format_hours(celest['ra'])
-            od['de'] = format_degrees(celest['de'])
-            altaz = dagor_position.get_altaz()
-            od['alt'] = format_degrees(altaz['alt'])
-            od['az'] = format_degrees(altaz['az'])
-            od['file_celest'] = file_celest
-            od['manual_internal'] = manual_internal  # TODO what's the difference between manual_internal and target_internal?
-            od['path'] = path
-            od['get_internal'] = dagor_position.get_internal()
-            od['target_internal'] = target_interal
-            od['on_target'] = on_target
-
-            console_header()
-            p_(od)
-
-            dagor_motors._ha.SetSpeed = ha_speed
-            dagor_motors._de.SetSpeed = de_speed
-            if stop_on_target and on_target:
-                raise EnterAbort()
-
-    except dagor_path.NoPath as e:
-        print_("No path: {}".format(e))
-        print_(target_interal)
-
-    except (EnterAbort, KeyboardInterrupt):
-        # Note: KeyboardInterrupt will sometimes not get caught here, it's a thing
-        print("")
-
-    except Exception as e:
-        print_(e.message)
-        print_("Exception info:\n")
-        raise
-
-    finally:
-        stop_tracking()
+def speed_tracking(target_celest=None,
+                   chirality=None,
+                   target_is_static=False,
+                   stop_on_target=False,
+                   rough=False,
+                   force=False):
+    tracking = Tracking(
+        target_celest,
+        chirality,
+        target_is_static,
+        stop_on_target,
+        rough,
+        force,
+    )
+    tracking.track()
 
 
 # Run as CLI client
@@ -459,13 +521,11 @@ def speed_tracking(manual_internal=None,
 def _main(args):
 
     if args['start']:
-        reset_correction_file()
-        dagor_motors.init()
-        speed_tracking()
+        tracking = Tracking()
+        tracking.track()
 
-    if args['speed']:
-        dagor_motors.init()
-        dagor_motors.set_speed(dagor_motors._ha, dagor_motors.TRACKING_SPEED)
+    if args['sync']:
+        raise NotImplementedError()
 
     if args['sync_console']:
         sync_console()

@@ -49,7 +49,7 @@ import local.configuration as config
 _DE_MOTOR_TO_ENCODER_RATIO = 97.6185
 _HA_MOTOR_TO_ENCODER_RATIO = 303.355
 
-_TRACKING_CHECK_INTERVAL = 0.1  # seconds
+#_TRACKING_CHECK_INTERVAL = 0.1  # seconds
 _TRACKING_ERROR_FEEDBACK_ha = 0.5
 _TRACKING_ERROR_FEEDBACK_de = 150
 
@@ -462,18 +462,41 @@ def init():
     _de = MotorCommunication(motors_comm_prot, 2)
 
 
+def get_motor(motor):
+    global _inited, _ha, _de
+    if not _inited:
+        raise RuntimeError('motors not yet inited')
+    ha, de = _ha, _de
+
+    if isinstance(motor, MotorCommunication):
+        return motor
+    if isinstance(motor, basestring) and motor in ('ha', 'de',):
+        return locals()[motor]
+    raise ValueError(
+        'Argument `motor` must be either'
+        ' MotorCommunication instance or "ha" or "de"')
+
+
+def enable(motor):
+    motor = get_motor(motor)
+    motor.enable()
+
+
 def require_stopped(motor):
-    if not motor.is_stopped:
+    motor = get_motor(motor)
+    if not stopped(motor):
         raise ValueError('Can not do that while drive is moving!')
 
 
 def require_op_mode(motor, op_mode):
+    motor = get_motor(motor)
     if not motor.OperationMode == op_mode:
         raise ValueError('Wrong operation mode!')
 
 
 def set_speed(motor, speed):
-    if not motor.is_stopped:
+    motor = get_motor(motor)
+    if not stopped(motor):
         require_op_mode(motor, OP_MODE_SPEED)
     motor.OperationMode = OP_MODE_SPEED
     motor.SetSpeed = speed
@@ -501,9 +524,14 @@ def move_by(delta_local, speeds=None):
         _de.move_delta(delta_position, case=case)
 
 
+def stopped(motor):
+    motor = get_motor(motor)
+    return motor.is_stopped and motor.Speed == 0
+
+
 def moving():
     global _inited, _ha, _de
-    return not (_ha.is_stopped and _de.is_stopped)
+    return not stopped(_ha) and not stopped(_de)
 
 
 def stop(ha=None, de=None):
@@ -512,7 +540,7 @@ def stop(ha=None, de=None):
         ha = True
         de = True
     if ha:
-        if not _ha.is_stopped:
+        if not stopped(_ha):
             if _ha.OperationMode == OP_MODE_SPEED:
                 _ha.SetSpeed = 0
             elif _ha.OperationMode == OP_MODE_POSITION:
@@ -520,7 +548,7 @@ def stop(ha=None, de=None):
             else:
                 raise ValueError('Unsupported operation mode!')
     if de:
-        if not _de.is_stopped:
+        if not stopped(_de):
             if _de.OperationMode == OP_MODE_SPEED:
                 _de.SetSpeed = 0
             elif _de.OperationMode == OP_MODE_POSITION:
@@ -678,7 +706,7 @@ def _main(args):
             args['ha'] = True
             args['de'] = True
         if args['ha']:
-            if not _ha.is_stopped:
+            if not stopped(_ha):
                 if _ha.OperationMode == OP_MODE_SPEED:
                     _ha.SetSpeed = 0
                 elif _ha.OperationMode == OP_MODE_POSITION:
@@ -686,7 +714,7 @@ def _main(args):
                 else:
                     raise ValueError('Unsupported operation mode!')
         if args['de']:
-            if not _de.is_stopped:
+            if not stopped(_de):
                 if _de.OperationMode == OP_MODE_SPEED:
                     _de.SetSpeed = 0
                 elif _de.OperationMode == OP_MODE_POSITION:
