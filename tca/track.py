@@ -281,6 +281,8 @@ class Tracking(object):
             self.config['target_celest'],
             'celest',
             self.config['target_is_static'])
+        if self.config['chirality'] is None:
+            self.config['chirality'] = dagor_position.get_chirality()
         self._reset_current()
 
     def _reset_current(self):

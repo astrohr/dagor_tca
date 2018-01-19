@@ -11,7 +11,7 @@ Usage:
   tca goto park [ce] [force]
   tca goto home2 [cw] [force]
   tca goto altaz <ALT> <AZ> [ce | cw | cc] [quick | track] [force]
-  tca goto local <HA> <DE> [ce | cw | cc] [notrack [quick]] [force]
+  tca goto local <HA> <DE> [ce | cw | cc] [quick | track] [force]
   tca goto celest <RA> <DE> [ce | cw | cc] [quick] [notrack] [force]
   tca goto stellarium [-] [ce | cw | cc] [quick] [notrack] [force]
   tca goto internal <int_HA> <int_DE> [quick | track] [force]
@@ -198,7 +198,7 @@ def _main(args):
             target_celest = dagor_position.altaz_to_celest(altaz_end)
 
         elif args['local']:
-            track = False if args['notrack'] else True
+            track = True if args['track'] else False
             stop_on_target = not track
             local_end = {
                 'ha': parse_hours(args['<HA>']),
