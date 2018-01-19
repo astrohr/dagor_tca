@@ -33,15 +33,19 @@ Usage:
   tca --version
 
 Commands:
-  api run           Stat HTTP api, used by ASCOM drivrs.
-  configure         Configure motor drivers before first use and write configuration to EEPROM and Flash memory.
+  api run           Stat HTTP api, used by ASCOM drivers.
+  configure         Configure motor drivers before first use and write
+                    configuration to EEPROM and Flash memory.
   get               Display current encoder readout.
-                    celest: celestial coordinates (right ascension and declination)
-                    local: local coordinates (hour angle and declination)
+                    celest: celestial coordinates
+                            (right ascension and declination)
+                    local: local coordinates
+                           (hour angle and declination)
                     altaz: alt-az coordinates
   move to           move to coordinates precisely
   set               Sync current position with provided coordinates
-  sync console      Position sync console, for fine position adjust using arrow keys.
+  sync console      Position sync console, for fine position adjust
+                    using arrow keys.
   dome              Control dome rotation and door.
   fans              Control fans on primary mirror.
                     0: stop, 1: half-speed, 2: full-speed
@@ -57,7 +61,8 @@ Parameters:
                     cw: West
                     cc: Closest
                     default: keep same chirality
-  force             Go directly to specified coordinates, disregarding safety constraints.
+  force             Go directly to specified coordinates,
+                    disregarding safety constraints.
                     Use very carefully!
 
 Options:
@@ -68,31 +73,22 @@ Options:
 from __future__ import division, print_function
 
 from os import sys, path
-
-sys.path.append(path.dirname(path.abspath(__file__)))
-
-from time import sleep
+sys.path.append(path.dirname(path.abspath(__file__)))  # noqa
 from docopt import docopt
-from common import print_, wait_for_stop, sign
 from local import configuration
 from formats import parse_hours, parse_degrees, format_hours, format_degrees
 import position as dagor_position
 import api
 import motors as dagor_motors
 import track as dagor_track
-import path as dagor_path
 import focus as dagor_focus
 import fans as dagor_fans
 import dome as dagor_dome
 import lights as dagor_lights
 import sys
 
-#   docopt    http://docopt.org/
-#   astar     https://github.com/elemel/python-astar2
-
-
-def stepped_move_by(delta_local):
-    pass
+# docopt    http://docopt.org/
+# astar     https://github.com/elemel/python-astar2
 
 
 # Run as CLI client
@@ -105,13 +101,7 @@ def _main(args):
 
     if args['configure']:
         dagor_motors.init()
-        dagor_motors._ha.disable()
-        dagor_motors._de.disable()
-        dagor_motors._ha.configure()
-        dagor_motors._de.configure()
-        # order is important when writing to flash (not eeprom):
-        dagor_motors._de.configure_flash()
-        dagor_motors._ha.configure_flash()
+        dagor_motors.configure()
 
     got_get_arg = any(
         (args['celest'], args['local'], args['altaz'], args['chirality']))
@@ -227,7 +217,7 @@ def _main(args):
             elif args['stellarium']:
                 # read stdin:
                 stellarium_ra_dec = None
-                TARGET_PREFIX = "RA/Dec ({}): ".format(
+                target_prefix = "RA/Dec ({}): ".format(
                     configuration.TRACKING["stellarium_mode"])
                 print("Paste object info from"
                       " Stellarium then press Enter twice:")
@@ -235,14 +225,14 @@ def _main(args):
                     input_ = raw_input().strip()
                     if input_ == '':
                         break
-                    if input_.startswith(TARGET_PREFIX):
-                        stellarium_ra_dec = input_[len(TARGET_PREFIX):]
+                    if input_.startswith(target_prefix):
+                        stellarium_ra_dec = input_[len(target_prefix):]
                 if not stellarium_ra_dec:
                     sys.stderr.write(
                         'No line starts with "{}" in the pasted data.\n'
-                        .format(TARGET_PREFIX))
+                        .format(target_prefix))
                     exit(1)
-                stellarium_ra , stellarium_de = stellarium_ra_dec.split('/', 1)
+                stellarium_ra, stellarium_de = stellarium_ra_dec.split('/', 1)
                 target_celest = {
                     'ra': parse_hours(stellarium_ra),
                     'de': parse_degrees(stellarium_de),
@@ -296,14 +286,17 @@ def _main(args):
                 try:
                     rade = rade.replace('RA ', '').replace('  Dec ', '')
                     arg_ra, arg_de = rade.split(',')
-                except:
+                except Exception:
                     raise ValueError('Cannot parse format')
             else:
                 arg_ra = args['<RA>']
                 arg_de = args['<DE>']
             ra = parse_hours(arg_ra)
             de = parse_degrees(arg_de)
-            dagor_position.set_internal(dagor_position.celest_to_internal({'ra': ra, 'de': de}), args['blind'])
+            dagor_position.set_internal(
+                dagor_position.celest_to_internal(
+                    {'ra': ra, 'de': de}),
+                args['blind'])
 
     if args['focus']:
         if args['get']:
@@ -360,94 +353,13 @@ def _main(args):
             dagor_fans.set_fan(1, n)
 
 
-def move_to_local(local=None, celest=None, chirality=None, quick=False, track=False):
-    if local is not None and celest is not None:
-        raise AttributeError('Use only local or celest coordinates, not both!')
-    if local is None and celest is None:
-        raise AttributeError('Use either local or celest coordinates!')
-    internal_start = dagor_position.get_internal()
-    track_correction = -27 if track else 0
-    if local:
-        internal_end = dagor_position.local_to_internal(local, chirality)
-    else:  # celest
-        internal_end = dagor_position.celest_to_internal(celest, chirality)
-    try:
-        path = dagor_path.get_path(internal_start, internal_end)
-    except dagor_path.NoPath:
-        path = None
-        #@TODO argument to force move?
-        path = [
-            dagor_path.Position(internal_start['ha'], internal_start['de']),
-            dagor_path.Position(internal_end['ha'], internal_end['de']),
-        ]
-
-    #steps = [(1.3, 3000), (0.1, 1000), (0.0, 300), ]
-    steps = [(1, 3000), (0, 300), ]
-    if quick:
-        steps = [(0, 3000), ]
-
-    print("Moving")
-    dagor_motors.init()
-    print("path: {}".format(path))
-    for position in path[1:]:
-        for i, (difference, speed) in enumerate(steps):
-            internal_now = dagor_position.get_internal()
-            position_delta = {
-                'ha': position.ha - internal_now['ha'],
-                'de': position.de - internal_now['de'],
-            }
-            step_delta = position_delta.copy()
-            if difference < abs(step_delta['de']):
-                step_delta['de'] -= difference * sign(step_delta['de'])
-            else:
-                step_delta['de'] = None
-            if difference < abs(step_delta['ha']) * 15:
-                step_delta['ha'] -= difference / 15 * sign(step_delta['ha'])
-            else:
-                step_delta['ha'] = None
-            print("position_delta: {}".format(position_delta))
-            #print step_delta
-            if step_delta['ha'] is None and step_delta['de'] is None:
-                print("no step delta, next")
-                continue
-            speeds = {
-                'ha': speed,
-                'de': speed,
-            }
-            if step_delta['ha'] and step_delta['de']:
-                speeds['de'] = min(
-                    abs(speeds['de'] * step_delta['de'] / (step_delta['ha'] * 15) / 3.2),
-                    abs(speeds['de'])
-                )
-                speeds['ha'] = min(
-                    abs(speeds['ha'] * (step_delta['ha'] * 15) / step_delta['de'] * 3.2),
-                    abs(speeds['ha'])
-                )
-            speeds['ha'] += 0  # track_correction
-            print("speeds: {}".format(speeds))
-            dagor_motors.move_by(step_delta, speeds)
-            sys.stdout.write('moving')
-            sys.stdout.flush()
-            sleep(0.2)
-            while dagor_motors.moving():
-                wait_for_stop(dagor_motors._ha, dots=True, skip_dots=3, enter_abort=True)
-                wait_for_stop(dagor_motors._de, dots=True, skip_dots=3, enter_abort=True)
-        if track:
-            if celest:
-                raise NotImplementedError()
-                # dagor_track.speed_tracking(internal_end)
-
-
 if __name__ == '__main__':
 
-    args = docopt(__doc__, version=__doc__.split("\n")[0], options_first=True)
+    cli_args = docopt(
+        __doc__, version=__doc__.split("\n")[0], options_first=True)
 
-    if len(sys.argv) == 1 or args['help']:
+    if len(sys.argv) == 1 or cli_args['help']:
         print(__doc__.strip())
         exit(0)
 
-    try:
-        _main(args)
-    except:
-        raise
-        #exit_('ERROR')
+    _main(cli_args)

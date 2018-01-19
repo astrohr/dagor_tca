@@ -11,8 +11,10 @@ Usage:
 Commands:
   start             Start dynamic tracking.
   speed             Set approximate tracking speed.
-  sync_console      Position sync console, for fine position adjust using arrow keys.
-  sync              Start interactive mode - allows to adjust position and sync celest coordinates
+  sync_console      Position sync console, for fine position adjust
+                    using arrow keys.
+  sync              Start interactive mode - allows to adjust position
+                    and sync celest coordinates
 
 Options:
   -h --help         Show this screen.
@@ -30,7 +32,8 @@ from time import time, sleep
 import os
 import sys
 
-from common import NonBlockingConsole, BASE_PATH, EnterAbort, print_, wait_for_time, sign, p_, wait_for_stop
+from common import (NonBlockingConsole, BASE_PATH, EnterAbort, print_,
+                    wait_for_time, sign, p_, wait_for_stop)
 from formats import format_hours, format_degrees, parse_degrees, parse_hours
 import motors as dagor_motors
 import path as dagor_path
@@ -40,8 +43,8 @@ import local.configuration as conf
 
 TRACKING_COORDINATES_FILE = os.path.join(BASE_PATH, 'coords.txt')
 TRACKING_CORRECTIONS_FILE = os.path.join(BASE_PATH, 'tracking_corrections.txt')
-TRACKING_CORRECTIONS_STEP_HA = parse_degrees('0:01')
-TRACKING_CORRECTIONS_STEP_DE = parse_hours('0h01m')
+TRACK_CORRECT_STEP_HA = parse_degrees('0:01')
+TRACK_CORRECT_STEP_DE = parse_hours('0h01m')
 
 TRACKING_OK_TARGET_ZONE_HA = parse_degrees('00:00:01') / 15 / 2
 TRACKING_OK_TARGET_ZONE_DE = parse_degrees('00:00:01') / 2
@@ -101,7 +104,7 @@ def read_corrections_file():
             lines = [line for line in f.readlines() if line[0] != '#']
     except IOError:
         lines = [0, 0]
-        #raise
+        # TODO log error
     if len(lines) > 1:
         manual_corrections['ha_offset'] = parse_hours(lines[0])
         manual_corrections['de_offset'] = parse_degrees(lines[1])
@@ -113,14 +116,9 @@ def sync_console():
         print "\x1b[2J"
         print "\x1b[0;0HTracking sync console"
         print "\n\n"
-        #reset_correction_file()
         manual_corrections = read_corrections_file()
-        data = ''
-        last_data = ''
         while True:
             sleep(0.05)
-            if data:
-                last_data = data
             data = nbc.get_data()
             print "\x1b[2;0H\x1b[J"
             print "Position correction:"
@@ -158,42 +156,43 @@ def sync_console():
                 'R': 'RESET',
                 'T': 'TARGET',
             }
-            #print data.encode('string-escape') if data and data != '\x1b' else last_data.encode('string-escape')
 
             if data not in known_sequences.keys():
                 continue
             if known_sequences[data] == 'ESCAPE':
                 break
             elif known_sequences[data] == 'ARROW_UP':
-                manual_corrections['de_offset'] -= TRACKING_CORRECTIONS_STEP_DE
+                manual_corrections['de_offset'] -= TRACK_CORRECT_STEP_DE
             elif known_sequences[data] == 'ARROW_DOWN':
-                manual_corrections['de_offset'] += TRACKING_CORRECTIONS_STEP_DE
+                manual_corrections['de_offset'] += TRACK_CORRECT_STEP_DE
             elif known_sequences[data] == 'ARROW_RIGHT':
-                manual_corrections['ha_offset'] -= TRACKING_CORRECTIONS_STEP_HA
+                manual_corrections['ha_offset'] -= TRACK_CORRECT_STEP_HA
             elif known_sequences[data] == 'ARROW_LEFT':
-                manual_corrections['ha_offset'] += TRACKING_CORRECTIONS_STEP_HA
+                manual_corrections['ha_offset'] += TRACK_CORRECT_STEP_HA
             elif known_sequences[data] == 'ARROW_LEFT':
-                manual_corrections['ha_offset'] -= TRACKING_CORRECTIONS_STEP_HA
+                manual_corrections['ha_offset'] -= TRACK_CORRECT_STEP_HA
             elif known_sequences[data] == 'SHIFT_ARROW_UP':
-                manual_corrections['de_offset'] -= TRACKING_CORRECTIONS_STEP_DE / 6
+                manual_corrections['de_offset'] -= TRACK_CORRECT_STEP_DE / 6
             elif known_sequences[data] == 'SHIFT_ARROW_DOWN':
-                manual_corrections['de_offset'] += TRACKING_CORRECTIONS_STEP_DE / 6
+                manual_corrections['de_offset'] += TRACK_CORRECT_STEP_DE / 6
             elif known_sequences[data] == 'SHIFT_ARROW_RIGHT':
-                manual_corrections['ha_offset'] += TRACKING_CORRECTIONS_STEP_HA / 20
+                manual_corrections['ha_offset'] += TRACK_CORRECT_STEP_HA / 20
             elif known_sequences[data] == 'SHIFT_ARROW_LEFT':
-                manual_corrections['ha_offset'] -= TRACKING_CORRECTIONS_STEP_HA / 20
+                manual_corrections['ha_offset'] -= TRACK_CORRECT_STEP_HA / 20
             elif known_sequences[data] == 'CTRL_ARROW_UP':
-                manual_corrections['de_offset'] -= TRACKING_CORRECTIONS_STEP_DE * 10
+                manual_corrections['de_offset'] -= TRACK_CORRECT_STEP_DE * 10
             elif known_sequences[data] == 'CTRL_ARROW_DOWN':
-                manual_corrections['de_offset'] += TRACKING_CORRECTIONS_STEP_DE * 10
+                manual_corrections['de_offset'] += TRACK_CORRECT_STEP_DE * 10
             elif known_sequences[data] == 'CTRL_ARROW_RIGHT':
-                manual_corrections['ha_offset'] += TRACKING_CORRECTIONS_STEP_HA * 10
+                manual_corrections['ha_offset'] += TRACK_CORRECT_STEP_HA * 10
             elif known_sequences[data] == 'CTRL_ARROW_LEFT':
-                manual_corrections['ha_offset'] -= TRACKING_CORRECTIONS_STEP_HA * 10
+                manual_corrections['ha_offset'] -= TRACK_CORRECT_STEP_HA * 10
             if 'ARROW' in known_sequences[data]:  # any arrow
-                if abs(manual_corrections['ha_offset']) < TRACKING_CORRECTIONS_STEP_HA / 20:
+                abs_ha = abs(manual_corrections['ha_offset'])
+                if abs_ha < TRACK_CORRECT_STEP_HA / 20:
                     manual_corrections['ha_offset'] = 0
-                if abs(manual_corrections['de_offset']) < TRACKING_CORRECTIONS_STEP_DE / 20:
+                abs_de = abs(manual_corrections['de_offset'])
+                if abs_de < TRACK_CORRECT_STEP_DE / 20:
                     manual_corrections['de_offset'] = 0
                 write_correction_file(manual_corrections)
 
@@ -287,7 +286,8 @@ class Tracking(object):
     def _reset_current(self):
         self.current = {}
 
-    def init_motors(self):
+    @staticmethod
+    def init_motors():
         dagor_motors.init()
         dagor_motors.require_stopped('ha')
         dagor_motors.require_stopped('de')
@@ -296,7 +296,8 @@ class Tracking(object):
         dagor_motors.set_speed('ha', 0)
         dagor_motors.set_speed('de', 0)
 
-    def adjust_speeds(self, ha_err, de_err, max_ha, max_de):
+    @staticmethod
+    def adjust_speeds(ha_err, de_err, max_ha, max_de):
         """
         Calculate max possible speeds to equalize travel time.
         """
@@ -310,11 +311,13 @@ class Tracking(object):
             'speed_de': max_de,
         }
 
-    def slope(self, speed, err, a=9, b=400):
+    @staticmethod
+    def slope(speed, err, a=9, b=400):
         """Calculate real speed given position error."""
         return (a * speed * abs(err) ** 2 / b) ** (1 / 3)
 
-    def speed_real_to_motor(self, speed, limit):
+    @staticmethod
+    def speed_real_to_motor(speed, limit):
         """Translate from real speed (deg/s or h/sec) to motor speed units."""
         factor = conf.MOTORS['speed_limit'] / limit
         return speed * factor
@@ -328,13 +331,15 @@ class Tracking(object):
         end = self.tracking_check_interval + rnd_interval
         return random.uniform(start, end)
 
-    def stop_tracking(self):
+    @staticmethod
+    def stop_tracking():
         print_("Stopping")
         dagor_motors.stop()
         wait_for_stop(dagor_motors.get_motor('ha'), dots=True)
         wait_for_stop(dagor_motors.get_motor('de'), dots=True)
 
-    def update_path(self, path, current_internal):
+    @staticmethod
+    def update_path(path, current_internal):
         """Remove the first point if we are close enough to it"""
         if len(path) > 2:
             if dagor_position.angular_distance(
@@ -395,7 +400,6 @@ class Tracking(object):
         self.current['de_err'] = de_now - self.current['target'].de
 
     def _loop_calculate_speeds(self):
-        # TODO get rid of dagor_motors.MAX_SPEED_HA and use conf.MOTORS['speed_limit'] instead
         speeds = self.adjust_speeds(
             self.current['ha_err'],
             self.current['de_err'],
@@ -502,7 +506,8 @@ class Tracking(object):
             print_(self.target.celest())
 
         except (EnterAbort, KeyboardInterrupt):
-            # Note: KeyboardInterrupt will sometimes not get caught here, it's a thing
+            # Note: KeyboardInterrupt will sometimes not get caught here
+            # ... it's a thing
             print("")
 
         except Exception as e:
@@ -588,15 +593,11 @@ def _main(args):
 
 if __name__ == '__main__':
 
-    args = docopt(__doc__, version=__doc__.split("\n")[0], options_first=True)
+    cli_args = docopt(
+        __doc__, version=__doc__.split("\n")[0], options_first=True)
 
-    if len(sys.argv) == 1 or args['help']:
+    if len(sys.argv) == 1 or cli_args['help']:
         print __doc__.strip()
         exit(0)
 
-    try:
-        _main(args)
-    except:
-        raise
-        #exit_('ERROR')
-
+    _main(cli_args)

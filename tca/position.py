@@ -76,11 +76,11 @@ _DE_BLIND_POINT = 6500000
 _HA_INTERNAL_BLIND_POINT = 5  # Approximately corresponds to above blind points. Very very approximately!
 _DE_INTERNAL_BLIND_POINT = 0  # Approximately corresponds to above blind points. Very very approximately!
 
-_HA_SLOPE = -349593.3017543860
-_HA_INTERSECTION = 7445177.90526316
+HA_SLOPE = -349593.3017543860
+HA_INTERSECTION = 7445177.90526316
 
-_DE_SLOPE = -23300.2286699885
-_DE_INTERSECTION = 6543059.76197777
+DE_SLOPE = -23300.2286699885
+DE_INTERSECTION = 6543059.76197777
 
 _HA_REAL_OFFSET = -0.0314481764 - -0.0045467897 - 0.0045420766 + 0.046 - 0.0854678 - 0.035 - 0.024444944100000754
 _DE_REAL_OFFSET = 279.44431524230004 + 0.040461855 + -0.0156058897 + 0.0023 + 0.0194028 + 0.5 + 0.013929050277777577
@@ -208,8 +208,8 @@ def get_internal():
     data = get_normalised()
     corrections = read_internal_correction_file()
     return {
-        'ha': (data['ha'] - _HA_INTERSECTION) / _HA_SLOPE + corrections['ha'],
-        'de': (data['de'] - _DE_INTERSECTION) / _DE_SLOPE + corrections['de']
+        'ha': (data['ha'] - HA_INTERSECTION) / HA_SLOPE + corrections['ha'],
+        'de': (data['de'] - DE_INTERSECTION) / DE_SLOPE + corrections['de']
     }
 
 
