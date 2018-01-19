@@ -114,7 +114,7 @@ def _main(args):
         dagor_motors._ha.configure_flash()
 
     got_get_arg = any(
-        args['celest'], args['local'], args['altaz'], args['chirality'])
+        (args['celest'], args['local'], args['altaz'], args['chirality']))
     if args['get'] and got_get_arg:
         values = {}
         template = ''

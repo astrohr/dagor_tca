@@ -524,17 +524,17 @@ class Tracking(object):
     def _loop_print_stats(self):
 
         od = OrderedDict()
-        od['speeds'] = '{:>13}  {:>13}'.format(
+        od['speeds'] = '{:>14}  {:>14}'.format(
             self.current['ha_speed'], self.current['de_speed'])
-        od['errors'] = '{:>13}  {:>13}'.format(
+        od['errors'] = '{:>14}  {:>14}'.format(
             format_degrees(self.current['ha_err'] * 15),
             format_degrees(self.current['de_err']),
         )
         celest = dagor_position.get_celest()
-        od['celest'] = '{:>13}  {:>13}'.format(
+        od['celest'] = '{:>14}  {:>14}'.format(
             format_hours(celest['ra']), format_degrees(celest['de']))
         altaz = dagor_position.get_altaz()
-        od['altaz '] = '{:>13}  {:>13}'.format(
+        od['altaz '] = '{:>14}  {:>14}'.format(
             format_degrees(altaz['alt']), format_degrees(altaz['az']))
         chiral = dagor_position.get_chirality(self.current['internal']['de'])
         od['chiral'] = chiral
@@ -542,11 +542,11 @@ class Tracking(object):
             od['chiral'] += '  ->  {}'.format(self.config['chirality'])
         od['mode  '] = 'precise' if not self.config['rough'] else 'quick'
         od['target'] = 'static' if self.config['target_is_static'] else 'sky'
-        od['inter.'] = '{:0<13}  {:0<13}'.format(
+        od['inter.'] = '{:0<14}  {:0<14}'.format(
             self.current['internal']['ha'],
             self.current['internal']['de'])
         for i, point in enumerate(self.current['path'][1:], start=1):
-            od['path_{}'.format(i)] = '{:0<13}  {:0<13}'.format(
+            od['path_{}'.format(i)] = '{:0<14}  {:0<14}'.format(
                 point.ha, point.de)
         od['on_target'] = self.current['on_target']
         p_(od)
