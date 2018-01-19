@@ -22,7 +22,7 @@ from time import sleep
 from docopt import docopt
 import sys
 import math
-from common import exit_, _wait_for_stop, EnterAbort
+from common import exit_, wait_for_stop, EnterAbort
 
 import position
 
@@ -54,13 +54,13 @@ def _transmition(axes, start, finish, speed, increment):
     sys.stdout.write("moving to start position")
     sys.stdout.flush()
     motor.move_delta(delta, case=axes)
-    _wait_for_stop(motor, dots=True, after=1, skip_dots=5, enter_abort=True)
+    wait_for_stop(motor, dots=True, after=1, skip_dots=5, enter_abort=True)
     sys.stdout.write("\naligning gears")
     sys.stdout.flush()
     motor.move_delta(-gear_deadzone)
-    _wait_for_stop(motor, dots=True, after=1, skip_dots=5, enter_abort=True)
+    wait_for_stop(motor, dots=True, after=1, skip_dots=5, enter_abort=True)
     motor.move_delta(gear_deadzone)
-    _wait_for_stop(motor, dots=True, after=1, skip_dots=5, enter_abort=True)
+    wait_for_stop(motor, dots=True, after=1, skip_dots=5, enter_abort=True)
     sys.stdout.write("\ntesting!\n")
     sys.stdout.write("tested_axes\t{}\n".format(axes))
     sys.stdout.write("increment\t{}\n".format(increment))
@@ -72,7 +72,7 @@ def _transmition(axes, start, finish, speed, increment):
     motor.Task1_Speed = speed
     while True:
         motor.move_delta(increment, case=axes)
-        _wait_for_stop(motor, after=1, enter_abort=True)
+        wait_for_stop(motor, after=1, enter_abort=True)
 
         current_angle = position.get_internal()[axes]
         current_raw = position.get_normalised()[axes]
