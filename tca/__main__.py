@@ -109,10 +109,13 @@ def _main(args):
         dagor_motors._de.disable()
         dagor_motors._ha.configure()
         dagor_motors._de.configure()
-        dagor_motors._de.configure_flash()  # order is important when writing to flash (not eeprom)
+        # order is important when writing to flash (not eeprom):
+        dagor_motors._de.configure_flash()
         dagor_motors._ha.configure_flash()
 
-    if args['get'] and (args['celest'] or args['local'] or args['altaz'] or args['chirality']):
+    got_get_arg = any(
+        args['celest'], args['local'], args['altaz'], args['chirality'])
+    if args['get'] and got_get_arg:
         values = {}
         template = ''
         if args['celest']:
@@ -157,7 +160,7 @@ def _main(args):
         track = False
         stop_on_target = True
         quick = True if args['quick'] else False
-        internal_end = None
+        target_celest = None
         chirality = None  # default: None (keep chirality)
         if args['ce']:
             chirality = dagor_position.CHIRAL_E
@@ -170,9 +173,8 @@ def _main(args):
             chirality = dagor_position.HOME_CHIRALITY
             if args['ce']:
                 chirality = dagor_position.CHIRAL_E
-            internal_end = dagor_position.altaz_to_internal(
-                dagor_position.HOME_ALTAZ,
-                chirality)
+            target_celest = dagor_position.altaz_to_celest(
+                dagor_position.HOME_ALTAZ)
             quick = True
             stop_on_target = True
 
@@ -180,9 +182,8 @@ def _main(args):
             chirality = dagor_position.HOME_N_CHIRALITY
             if args['cw']:
                 chirality = dagor_position.CHIRAL_W
-            internal_end = dagor_position.altaz_to_internal(
-                dagor_position.HOME_N_ALTAZ,
-                chirality)
+            target_celest = dagor_position.altaz_to_celest(
+                dagor_position.HOME_N_ALTAZ)
             quick = True
             stop_on_target = True
 
@@ -191,8 +192,7 @@ def _main(args):
             if args['ce']:
                 chirality = dagor_position.CHIRAL_E
             target_celest = dagor_position.altaz_to_celest(
-                dagor_position.PARK_ALTAZ,
-                chirality)
+                dagor_position.PARK_ALTAZ)
             quick = True
             stop_on_target = True
 
@@ -225,11 +225,12 @@ def _main(args):
                 }
 
             elif args['stellarium']:
-                #print('Paste object data from Stellarium, empty line to submit')
                 # read stdin:
                 stellarium_ra_dec = None
-                TARGET_PREFIX = "RA/Dec ({}): ".format(configuration.TRACKING["stellarium_mode"])
-                print("Paste object info from Stellarium then press Enter twice:")
+                TARGET_PREFIX = "RA/Dec ({}): ".format(
+                    configuration.TRACKING["stellarium_mode"])
+                print("Paste object info from"
+                      " Stellarium then press Enter twice:")
                 while True:
                     input_ = raw_input().strip()
                     if input_ == '':
@@ -237,7 +238,9 @@ def _main(args):
                     if input_.startswith(TARGET_PREFIX):
                         stellarium_ra_dec = input_[len(TARGET_PREFIX):]
                 if not stellarium_ra_dec:
-                    sys.stderr.write('No line starts with "{}" in the pasted data.\n'.format(TARGET_PREFIX))
+                    sys.stderr.write(
+                        'No line starts with "{}" in the pasted data.\n'
+                        .format(TARGET_PREFIX))
                     exit(1)
                 stellarium_ra , stellarium_de = stellarium_ra_dec.split('/', 1)
                 target_celest = {

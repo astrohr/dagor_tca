@@ -29,6 +29,7 @@ from docopt import docopt
 from time import time, sleep
 import os
 import sys
+
 from common import NonBlockingConsole, BASE_PATH, EnterAbort, print_, wait_for_time, sign, p_, wait_for_stop
 from formats import format_hours, format_degrees, parse_degrees, parse_hours
 import motors as dagor_motors
@@ -274,8 +275,9 @@ class Tracking(object):
 
     def load_config(self, config):
         self.config = self.DEFAULT_CONF.copy()
-        self.config['target_celest'] = dagor_position.get_celest()
         self.config.update(config)
+        if self.config['target_celest'] is None:
+            self.config['target_celest'] = dagor_position.get_celest()
         self.target = Target(
             self.config['target_celest'],
             'celest',
@@ -400,10 +402,9 @@ class Tracking(object):
             dagor_motors.MAX_SPEED_HA,
             dagor_motors.MAX_SPEED_DE,
         )
-
         b = 200 if self.config['rough'] else 400
-        ha_speed = self.slope(
-            speeds['speed_ha'], self.current['ha_err'], b=b)
+        # HA:
+        ha_speed = self.slope(speeds['speed_ha'], self.current['ha_err'], b=b)
         ha_speed = self.speed_real_to_motor(
             ha_speed, dagor_motors.MAX_SPEED_HA)
         ha_speed = min(
@@ -413,23 +414,28 @@ class Tracking(object):
         ha_speed = int(ha_speed * sign(self.current['ha_err']))
         if not self.config['target_is_static']:
             ha_speed += dagor_motors.TRACKING_SPEED
-
+        # DE:
         de_speed = self.slope(speeds['speed_de'], self.current['de_err'], b=b)
-        factor = conf.MOTORS['speed_limit'] / dagor_motors.MAX_SPEED_DE
-        de_speed *= factor
+        de_speed = self.speed_real_to_motor(
+            de_speed, dagor_motors.MAX_SPEED_DE)
         de_speed = min(
             de_speed,
             conf.MOTORS['speed_limit'] * speeds[
                 'speed_de'] / dagor_motors.MAX_SPEED_DE)
         de_speed = int(de_speed * sign(self.current['de_err']))
 
+        # limit total speed:
         sum_speed = abs(ha_speed) + abs(de_speed)
         if sum_speed > conf.TRACKING['total_speed_limit']:
             correct_factor = conf.TRACKING['total_speed_limit'] / sum_speed
             ha_speed *= correct_factor
             de_speed *= correct_factor
 
-        self.current.update(ha_speed=ha_speed, de_speed=de_speed)
+        # all done:
+        self.current.update(
+            ha_speed=int(round(ha_speed)),
+            de_speed=int(round(de_speed)),
+        )
 
     def _loop_check_target(self):
         if self.config['rough']:
@@ -530,6 +536,10 @@ class Tracking(object):
         altaz = dagor_position.get_altaz()
         od['altaz '] = '{:>13}  {:>13}'.format(
             format_degrees(altaz['alt']), format_degrees(altaz['az']))
+        chiral = dagor_position.get_chirality(self.current['internal']['de'])
+        od['chiral'] = chiral
+        if self.config['chirality'] != chiral:
+            od['chiral'] += '  ->  {}'.format(self.config['chirality'])
         od['mode  '] = 'precise' if not self.config['rough'] else 'quick'
         od['target'] = 'static' if self.config['target_is_static'] else 'sky'
         od['inter.'] = '{:0<13}  {:0<13}'.format(
