@@ -42,14 +42,13 @@ from modbus_tk import modbus_rtu
 from time import sleep
 import sys
 
-from position import _HA_SLOPE, _DE_SLOPE
+from position import HA_SLOPE, DE_SLOPE
 import local.configuration as config
 
 
 _DE_MOTOR_TO_ENCODER_RATIO = 97.6185
 _HA_MOTOR_TO_ENCODER_RATIO = 303.355
 
-_TRACKING_CHECK_INTERVAL = 0.1  # seconds
 _TRACKING_ERROR_FEEDBACK_ha = 0.5
 _TRACKING_ERROR_FEEDBACK_de = 150
 
@@ -66,7 +65,8 @@ SPEED_LIMIT = config.MOTORS['speed_limit']
 MAX_SPEED_DE = 1.456  # deg/sec
 MAX_SPEED_HA = 3.075e-2  # h/sec
 ACC_RAMP = 7000
-EMER_RAMP = 3000  # milliseconds at full speed, also adjust power-off relay timer!
+EMERGENCY_RAMP = 3000  # milliseconds at full speed
+# ^^^ !!! also adjust power-off relay timer !!! ^^^
 TRACKING_SPEED = -27
 
 OP_MODE_MANUAL = 0
@@ -86,15 +86,25 @@ class ModbusProtocol(object):
     def __init__(self):
         super(ModbusProtocol, self).__init__()
         self.master = modbus_rtu.RtuMaster(
-            serial.Serial(ModbusProtocol._PORT, ModbusProtocol._BAUD_RATE, ModbusProtocol._BYTE_SIZE,
-                          ModbusProtocol._PARITY, ModbusProtocol._STOP_BITS, ModbusProtocol._TIMEOUT))
-        #self.log_info("Connected on serial port %s" % ModbusProtocol._PORT)
+            serial.Serial(
+                ModbusProtocol._PORT,
+                ModbusProtocol._BAUD_RATE,
+                ModbusProtocol._BYTE_SIZE,
+                ModbusProtocol._PARITY,
+                ModbusProtocol._STOP_BITS,
+                ModbusProtocol._TIMEOUT,
+            ))
 
     def write_registers(self, motor_address, start_register, data):
         e = None
         for i in range(1, 5):
             try:
-                self.master.execute(motor_address, cst.WRITE_MULTIPLE_REGISTERS, start_register, output_value=data)
+                self.master.execute(
+                    motor_address,
+                    cst.WRITE_MULTIPLE_REGISTERS,
+                    start_register,
+                    output_value=data,
+                )
             except modbus.ModbusError, e:
                 pass
             except modbus.ModbusInvalidResponseError, e:
@@ -105,21 +115,31 @@ class ModbusProtocol(object):
             if isinstance(e, modbus.ModbusError):
                 print("%s- Code=%d" % (e, e.get_exception_code()))
             elif isinstance(e, modbus.ModbusInvalidResponseError):
-                print("InvalidResponseError while writing to register %d of motor %d" % (start_register, motor_address))
+                print("InvalidResponseError while writing to "
+                      "register {} of motor {}"
+                      .format(start_register, motor_address))
             print(e)
             raise e
 
-    def read_registers(self, motor_address, start_register, number_of_registers):
+    def read_registers(
+            self, motor_address, start_register, number_of_registers):
         e = None
         for i in range(1, 5):
             try:
-                return self.master.execute(motor_address, cst.READ_HOLDING_REGISTERS, start_register,
-                                           number_of_registers, data_format=">" + (number_of_registers * "h"))
+                return self.master.execute(
+                    motor_address,
+                    cst.READ_HOLDING_REGISTERS,
+                    start_register,
+                    number_of_registers,
+                    data_format=">" + (number_of_registers * "h"),
+                )
             except modbus.ModbusError, e:
                 print("%s- Code=%d" % (e, e.get_exception_code()))
                 pass
             except modbus.ModbusInvalidResponseError, e:
-                print("InvalidResponseError while reading register %d of motor %d" % (start_register, motor_address))
+                print("InvalidResponseError while reading "
+                      "register {} of motor {}"
+                      .format(start_register, motor_address))
                 print(e)
                 pass
         if e:
@@ -201,13 +221,12 @@ class MotorCommunication(object):
 
     tasks = range(1, MAX_TASKS+1)
 
-
     ALARM_NAMES = [
-        #LO:
+        # LO:
         'Overcurrent regen resistance alarm',  # 1
         'Holding brake alarm',  # 2
         'In - rush bus alarm',  # 3
-        'Auxiliry voltage alarm',  # 4
+        'Auxiliary voltage alarm',  # 4
         'NA',  # 5
         'NA',  # 6
         'Flash alarm',  # 7
@@ -238,23 +257,34 @@ class MotorCommunication(object):
         'NA',  # 15
     ]
 
-    def __init__(self, protocol, address, *args, **kwargs):
+    def __init__(self, protocol, address):
         self.protocol = protocol
         self.address = address
+        set_attr_on_self = super(MotorCommunication, self).__setattr__
         for i in range(1, MAX_TASKS + 1):
-            super(MotorCommunication, self).__setattr__('Task{}_Target'.format(i), MotorParameter(320 + 16 * (i-1), 2))
-            super(MotorCommunication, self).__setattr__('Task{}_Speed'.format(i), MotorParameter(322 + 16 * (i-1), 1))
-            super(MotorCommunication, self).__setattr__('Task{}_Acc_Time'.format(i), MotorParameter(323 + 16 * (i-1), 1))
-            super(MotorCommunication, self).__setattr__('Task{}_Dcc_Time'.format(i), MotorParameter(324 + 16 * (i-1), 1))
-            super(MotorCommunication, self).__setattr__('Task{}_Window_Pos'.format(i), MotorParameter(325 + 16 * (i-1), 2))
-            super(MotorCommunication, self).__setattr__('Task{}_Window_Time'.format(i), MotorParameter(327 + 16 * (i-1), 1))
-            super(MotorCommunication, self).__setattr__('Task{}_Next_Profile'.format(i), MotorParameter(328 + 16 * (i-1), 1))
-            super(MotorCommunication, self).__setattr__('Task{}_Delay_Time'.format(i), MotorParameter(329 + 16 * (i-1), 1))
-            super(MotorCommunication, self).__setattr__('Task{}_Settings'.format(i), MotorParameter(334 + 16 * (i-1), 1))
-            super(MotorCommunication, self).__setattr__('Task{}_State'.format(i), MotorParameter(335 + 16 * (i-1), 1))
+            set_attr_on_self('Task{}_Target'.format(i),
+                             MotorParameter(320 + 16 * (i-1), 2))
+            set_attr_on_self('Task{}_Speed'.format(i),
+                             MotorParameter(322 + 16 * (i-1), 1))
+            set_attr_on_self('Task{}_Acc_Time'.format(i),
+                             MotorParameter(323 + 16 * (i-1), 1))
+            set_attr_on_self('Task{}_Dcc_Time'.format(i),
+                             MotorParameter(324 + 16 * (i-1), 1))
+            set_attr_on_self('Task{}_Window_Pos'.format(i),
+                             MotorParameter(325 + 16 * (i-1), 2))
+            set_attr_on_self('Task{}_Window_Time'.format(i),
+                             MotorParameter(327 + 16 * (i-1), 1))
+            set_attr_on_self('Task{}_Next_Profile'.format(i),
+                             MotorParameter(328 + 16 * (i-1), 1))
+            set_attr_on_self('Task{}_Delay_Time'.format(i),
+                             MotorParameter(329 + 16 * (i-1), 1))
+            set_attr_on_self('Task{}_Settings'.format(i),
+                             MotorParameter(334 + 16 * (i-1), 1))
+            set_attr_on_self('Task{}_State'.format(i),
+                             MotorParameter(335 + 16 * (i-1), 1))
 
     def __getattribute__(self, key):
-        # poor man's descriptor pattern
+        """poor man's descriptor pattern, getter"""
         item = super(MotorCommunication, self).__getattribute__(key)
         if isinstance(item, MotorParameter):
             return self._read(item)
@@ -262,7 +292,7 @@ class MotorCommunication(object):
             return item
 
     def __setattr__(self, key, value):
-        # poor man's descriptor pattern
+        """poor man's descriptor pattern, setter"""
         try:
             item = super(MotorCommunication, self).__getattribute__(key)
         except AttributeError:
@@ -276,7 +306,7 @@ class MotorCommunication(object):
         return super(MotorCommunication, self).__getattribute__(key)
 
     def configure(self):
-        self.configure_DGTIO()
+        self.configure_dgtio()
         self.configure_speed()
         self.configure_tasks()
         self.OperationMode = OP_MODE_MANUAL
@@ -288,8 +318,8 @@ class MotorCommunication(object):
         """
         self.Commands = self.COMMAND_WRITE_FLASH
 
-    def configure_DGTIO(self):
-        #self.DGTOUT1Conf = 3  # Homing ok
+    def configure_dgtio(self):
+        # self.DGTOUT1Conf = 3  # Homing ok
         self.DGTOUT1Conf = 2  # Speed < ...
         self.DGTOUT1 = 1  # Speed <= this
         self.DGTOUT2Conf = 7  # Target ok
@@ -306,7 +336,7 @@ class MotorCommunication(object):
         self.SpeedLimit = SPEED_LIMIT  # Speed limit 3000 rpm
         self.SpeedAccRamp = ACC_RAMP  # Speed mode acceleration ramp 5 s
         self.SpeedDecRamp = ACC_RAMP  # Speed mode deceleration ramp 5 s
-        self.SpeedEmerRamp = EMER_RAMP  # Speed emergency ramp 500 ms
+        self.SpeedEmerRamp = EMERGENCY_RAMP  # Speed emergency ramp 500 ms
         self.AnalogFilter = 2000
         self.AnalogDeadBand = 3500
 
@@ -325,7 +355,9 @@ class MotorCommunication(object):
             self.disable()
             sleep(1)
             if self.is_enabled:
-                raise Exception("Can't disable drive {}! Is is manually enabled?".format({1: 'HA', 2: 'DE'}[self.address]))
+                raise Exception(
+                    "Can't disable drive {}! Is is manually enabled?"
+                    .format({1: 'HA', 2: 'DE'}[self.address]))
         self.enable()
         self.set_homing()
         sleep(1)
@@ -337,13 +369,13 @@ class MotorCommunication(object):
         alarm = self.ALARM
         present_alarms = []
         for i, alarm_name in enumerate(self.ALARM_NAMES):
+            # noinspection PyUnresolvedReferences
             if alarm & 2**i:
                 present_alarms.append("AL{}: {}".format(i, alarm_name))
         return present_alarms
 
     def status_str(self):
         bool_en = lambda v: "Enabled" if v else "Disabled"
-        values = {}
         template = "{en}, alarms: {al}"
         values = {
             'en': bool_en(self.is_enabled),
@@ -376,11 +408,11 @@ class MotorCommunication(object):
     def get_motor_position(self):
         return self.GetPosition
 
-    def get_homing_OK(self):
+    def get_homing_ok(self):
         # noinspection PyTypeChecker
         return not (self.DGTSTAT / 16384) % 2 == 0
 
-    def get_target_OK(self):
+    def get_target_ok(self):
         # noinspection PyTypeChecker
         return not (self.DGTSTAT / 32768) % 2 == 0
 
@@ -403,7 +435,7 @@ class MotorCommunication(object):
 
     @property
     def is_stopped(self):
-        # noinspection PyTypeChecker
+        # noinspection PyUnresolvedReferences
         return self.DGTSTAT & 2**14 == 2**14
 
     def move_delta(self, delta_position, case=None):
@@ -414,21 +446,30 @@ class MotorCommunication(object):
         if not self.is_enabled:
             self.enable()
         if case == 'ha':
-             delta_position = _HA_SLOPE * _HA_MOTOR_TO_ENCODER_RATIO * float(delta_position)
+            delta_position *= HA_SLOPE * _HA_MOTOR_TO_ENCODER_RATIO
         if case == 'de':
-             delta_position = _DE_SLOPE * _DE_MOTOR_TO_ENCODER_RATIO * float(delta_position)
+            delta_position *= DE_SLOPE * _DE_MOTOR_TO_ENCODER_RATIO
         self.clear_start_task()
         self.clear_homing()
         self.set_homing()
         target = int(delta_position)
         if target > FULL2_MAXI or target < FULL2_MINI:
-            raise ValueError('Target outside of range, but I mean way outside!')
+            raise ValueError(
+                'Target outside of range, but I mean way outside!')
+        # noinspection PyAttributeOutsideInit
         self.Task1_Target = target
         self.set_start_task()
 
     def _read(self, parameter_register):
-        data = self.protocol.read_registers(self.address, parameter_register.register_number, parameter_register.size)[::-1]
-        value = sum([(data[i] if data[i] >= 0 else data[i] + FULL) * FULL ** i for i in range(0, parameter_register.size)])
+        data = self.protocol.read_registers(
+            self.address,
+            parameter_register.register_number,
+            parameter_register.size,
+        )[::-1]
+        value = sum([
+            (data[i] if data[i] >= 0 else data[i] + FULL) * FULL ** i
+            for i in range(0, parameter_register.size)
+        ])
         i = parameter_register.size
         if value > MAXI**i / i:
             value = value - FULL**i
@@ -441,8 +482,8 @@ class MotorCommunication(object):
         for i in range(0, parameter_register.size):
             chunk = (value % FULL ** (i+1)) / FULL ** i
             data[i] = int(chunk if chunk < FULL/2 else chunk - FULL)
-        #print data[::-1]
-        self.protocol.write_registers(self.address, parameter_register.register_number, data[::-1])
+        self.protocol.write_registers(
+            self.address, parameter_register.register_number, data[::-1])
 
 
 # Control logic
@@ -457,23 +498,61 @@ def init():
     if _inited:
         return None
     _inited = True
-    motors_comm_prot = ModbusProtocol()
-    _ha = MotorCommunication(motors_comm_prot, 1)
-    _de = MotorCommunication(motors_comm_prot, 2)
+    motors_comm_protocol = ModbusProtocol()
+    _ha = MotorCommunication(motors_comm_protocol, 1)
+    _de = MotorCommunication(motors_comm_protocol, 2)
+
+
+def get_motor(motor):
+    global _inited, _ha, _de
+    if not _inited:
+        raise RuntimeError('motors not yet inited')
+    ha, de = _ha, _de
+
+    if isinstance(motor, MotorCommunication):
+        return motor
+    if isinstance(motor, basestring) and motor in ('ha', 'de',):
+        return locals()[motor]
+    raise ValueError(
+        'Argument `motor` must be either'
+        ' MotorCommunication instance or "ha" or "de"')
+
+
+def enable(motor):
+    motor = get_motor(motor)
+    motor.enable()
+
+
+def disable(motor):
+    motor = get_motor(motor)
+    motor.disable()
+
+
+def configure():
+    _ha.disable()
+    _de.disable()
+    _ha.configure()
+    _de.configure()
+    # order is important when writing to flash (not eeprom):
+    _ha.configure_flash()
+    _de.configure_flash()
 
 
 def require_stopped(motor):
-    if not motor.is_stopped:
+    motor = get_motor(motor)
+    if not stopped(motor):
         raise ValueError('Can not do that while drive is moving!')
 
 
 def require_op_mode(motor, op_mode):
+    motor = get_motor(motor)
     if not motor.OperationMode == op_mode:
         raise ValueError('Wrong operation mode!')
 
 
 def set_speed(motor, speed):
-    if not motor.is_stopped:
+    motor = get_motor(motor)
+    if not stopped(motor):
         require_op_mode(motor, OP_MODE_SPEED)
     motor.OperationMode = OP_MODE_SPEED
     motor.SetSpeed = speed
@@ -501,9 +580,14 @@ def move_by(delta_local, speeds=None):
         _de.move_delta(delta_position, case=case)
 
 
+def stopped(motor):
+    motor = get_motor(motor)
+    return motor.is_stopped and motor.Speed == 0
+
+
 def moving():
     global _inited, _ha, _de
-    return not (_ha.is_stopped and _de.is_stopped)
+    return not stopped(_ha) and not stopped(_de)
 
 
 def stop(ha=None, de=None):
@@ -512,7 +596,7 @@ def stop(ha=None, de=None):
         ha = True
         de = True
     if ha:
-        if not _ha.is_stopped:
+        if not stopped(_ha):
             if _ha.OperationMode == OP_MODE_SPEED:
                 _ha.SetSpeed = 0
             elif _ha.OperationMode == OP_MODE_POSITION:
@@ -520,7 +604,7 @@ def stop(ha=None, de=None):
             else:
                 raise ValueError('Unsupported operation mode!')
     if de:
-        if not _de.is_stopped:
+        if not stopped(_de):
             if _de.OperationMode == OP_MODE_SPEED:
                 _de.SetSpeed = 0
             elif _de.OperationMode == OP_MODE_POSITION:
@@ -654,8 +738,8 @@ def _main(args):
             values = {}
             if not args['ha'] and not args['de']:
                 values = {
-                    'ha' : _ha.Speed,
-                    'de' : _de.Speed,
+                    'ha': _ha.Speed,
+                    'de': _de.Speed,
                 }
             if args['ha']:
                 values['ha'] = _ha.Speed
@@ -678,7 +762,7 @@ def _main(args):
             args['ha'] = True
             args['de'] = True
         if args['ha']:
-            if not _ha.is_stopped:
+            if not stopped(_ha):
                 if _ha.OperationMode == OP_MODE_SPEED:
                     _ha.SetSpeed = 0
                 elif _ha.OperationMode == OP_MODE_POSITION:
@@ -686,7 +770,7 @@ def _main(args):
                 else:
                     raise ValueError('Unsupported operation mode!')
         if args['de']:
-            if not _de.is_stopped:
+            if not stopped(_de):
                 if _de.OperationMode == OP_MODE_SPEED:
                     _de.SetSpeed = 0
                 elif _de.OperationMode == OP_MODE_POSITION:
@@ -695,16 +779,13 @@ def _main(args):
                     raise ValueError('Unsupported operation mode!')
 
     if args['move'] and args['by']:
-        delta_local = {
-            'ha': 0,
-            'de': 0,
-        }
         if args['ha']:
             if not args['pulse']:
                 case = 'ha'
             else:
                 case = None
-            delta_position = -1 * float(args['<angle>'])  #@TODO parse angle formats
+            # TODO parse angle formats:
+            delta_position = -1 * float(args['<angle>'])
             _ha.OperationMode = OP_MODE_POSITION
             if args['<S>']:
                 _ha.Task1_Speed = int(args['<S>'])
@@ -715,7 +796,8 @@ def _main(args):
                 case = 'de'
             else:
                 case = None
-            delta_position = -1 * float(args['<angle>'])  #@TODO parse angle formats
+            # TODO parse angle formats:
+            delta_position = -1 * float(args['<angle>'])
             _de.OperationMode = OP_MODE_POSITION
             if args['<S>']:
                 _de.Task1_Speed = int(args['<S>'])
@@ -724,17 +806,11 @@ def _main(args):
 
 if __name__ == '__main__':
 
-    args = docopt(__doc__, version=__doc__.split("\n")[0], options_first=True)
+    cli_args = docopt(
+        __doc__, version=__doc__.split("\n")[0], options_first=True)
 
-    if len(sys.argv) == 1 or args['help']:
+    if len(sys.argv) == 1 or cli_args['help']:
         print __doc__.strip()
         exit(0)
 
-    try:
-        _main(args)
-    except:
-        raise
-        #exit_('ERROR')
-
-
-
+    _main(cli_args)

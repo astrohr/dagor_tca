@@ -55,7 +55,7 @@ def _heardEnter():
     return False
 
 
-def _wait_for_stop(motor, dots=False, after=0.1, interval=0.1, skip_dots=0, enter_abort=False, end="\n"):
+def wait_for_stop(motor, dots=False, after=0.1, interval=0.1, skip_dots=0, enter_abort=False, end="\n"):
     i = 0
     while True:
         i += 1
