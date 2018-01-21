@@ -61,6 +61,7 @@ FULL2_MINI = FULL2 / -2
 MAX_TASKS = 2
 
 SPEED_LIMIT = config.MOTORS['speed_limit']
+_MOTOR_STOPPED_THRESHOLD = 5
 
 MAX_SPEED_DE = 1.456  # deg/sec
 MAX_SPEED_HA = 3.075e-2  # h/sec
@@ -547,13 +548,14 @@ def require_stopped(motor):
 def require_op_mode(motor, op_mode):
     motor = get_motor(motor)
     if not motor.OperationMode == op_mode:
-        raise ValueError('Wrong operation mode!')
+        raise ValueError('Wrong operation mode: {}'
+                         .format(motor.OperationMode))
 
 
 def set_speed(motor, speed):
     motor = get_motor(motor)
-    if not stopped(motor):
-        require_op_mode(motor, OP_MODE_SPEED)
+    #if not stopped(motor):
+    #    require_op_mode(motor, OP_MODE_SPEED)
     motor.OperationMode = OP_MODE_SPEED
     motor.SetSpeed = speed
 
@@ -582,7 +584,7 @@ def move_by(delta_local, speeds=None):
 
 def stopped(motor):
     motor = get_motor(motor)
-    return motor.is_stopped and motor.Speed == 0
+    return motor.is_stopped and motor.Speed < _MOTOR_STOPPED_THRESHOLD
 
 
 def moving():
@@ -768,7 +770,8 @@ def _main(args):
                 elif _ha.OperationMode == OP_MODE_POSITION:
                     _ha.clear_start_task()
                 else:
-                    raise ValueError('Unsupported operation mode!')
+                    raise ValueError('Unsupported operation mode: {}'
+                                     .format(_ha.OperationMode))
         if args['de']:
             if not stopped(_de):
                 if _de.OperationMode == OP_MODE_SPEED:
@@ -776,7 +779,8 @@ def _main(args):
                 elif _de.OperationMode == OP_MODE_POSITION:
                     _de.clear_start_task()
                 else:
-                    raise ValueError('Unsupported operation mode!')
+                    raise ValueError('Unsupported operation mode: {}'
+                                     .format(_de.OperationMode))
 
     if args['move'] and args['by']:
         if args['ha']:
