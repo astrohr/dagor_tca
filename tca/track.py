@@ -283,12 +283,27 @@ class Tracking(object):
 
     _last_conf = {}
 
+    def _dump_current_json(self):
+        tmp_file = conf.TRACKING['tracking_current_file'] + '.tmp'
+        real_file = conf.TRACKING['tracking_current_file']
+        current = self.current.copy()
+        current['path'] = [
+            (p.ha, p.de) for p in current['path']
+        ]
+        current['now'] = str(current['now'])
+        with open(tmp_file, 'w') as f:
+            f.write(json.dumps(current))
+        os.rename(tmp_file, real_file)
+
     def _dump_config_json(self):
         if self.config == self._last_conf:
             return  # already dumped this
+        tmp_file = conf.TRACKING['tracking_target_file'] + '.tmp'
+        real_file = conf.TRACKING['tracking_target_file']
         self.schema.validate(self.config)
-        with open(conf.TRACKING['tracking_target_file'], 'w') as f:
+        with open(tmp_file, 'w') as f:
             f.write(json.dumps(self.config))
+        os.rename(tmp_file, real_file)
 
     def _load_config_json(self):
         with open(conf.TRACKING['tracking_target_file'], 'r') as f:
@@ -300,6 +315,10 @@ class Tracking(object):
                 logger.exception('Error ')
                 self.config = {}
                 return
+
+    def get_config(self):
+        self._load_config_json()
+        return self.config
 
     def _process_config(self):
         if self.config['target_celest'] is None:
@@ -407,7 +426,7 @@ class Tracking(object):
         self.current['now'] = datetime.utcnow()
         self.current['offset'] = read_corrections_file()
 
-    def _loop_calculate_target(self):
+    def _loop_calculate_path_target(self):
         self.current['path'] = dagor_path.get_path(
             self.current['internal'],
             self.config['target_internal'],
@@ -415,7 +434,7 @@ class Tracking(object):
         )
         self.current['path'] = self.update_path(
             self.current['path'], self.current['internal'])
-        self.current['target'] = self.current['path'][1]
+        self.path_target = self.current['path'][1]
 
     def _loop_check_space(self):
         hence_sec = 10 if self.current['on_target'] else 0
@@ -435,8 +454,8 @@ class Tracking(object):
             'ha_offset']
         de_now = self.current['internal']['de'] + self.current['offset'][
             'de_offset']
-        self.current['ha_err'] = ha_now - self.current['target'].ha
-        self.current['de_err'] = de_now - self.current['target'].de
+        self.current['ha_err'] = ha_now - self.path_target.ha
+        self.current['de_err'] = de_now - self.path_target.de
 
     def _loop_calculate_speeds(self):
         speeds = self.adjust_speeds(
@@ -517,6 +536,9 @@ class Tracking(object):
         dagor_motors.set_speed('ha', self.current['ha_speed'])
         dagor_motors.set_speed('de', self.current['de_speed'])
 
+    def _loop_write_current(self):
+        self._dump_current_json()
+
     def track(self):
         if not self.config:
             raise RuntimeError('tracking not configured')
@@ -531,7 +553,7 @@ class Tracking(object):
                 self._loop_wait()
                 self._loop_reload_config()
                 self._loop_read_inputs()
-                self._loop_calculate_target()
+                self._loop_calculate_path_target()
                 self._loop_check_space()
                 self._loop_calculate_errors()
                 self._loop_calculate_speeds()
@@ -540,6 +562,7 @@ class Tracking(object):
                 self._loop_print_stats()
                 self._loop_apply_speeds()
                 self._loop_stop_on_target()
+                self._loop_write_current()
 
         except dagor_path.NoPath as e:
             print_("No path: {}".format(e))
@@ -613,6 +636,35 @@ def speed_tracking(target_celest=None,
         'force': force,
     })
     tracking.track()
+
+
+def set_config(config):
+    tracking = Tracking()
+    tracking.set_config(config)
+
+
+def get_config():
+    tracking = Tracking()
+    return tracking.get_config()
+
+
+def get_current():
+    with open(conf.TRACKING['tracking_current_file'], 'r') as f:
+        content = f.read()
+        try:
+            current = json.loads(content)
+        except ValueError:
+            logger.exception('Error ')
+            return None
+    return current
+
+
+def get_status():
+    status = {
+        'config': get_config(),
+        'current': get_current(),
+    }
+    return status
 
 
 # Run as CLI client
