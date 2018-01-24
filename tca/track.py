@@ -25,6 +25,7 @@ from __future__ import division
 from collections import OrderedDict
 
 from datetime import datetime
+import json
 import random
 
 from docopt import docopt
@@ -39,7 +40,13 @@ import motors as dagor_motors
 import path as dagor_path
 import position as dagor_position
 import cat as dagor_catalog
+import schemas as dagor_schemas
 import local.configuration as conf
+
+from logging_conf import get_logger
+
+logger = get_logger(__file__)
+
 
 TRACKING_COORDINATES_FILE = os.path.join(BASE_PATH, 'coords.txt')
 TRACKING_CORRECTIONS_FILE = os.path.join(BASE_PATH, 'tracking_corrections.txt')
@@ -270,11 +277,31 @@ class Tracking(object):
         'stop_on_target': False,
         'rough': False,
         'force': False,
+        'tracking': False,
     }
+    schema = dagor_schemas.Schema('track')
 
-    def load_config(self, config):
-        self.config = self.DEFAULT_CONF.copy()
-        self.config.update(config)
+    _last_conf = {}
+
+    def _dump_config_json(self):
+        if self.config == self._last_conf:
+            return  # already dumped this
+        self.schema.validate(self.config)
+        with open(conf.TRACKING['tracking_target_file'], 'w') as f:
+            f.write(json.dumps(self.config))
+
+    def _load_config_json(self):
+        with open(conf.TRACKING['tracking_target_file'], 'r') as f:
+            content = f.read()
+            try:
+                self.config = json.loads(content)
+                self.schema.validate(self.config)
+            except ValueError:
+                logger.exception('Error ')
+                self.config = {}
+                return
+
+    def _process_config(self):
         if self.config['target_celest'] is None:
             self.config['target_celest'] = dagor_position.get_celest()
         self.target = Target(
@@ -283,7 +310,13 @@ class Tracking(object):
             self.config['target_is_static'])
         if self.config['chirality'] is None:
             self.config['chirality'] = dagor_position.get_chirality()
+
+    def set_config(self, config):
+        self.config = self.DEFAULT_CONF.copy()
+        self.config.update(config)
         self._reset_current()
+        self._process_config()
+        self._dump_config_json()
 
     def _reset_current(self):
         self.current = {}
@@ -359,6 +392,10 @@ class Tracking(object):
             enter_abort=True,
             interval=self.tracking_check_interval / 100,
         )
+
+    def _loop_reload_config(self):
+        self._load_config_json()
+        self._process_config()
 
     def _loop_read_inputs(self):
         self.config['target_internal'] = dagor_position.celest_to_internal(
@@ -492,6 +529,7 @@ class Tracking(object):
         try:
             while True:
                 self._loop_wait()
+                self._loop_reload_config()
                 self._loop_read_inputs()
                 self._loop_calculate_target()
                 self._loop_check_space()
@@ -566,7 +604,7 @@ def speed_tracking(target_celest=None,
                    rough=False,
                    force=False):
     tracking = Tracking()
-    tracking.load_config({
+    tracking.set_config({
         'target_celest': target_celest,
         'chirality': chirality,
         'target_is_static': target_is_static,
