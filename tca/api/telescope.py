@@ -20,21 +20,16 @@ Options:
 from mock.mock import MagicMock
 from docopt import docopt
 from datetime import datetime, timedelta
-from flask import Blueprint, request, make_response
+from flask import Blueprint, request
 
-from common import p_
-from flask.ext.api.decorators import set_renderers, set_parsers
 from flask_api import FlaskAPI, status as http_status
-from flask_api.exceptions import ParseError
 
 from tca import track as dagor_track
 from tca.api import version
 from tca.api.utils import (
-    RegexConverter, IntBrowsableAPIRenderer,
-    BoolRenderer, BoolParser,
-    IntRenderer, IntParser,
+    RegexConverter,
     set_mock_var, read_mock_var,
-    check_connectivity, retry_serial, handle_request_errors)
+    check_connectivity, retry_serial,)
 
 # noinspection PyUnboundLocalVariable
 from tca.logging_conf import get_logger
@@ -104,7 +99,6 @@ def resource():
     except Exception:
         raise
     else:
-        p_(status)
         time_ago = datetime.utcnow() - datetime.utcfromtimestamp(status['current']['t_now'])
         is_active = time_ago < timedelta(seconds=1)
         status = {
@@ -123,16 +117,53 @@ def state_resource():
     """
     Telescope device status.
 
-    ###Fields
+    ### Fields
 
-    Writable: `position`<br />
-    Read-only: all other fields
+    Writable: `config`<br />
+    Read-only: `current`
 
     ### Methods
 
-    **PUT**: set new telescope state.<br />
-    **POST**: sync current celest coordinates.
+    #### PUT
 
+    Set new desired telescope state.
+
+    ##### Example payload:
+
+    ```
+    {
+        "config": {
+            "tracking": true,
+            "force": false,
+            "chirality": "cw",
+            "stop_on_target": false,
+            "target_celest": {
+                "de": 0.0,
+                "ra": 12.0
+            },
+            "rough": false,
+            "target_is_static": false
+        }
+    }
+    ```
+
+    #### POST
+
+    Sync current celest coordinates.
+
+    Only `target_celest` key id writable, other keys are ignored.
+
+    ```
+    {
+        "config": {
+            "target_celest": {
+                "de": 0.0,
+                "ra": 12.0
+            },
+        }
+    }
+
+    ```
     ### Hyperlinks
 
     * [Up](..)

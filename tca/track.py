@@ -28,10 +28,13 @@ from datetime import datetime
 import json
 import random
 
+import jsonschema
 from docopt import docopt
 from time import time, sleep
 import os
 import sys
+
+from jsonschema import ValidationError
 
 from common import (NonBlockingConsole, BASE_PATH, EnterAbort, print_,
                     wait_for_time, sign, p_, wait_for_stop)
@@ -385,8 +388,15 @@ class Tracking(object):
         end = self.tracking_check_interval + rnd_interval
         return random.uniform(start, end)
 
+    def stop_tracking(self):
+        """Stop tracking but keep the loop running"""
+        self.config['tracking'] = False
+        self.config['target_celest'] = dagor_position.get_celest()
+        self._dump_config_json()
+
     @staticmethod
-    def stop_tracking():
+    def halt_tracking():
+        """Stop tracking and hal the loop."""
         print_("Stopping")
         dagor_motors.stop()
         wait_for_stop(dagor_motors.get_motor('ha'), dots=True)
@@ -533,6 +543,9 @@ class Tracking(object):
             raise EnterAbort()
 
     def _loop_apply_speeds(self):
+        if not self.config['tracking']:
+            self.current['ha_speed'] = 0
+            self.current['de_speed'] = 0
         dagor_motors.set_speed('ha', self.current['ha_speed'])
         dagor_motors.set_speed('de', self.current['de_speed'])
 
@@ -550,36 +563,41 @@ class Tracking(object):
         self.current['on_target_since'] = None
         try:
             while True:
-                self._loop_wait()
-                self._loop_reload_config()
-                self._loop_read_inputs()
-                self._loop_calculate_path_target()
-                self._loop_check_space()
-                self._loop_calculate_errors()
-                self._loop_calculate_speeds()
-                self._loop_check_target()
-                self._loop_print_console_header()
-                self._loop_print_stats()
-                self._loop_apply_speeds()
-                self._loop_stop_on_target()
-                self._loop_write_current()
+                try:
+                    self._loop_wait()
+                    self._loop_reload_config()
+                    self._loop_read_inputs()
+                    self._loop_calculate_path_target()
+                    self._loop_check_space()
+                    self._loop_calculate_errors()
+                    self._loop_calculate_speeds()
+                    self._loop_check_target()
+                    self._loop_apply_speeds()
+                    self._loop_print_console_header()
+                    self._loop_print_stats()
+                    self._loop_stop_on_target()
+                    self._loop_write_current()
 
-        except dagor_path.NoPath as e:
-            print_("No path: {}".format(e))
-            print_(self.target.celest())
+                except dagor_path.NoPath as e:
+                    print_("No path: {}".format(e))
+                    print_(self.target.celest())
+                    self.config['tracking'] = False
+
+                except ValidationError as e:
+                    print_("Schema error: {}".format(e))
+                    self.stop_tracking()
 
         except (EnterAbort, KeyboardInterrupt):
             # Note: KeyboardInterrupt will sometimes not get caught here
             # ... it's a thing
             print("")
+            self.halt_tracking()
 
-        except Exception as e:
-            print_(e.message)
-            print_("Exception info:\n")
+        except Exception:
+            print_('Halting track loop!!!')
+            self.halt_tracking()
+            print_('Original error:')
             raise
-
-        finally:
-            self.stop_tracking()
 
     def _loop_print_console_header(self):
         print_("\x1b[2J\x1b[0;0H")
@@ -634,6 +652,7 @@ def speed_tracking(target_celest=None,
         'stop_on_target': stop_on_target,
         'rough': rough,
         'force': force,
+        'tracking': True,
     })
     tracking.track()
 
