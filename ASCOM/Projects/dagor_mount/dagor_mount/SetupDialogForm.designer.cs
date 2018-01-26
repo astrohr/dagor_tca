@@ -149,8 +149,10 @@ namespace ASCOM.DagorTelescope
             // 
             // SetupDialogForm
             // 
+            this.AcceptButton = this.cmdOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.CancelButton = this.cmdCancel;
             this.ClientSize = new System.Drawing.Size(350, 175);
             this.Controls.Add(this.textBoxPort);
             this.Controls.Add(this.label4);

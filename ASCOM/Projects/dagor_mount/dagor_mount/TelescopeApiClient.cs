@@ -13,6 +13,20 @@ namespace ASCOM.DagorTelescope
     public class StateRepr : IRepr
     {
 
+
+        public class Celest
+        {
+            [JsonProperty("ra")]
+            public double ra { get; set; }
+
+            [JsonProperty("de")]
+            public double de { get; set; }
+        }
+
+
+        [JsonProperty("ready")]
+        public bool ready { get; }
+
         [JsonProperty("current")]
         public Current current { get; set; }
         public class Current
@@ -21,15 +35,25 @@ namespace ASCOM.DagorTelescope
             [JsonProperty("chirality")]
             public string chirality { get; }
 
+            [JsonProperty("slewing")]
+            public bool slewing { get; }
+
+            [JsonProperty("on_target")]
+            public bool on_target { get; }
+
             [JsonProperty("celest")]
             public Celest celest { get; set; }
-            public class Celest
-            {
-                [JsonProperty("ra")]
-                public double ra { get; set; }
+           
 
-                [JsonProperty("de")]
-                public double de { get; set; }
+            [JsonProperty("altaz")]
+            public Altaz altaz { get; set; }
+            public class Altaz
+            {
+                [JsonProperty("alt")]
+                public double alt { get; set; }
+
+                [JsonProperty("az")]
+                public double az { get; set; }
             }
 
         }
@@ -41,19 +65,14 @@ namespace ASCOM.DagorTelescope
             [JsonProperty("tracking")]
             public bool tracking { get; set; }
 
+            [JsonProperty("target_is_static")]
+            public bool target_is_static { get; set; }
+
             [JsonProperty("chirality")]
             public string chirality { get; }
 
             [JsonProperty("target_celest")]
-            public TargetCelest target_celest { get; set; }
-            public class TargetCelest
-            {
-                [JsonProperty("ra")]
-                public double ra { get; set; }
-
-                [JsonProperty("de")]
-                public double de { get; set; }
-            }
+            public Celest target_celest { get; set; }
         }
     }
 
@@ -86,9 +105,36 @@ namespace ASCOM.DagorTelescope
             if (stateLastRefreshed == null || stateLastRefreshed < aSecAgo)
             {
                 stateLastRefreshed = DateTime.Now;
-                _state = ExecuteGET<StateRepr>("state");
+                //_state = ExecuteGET<StateRepr>("state");
             }
+            _state = ExecuteGET<StateRepr>("state");
         }
-        
+
+        public bool GetTracking()
+        {
+            refreshStaleState();
+            _state = ExecuteGET<StateRepr>("state");
+            return _state.config.tracking && ! _state.current.slewing && _state.config.target_is_static;
+        }
+
+        public void SetTracking(bool value)
+        {
+            refreshStaleState();
+            _state.config.target_is_static = !value;
+            if (! value)
+            {
+                _state.config.target_celest = _state.current.celest;
+            }
+            _state = ExecutePUT<StateRepr, StateRepr>("state", _state);
+        }
+
+        public void SetTargetCelest(double ra, double de)
+        {
+            refreshStaleState();
+            _state.config.target_celest.ra = ra;
+            _state.config.target_celest.de = de;
+            _state = ExecutePUT<StateRepr, StateRepr>("state", _state);
+        }
+
     }
 }

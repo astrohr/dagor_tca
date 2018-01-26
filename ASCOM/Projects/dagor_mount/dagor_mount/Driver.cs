@@ -76,9 +76,9 @@ namespace ASCOM.DagorTelescope
         internal static List<string> protocolOptions = new List<string>(new string[] { "http", "https" });
         internal static string protocolDefault = protocolOptions[0];
         internal static string serverProfileName = "Server";
-        internal static string serverDefault = "127.0.0.1";
+        internal static string serverDefault = "10.1.4.120";
         internal static string portProfileName = "Port";
-        internal static string portDefault = "8000";
+        internal static string portDefault = "8001";
         internal static string traceStateProfileName = "Trace Level";
         internal static string traceStateDefault = "false";
 
@@ -328,8 +328,9 @@ namespace ASCOM.DagorTelescope
         {
             get
             {
-                tl.LogMessage("Altitude", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("Altitude", false);
+                double altitude = client.state.current.altaz.alt;
+                tl.LogMessage("Altitude Get", altitude.ToString());
+                return altitude;
             }
         }
 
@@ -379,8 +380,9 @@ namespace ASCOM.DagorTelescope
         {
             get
             {
-                tl.LogMessage("Azimuth Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("Azimuth", false);
+                double azimuth = client.state.current.altaz.az;
+                tl.LogMessage("Azimuth Get", azimuth.ToString());
+                return azimuth;
             }
         }
 
@@ -472,8 +474,8 @@ namespace ASCOM.DagorTelescope
         {
             get
             {
-                tl.LogMessage("CanSetTracking", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanSetTracking", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -508,8 +510,8 @@ namespace ASCOM.DagorTelescope
         {
             get
             {
-                tl.LogMessage("CanSlewAsync", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanSlewAsync", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -517,8 +519,8 @@ namespace ASCOM.DagorTelescope
         {
             get
             {
-                tl.LogMessage("CanSync", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanSync", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -784,8 +786,8 @@ namespace ASCOM.DagorTelescope
         {
             get
             {
-                tl.LogMessage("SlewSettleTime Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("SlewSettleTime", false);
+                tl.LogMessage("SlewSettleTime Get", "0");
+                return 0;
             }
             set
             {
@@ -808,14 +810,14 @@ namespace ASCOM.DagorTelescope
 
         public void SlewToCoordinates(double RightAscension, double Declination)
         {
-            tl.LogMessage("SlewToCoordinates", "Not implemented");
+            tl.LogMessage("SlewToCoordinates", RightAscension.ToString() + "," + Description.ToString());
             throw new ASCOM.MethodNotImplementedException("SlewToCoordinates");
         }
 
         public void SlewToCoordinatesAsync(double RightAscension, double Declination)
         {
-            tl.LogMessage("SlewToCoordinatesAsync", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SlewToCoordinatesAsync");
+            tl.LogMessage("SlewToCoordinatesAsync", RightAscension.ToString() + "," + Declination.ToString());
+            client.SetTargetCelest(RightAscension, Declination);
         }
 
         public void SlewToTarget()
@@ -834,8 +836,9 @@ namespace ASCOM.DagorTelescope
         {
             get
             {
-                tl.LogMessage("Slewing Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("Slewing", false);
+                bool slewing = client.state.current.slewing;
+                tl.LogMessage("Slewing Get", slewing.ToString());
+                return slewing;
             }
         }
 
@@ -892,14 +895,15 @@ namespace ASCOM.DagorTelescope
         {
             get
             {
-                bool tracking = client.state.config.tracking;
+                bool tracking = client.GetTracking();
                 tl.LogMessage("Tracking", "Get - " + tracking.ToString());
                 return tracking;
             }
             set
             {
-                tl.LogMessage("Tracking Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("Tracking", true);
+                
+                tl.LogMessage("Tracking", "Set - " + value.ToString());
+                client.SetTracking(value);
             }
         }
 
