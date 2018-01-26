@@ -307,8 +307,8 @@ namespace ASCOM.DagorTelescope
         #region ITelescope Implementation
         public void AbortSlew()
         {
-            tl.LogMessage("AbortSlew", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("AbortSlew");
+            tl.LogMessage("AbortSlew", "SetTrackiing(false)");
+            client.SetTracking(false);
         }
 
         public AlignmentModes AlignmentMode
@@ -574,8 +574,8 @@ namespace ASCOM.DagorTelescope
         {
             get
             {
-                tl.LogMessage("DoesRefraction Get", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("DoesRefraction", false);
+                tl.LogMessage("DoesRefraction Get", false.ToString());
+                return false;
             }
             set
             {
@@ -824,8 +824,8 @@ namespace ASCOM.DagorTelescope
 
         public void SlewToTargetAsync()
         {
-            tl.LogMessage("SlewToTargetAsync", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SlewToTargetAsync");
+            tl.LogMessage("SlewToTargetAsync", TargetRightAscension.ToString() + "," + TargetDeclination.ToString());
+            client.SetTargetCelest(TargetRightAscension, TargetDeclination);
         }
 
         public bool Slewing
@@ -970,7 +970,7 @@ namespace ASCOM.DagorTelescope
         /// <param name="bRegister">If <c>true</c>, registers the driver, otherwise unregisters it.</param>
         private static void RegUnregASCOM(bool bRegister)
         {
-            using (var P = new ASCOM.Utilities.Profile())
+            using (var P = new Profile())
             {
                 P.DeviceType = "Telescope";
                 if (bRegister)
