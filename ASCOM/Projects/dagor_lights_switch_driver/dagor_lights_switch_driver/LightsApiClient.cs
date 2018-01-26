@@ -59,7 +59,7 @@ namespace ASCOM.DagorLights
                 }
                 catch (Exception ex)
                 {
-                    // TODO log excaption
+                    // TODO log exception
                     throw new NotConnectedException();
                 }
             }

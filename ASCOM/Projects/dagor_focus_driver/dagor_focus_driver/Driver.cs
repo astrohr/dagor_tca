@@ -121,21 +121,19 @@ namespace ASCOM.DagorFocus
         /// </summary>
         public Focuser()
         {
-            
             tl = new TraceLogger("", "DagorFocus");
-            ReadProfile(); // Read device configuration from the ASCOM Profile store
 
-            LogMessage("Focuser", "Starting initialisation");
+            // Read device configuration from the ASCOM Profile store
+            ReadProfile();
 
-            connectedState = false; // Initialise connected to false
-            utilities = new Util(); //Initialise util object
-            astroUtilities = new AstroUtils(); // Initialise astro utilities object
+            tl.LogMessage("Focuser", "Starting initialisation");
 
-            //TODO: Implement your additional construction here
-            
+            connectedState = false;
+            utilities = new Util();
+            astroUtilities = new AstroUtils();
             client = new FocusApiClient(protocol, server, port);
-            
-            LogMessage("Focuser", "Completed initialisation");
+
+            tl.LogMessage("Focuser", "Completed initialisation");
         }
 
 
@@ -244,8 +242,10 @@ namespace ASCOM.DagorFocus
                 {
                     connectedState = true;
                     LogMessage("Connected Set", "Connecting to URL {0}", protocol);
+
                     if (!client.IsReady)
                     {
+                        connectedState = false;
                         throw new NotConnectedException();
 
                     }

@@ -113,16 +113,9 @@ namespace ASCOM.DagorLights
 
             tl.LogMessage("Switch", "Starting initialisation");
 
-            // Initialise connected to false
             connectedState = false;
-
-            //Initialise util object 
             utilities = new Util();
-
-            // Initialise astro utilities object
             astroUtilities = new AstroUtils(); 
-
-            //Initialize API Client            
             client = new LightsApiClient(protocol, server, port);
 
             tl.LogMessage("Switch", "Completed initialisation");

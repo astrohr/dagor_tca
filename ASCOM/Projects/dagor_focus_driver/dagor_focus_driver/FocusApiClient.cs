@@ -29,8 +29,10 @@ namespace ASCOM.DagorFocus
         public FocusApiClient(string Proto, string Server, int Port) : base(Proto, Server, Port)
         { }
 
-        protected override string _DevPath() {
-            return "focus"; }
+        protected override string _DevPath()
+        {
+            return "focus";
+        }
 
         public bool IsIdle
         {
@@ -72,7 +74,7 @@ namespace ASCOM.DagorFocus
                 }
                 catch (Exception ex)
                 {
-                    // TODO log excaption
+                    // TODO log exception
                     throw new NotConnectedException();
                 }
             }

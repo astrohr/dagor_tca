@@ -579,8 +579,9 @@
         <member name="P:ASCOM.DriverAccess.Camera.LastExposureStartTime">
             <summary>
             Reports the actual exposure start in the FITS-standard CCYY-MM-DDThh:mm:ss[.sss...] format.
+            The time must be UTC.
             </summary>
-            <value>The last exposure start time.</value>
+            <value>The last exposure start time in UTC.</value>
             <exception cref="T:ASCOM.PropertyNotImplementedException">Must throw an exception if not supported</exception>
             <exception cref="T:ASCOM.InvalidOperationException">If called before any exposure has been taken</exception>
         </member>
@@ -1303,6 +1304,21 @@
             <summary>
             Provides universal access to ASCOM Dome drivers
             </summary>
+            <remarks>
+            This interface is used to handle a dome, with or without a controllable shutter, and also a roll off roof.
+            <para>The dome implentation should be self explanatory.</para>
+            <para>A roll off roof is implemented using the shutter control as the roof.  The properties and methods shoud be implented as follows:
+            <list>
+            <item><description>OpenShutter and CloseShutter open and close the roof.</description></item>
+            <item><description>CanFindHome, CanPark,CanSetAltitude, CanSetAzimuth, CanSetPark, CanSlave and CanSyncAzimuth all return false.</description></item>
+            <item><description>CanSetShutter returns true.</description></item>
+            <item><description>ShutterStatus is implemented.</description></item>
+            <item><description>Slewing always returns false.</description></item>
+            <item><description>AbortSlew should stop the shutter moving.</description></item>
+            <item><description>FindHome, Park, SetPark, SlewToAltitude, SlewToAzimuth and SyncToAzimuth all throw the <see cref="T:ASCOM.MethodNotImplementedException"/></description></item>
+            <item><description>Altitude and Azimuth throw the <see cref="T:ASCOM.PropertyNotImplementedException"/>.</description></item>
+            </list></para>
+            </remarks>
         </member>
         <member name="M:ASCOM.DriverAccess.Dome.#ctor(System.String)">
             <summary>
