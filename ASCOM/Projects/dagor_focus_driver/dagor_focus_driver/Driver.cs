@@ -247,7 +247,6 @@ namespace ASCOM.DagorFocus
                     {
                         connectedState = false;
                         throw new NotConnectedException();
-
                     }
 
                 }
@@ -317,7 +316,6 @@ namespace ASCOM.DagorFocus
 
         #region IFocuser Implementation
 
-        private int focuserPosition = 0; // Class level variable to hold the current focuser position
         private const int focuserSteps = 10000;
         public bool Absolute
         {

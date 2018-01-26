@@ -155,7 +155,7 @@ namespace ASCOM.DagorApiClient
                     var response_repr = JsonConvert.DeserializeObject<ResponseRepr>(content);
                     return response_repr;
                 }
-                System.Threading.Thread.Sleep(1000);
+                System.Threading.Thread.Sleep(300);
             }
             throw new CommError("Retries exhausted");
         }

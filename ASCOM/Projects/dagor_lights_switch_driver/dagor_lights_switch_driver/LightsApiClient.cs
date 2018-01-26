@@ -42,7 +42,7 @@ namespace ASCOM.DagorLights
                     ReprState repr_state = ExecuteGET<ReprState>("state");
                     return repr_state.n;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // TODO log excaption
                     throw new NotConnectedException();
@@ -57,7 +57,7 @@ namespace ASCOM.DagorLights
 
                     ReprState repr_n_response = ExecutePUT<ReprState, ReprState>("state", repr_state);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // TODO log exception
                     throw new NotConnectedException();
@@ -72,7 +72,7 @@ namespace ASCOM.DagorLights
                 bool repr_state = ExecuteGET<bool>(n.ToString());
                 return repr_state;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // TODO log exception
                 throw new NotConnectedException();
@@ -86,7 +86,7 @@ namespace ASCOM.DagorLights
                 bool repr_state = ExecutePUT<bool, bool>(n.ToString(), state);
                 return repr_state;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // TODO log exception
                 throw new NotConnectedException();
