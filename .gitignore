@@ -24,3 +24,6 @@ hardware/dagor_fans/firmware/platformio.ini
 .flow
 tca/.idea
 ASCOM/Projects/dagor_mount/packages/Newtonsoft.Json.10.0.3/
+hardware/switches/.pioenvs
+.clang_complete
+.gcc-flags.json
