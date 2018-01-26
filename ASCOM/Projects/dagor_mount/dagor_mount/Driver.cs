@@ -28,12 +28,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
 using System.Runtime.InteropServices;
 
-using ASCOM;
-using ASCOM.Astrometry;
 using ASCOM.Astrometry.AstroUtils;
 using ASCOM.Utilities;
 using ASCOM.DeviceInterface;
@@ -124,7 +120,7 @@ namespace ASCOM.DagorTelescope
             connectedState = false; // Initialise connected to false
             utilities = new Util(); //Initialise util object
             astroUtilities = new AstroUtils(); // Initialise astro utilities object
-            client = new TelescopeApiClient(protocol, server, port);
+            client = new TelescopeApiClient(protocol, server, port, tl);
 
             tl.LogMessage("Telescope", "Completed initialisation");
         }
@@ -836,8 +832,8 @@ namespace ASCOM.DagorTelescope
         {
             get
             {
-                bool slewing = client.state.current.slewing;
-                tl.LogMessage("Slewing Get", slewing.ToString());
+                bool slewing = client.GetSlewing();
+                tl.LogMessage("Slewing", "Get - " + slewing.ToString());
                 return slewing;
             }
         }

@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using ASCOM.DagorApiClient;
 using Newtonsoft.Json;
+using ASCOM.Utilities;
 
 namespace ASCOM.DagorTelescope
 {
@@ -13,6 +10,7 @@ namespace ASCOM.DagorTelescope
     public class StateRepr : IRepr
     {
 
+        // Definitions
 
         public class Celest
         {
@@ -23,9 +21,19 @@ namespace ASCOM.DagorTelescope
             public double de { get; set; }
         }
 
+        public class Altaz
+        {
+            [JsonProperty("alt")]
+            public double alt { get; set; }
+
+            [JsonProperty("az")]
+            public double az { get; set; }
+        }
+
+        // Data structure
 
         [JsonProperty("ready")]
-        public bool ready { get; }
+        public bool ready { get; set; }
 
         [JsonProperty("current")]
         public Current current { get; set; }
@@ -33,29 +41,19 @@ namespace ASCOM.DagorTelescope
         {
 
             [JsonProperty("chirality")]
-            public string chirality { get; }
+            public string chirality { get; set; }
 
             [JsonProperty("slewing")]
-            public bool slewing { get; }
+            public bool slewing { get; set; }
 
             [JsonProperty("on_target")]
-            public bool on_target { get; }
+            public bool on_target { get; set; }
 
             [JsonProperty("celest")]
             public Celest celest { get; set; }
            
-
             [JsonProperty("altaz")]
             public Altaz altaz { get; set; }
-            public class Altaz
-            {
-                [JsonProperty("alt")]
-                public double alt { get; set; }
-
-                [JsonProperty("az")]
-                public double az { get; set; }
-            }
-
         }
 
         [JsonProperty("config")]
@@ -69,7 +67,7 @@ namespace ASCOM.DagorTelescope
             public bool target_is_static { get; set; }
 
             [JsonProperty("chirality")]
-            public string chirality { get; }
+            public string chirality { get; set; }
 
             [JsonProperty("target_celest")]
             public Celest target_celest { get; set; }
@@ -81,6 +79,11 @@ namespace ASCOM.DagorTelescope
     {
         public TelescopeApiClient(string Proto, string Server, int Port) : base(Proto, Server, Port)
         { }
+
+        public TelescopeApiClient(string Proto, string Server, int Port, TraceLogger tracelogger) : base(Proto, Server, Port)
+        {
+            tl = tracelogger;
+        }
 
         public StateRepr state
         {
@@ -105,26 +108,41 @@ namespace ASCOM.DagorTelescope
             if (stateLastRefreshed == null || stateLastRefreshed < aSecAgo)
             {
                 stateLastRefreshed = DateTime.Now;
-                //_state = ExecuteGET<StateRepr>("state");
+                _state = ExecuteGET<StateRepr>("state");
             }
-            _state = ExecuteGET<StateRepr>("state");
+            //_state = ExecuteGET<StateRepr>("state");
+        }
+
+        public bool GetSlewing()
+        {
+            refreshStaleState();
+            //bool slewing = _state.current.slewing;
+            LogMessage(
+                "GetTracking",
+                "ready: " + _state.ready.ToString() +
+                ", config.tracking: " + _state.config.tracking.ToString() +
+                ", current.on_target: " + _state.current.on_target.ToString());
+            bool slewing = _state.ready && _state.config.tracking && !_state.current.on_target;
+            return slewing;
         }
 
         public bool GetTracking()
         {
             refreshStaleState();
-            _state = ExecuteGET<StateRepr>("state");
-            return _state.config.tracking && ! _state.current.slewing && _state.config.target_is_static;
+            LogMessage(
+                "GetTracking",
+                "ready: " + _state.ready.ToString() + 
+                ", config.tracking: " + _state.config.tracking.ToString() +
+                ", config.target_is_static: " + _state.config.target_is_static.ToString() + 
+                ", current.on_target: " + _state.current.on_target.ToString());
+            return _state.ready && _state.config.tracking && !_state.config.target_is_static && _state.current.on_target;
         }
 
         public void SetTracking(bool value)
         {
             refreshStaleState();
             _state.config.target_is_static = !value;
-            if (! value)
-            {
-                _state.config.target_celest = _state.current.celest;
-            }
+            _state.config.tracking = value;
             _state = ExecutePUT<StateRepr, StateRepr>("state", _state);
         }
 
@@ -134,6 +152,14 @@ namespace ASCOM.DagorTelescope
             _state.config.target_celest.ra = ra;
             _state.config.target_celest.de = de;
             _state = ExecutePUT<StateRepr, StateRepr>("state", _state);
+        }
+
+
+        internal static TraceLogger tl;
+        internal static void LogMessage(string identifier, string message, params object[] args)
+        {
+            var msg = string.Format(message, args);
+            tl.LogMessage(identifier, msg);
         }
 
     }
