@@ -588,7 +588,7 @@ namespace ASCOM.DagorTelescope
         {
             get
             {
-                EquatorialCoordinateType equatorialSystem = EquatorialCoordinateType.equJ2000;
+                EquatorialCoordinateType equatorialSystem = EquatorialCoordinateType.equOther;
                 tl.LogMessage("DeclinationRate", "Get - " + equatorialSystem.ToString());
                 return equatorialSystem;
             }
@@ -824,8 +824,10 @@ namespace ASCOM.DagorTelescope
 
         public void SlewToTargetAsync()
         {
-            tl.LogMessage("SlewToTargetAsync", TargetRightAscension.ToString() + "," + TargetDeclination.ToString());
-            client.SetTargetCelest(TargetRightAscension, TargetDeclination);
+            double ra = TargetRightAscension;
+            double de = TargetDeclination;
+            tl.LogMessage("SlewToTargetAsync", ra.ToString() + "," + de.ToString());
+            client.SetTargetCelest(ra, de);
         }
 
         public bool Slewing
@@ -846,14 +848,16 @@ namespace ASCOM.DagorTelescope
 
         public void SyncToCoordinates(double RightAscension, double Declination)
         {
-            tl.LogMessage("SyncToCoordinates", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SyncToCoordinates");
+            tl.LogMessage("SyncToCoordinates", RightAscension.ToString() + ", " + Declination.ToString());
+            client.SetCelest(RightAscension, Declination);
         }
 
         public void SyncToTarget()
         {
-            tl.LogMessage("SyncToTarget", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SyncToTarget");
+            double ra = TargetRightAscension;
+            double de = TargetDeclination;
+            tl.LogMessage("SyncToTarget", ra.ToString() + ", " + de.ToString());
+            client.SetCelest(ra, de);
         }
 
         public double TargetDeclination

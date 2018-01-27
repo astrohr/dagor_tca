@@ -3,6 +3,9 @@
 using ASCOM.DagorApiClient;
 using Newtonsoft.Json;
 using ASCOM.Utilities;
+using System.Text;
+using System.Net.Http;
+
 
 namespace ASCOM.DagorTelescope
 {
@@ -143,6 +146,8 @@ namespace ASCOM.DagorTelescope
             refreshStaleState();
             _state.config.target_is_static = !value;
             _state.config.tracking = value;
+            _state.config.target_celest.ra = _state.current.celest.ra;
+            _state.config.target_celest.de = _state.current.celest.de;
             _state = ExecutePUT<StateRepr, StateRepr>("state", _state);
         }
 
@@ -154,6 +159,13 @@ namespace ASCOM.DagorTelescope
             _state = ExecutePUT<StateRepr, StateRepr>("state", _state);
         }
 
+        public void SetCelest(double ra, double de)
+        {
+            refreshStaleState();
+            _state.current.celest.ra = ra;
+            _state.current.celest.de = de;
+            _state = ExecutePOST<StateRepr, StateRepr>("state", _state);
+        }
 
         internal static TraceLogger tl;
         internal static void LogMessage(string identifier, string message, params object[] args)
@@ -162,5 +174,30 @@ namespace ASCOM.DagorTelescope
             tl.LogMessage(identifier, msg);
         }
 
+
+
+        protected ResponseRepr ExecutePOST<ResponseRepr, RequestRepr>(string url, RequestRepr request_repr)
+        {
+            string content = JsonConvert.SerializeObject(request_repr);
+            int retries = Retries;
+            if (!string.IsNullOrEmpty(url) && !url.EndsWith("/"))
+                url += "/";
+            while (retries-- > 0)
+            {
+                StringContent request_content = new StringContent(content, Encoding.UTF8, "application/json");
+                HttpResponseMessage response = client.PostAsync(url, request_content).Result;
+
+                if (response.IsSuccessStatusCode)
+                {
+                    // Parse the response body. Blocking!
+                    var response_content = response.Content.ReadAsStringAsync().Result;
+                    var response_repr = JsonConvert.DeserializeObject<ResponseRepr>(response_content);
+                    return response_repr;
+                }
+                LogMessage("ExecutePOST", "Fail - sleep 300");
+                System.Threading.Thread.Sleep(300);
+            }
+            throw new CommError("Retries exhausted");
+        }
     }
 }
