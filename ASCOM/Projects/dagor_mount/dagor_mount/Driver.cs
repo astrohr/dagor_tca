@@ -35,7 +35,7 @@ using ASCOM.Utilities;
 using ASCOM.DeviceInterface;
 using System.Globalization;
 using System.Collections;
-
+using System.Threading;
 
 namespace ASCOM.DagorTelescope
 {
@@ -480,7 +480,7 @@ namespace ASCOM.DagorTelescope
             get
             {
                 tl.LogMessage("CanSlew", "Get - " + false.ToString());
-                return false;
+                return true;
             }
         }
 
@@ -807,7 +807,8 @@ namespace ASCOM.DagorTelescope
         public void SlewToCoordinates(double RightAscension, double Declination)
         {
             tl.LogMessage("SlewToCoordinates", RightAscension.ToString() + "," + Description.ToString());
-            throw new ASCOM.MethodNotImplementedException("SlewToCoordinates");
+            SlewToCoordinatesAsync(RightAscension, Declination);
+            BlockUntilTarget();
         }
 
         public void SlewToCoordinatesAsync(double RightAscension, double Declination)
@@ -819,7 +820,9 @@ namespace ASCOM.DagorTelescope
         public void SlewToTarget()
         {
             tl.LogMessage("SlewToTarget", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SlewToTarget");
+            SlewToTargetAsync();
+            BlockUntilTarget();
+
         }
 
         public void SlewToTargetAsync()
@@ -871,8 +874,8 @@ namespace ASCOM.DagorTelescope
             }
             set
             {
-                tl.LogMessage("TargetDeclination Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("TargetDeclination", true);
+                tl.LogMessage("TargetDeclination Set", value.ToString());
+                client.SetTargetCelest(client.state.config.target_celest.ra, value);
             }
         }
 
@@ -886,8 +889,8 @@ namespace ASCOM.DagorTelescope
             }
             set
             {
-                tl.LogMessage("TargetRightAscension Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("TargetRightAscension", true);
+                tl.LogMessage("TargetRightAscension Set", value.ToString());
+                client.SetTargetCelest(value, client.state.config.target_celest.de);
             }
         }
 
@@ -1111,6 +1114,18 @@ namespace ASCOM.DagorTelescope
             if (chirality == "ce")
                 return PierSide.pierWest;
             return PierSide.pierUnknown;
+        }
+
+        private void BlockUntilTarget()
+        {
+            while (true)
+            {
+                Thread.Sleep(500);
+                if (client.state.current.on_target)
+                    break;
+                if (!client.state.config.tracking)
+                    break;
+            }
         }
     }
 }
