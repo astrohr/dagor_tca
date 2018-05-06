@@ -588,7 +588,7 @@ namespace ASCOM.DagorTelescope
         {
             get
             {
-                EquatorialCoordinateType equatorialSystem = EquatorialCoordinateType.equOther;
+                EquatorialCoordinateType equatorialSystem = EquatorialCoordinateType.equJ2000;
                 tl.LogMessage("DeclinationRate", "Get - " + equatorialSystem.ToString());
                 return equatorialSystem;
             }
