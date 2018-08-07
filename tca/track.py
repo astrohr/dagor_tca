@@ -3,6 +3,7 @@
 
 Usage:
   track.py start
+  track.py run
   track.py sync_console
   track.py sync
   motors.py [-h | --help | help]
@@ -10,6 +11,7 @@ Usage:
 
 Commands:
   start             Start dynamic tracking.
+  run               Run tracking engine but don't move the telescope.
   speed             Set approximate tracking speed.
   sync_console      Position sync console, for fine position adjust
                     using arrow keys.
@@ -24,7 +26,8 @@ Options:
 from __future__ import division
 from collections import OrderedDict
 
-from datetime import datetime
+from datetime import datetime, timedelta
+import json
 import random
 
 from docopt import docopt
@@ -32,52 +35,32 @@ from time import time, sleep
 import os
 import sys
 
+from jsonschema import ValidationError
+
 from common import (NonBlockingConsole, BASE_PATH, EnterAbort, print_,
                     wait_for_time, sign, p_, wait_for_stop)
 from formats import format_hours, format_degrees, parse_degrees, parse_hours
 import motors as dagor_motors
 import path as dagor_path
 import position as dagor_position
-import cat as dagor_catalog
+import schemas as dagor_schemas
 import local.configuration as conf
 
-TRACKING_COORDINATES_FILE = os.path.join(BASE_PATH, 'coords.txt')
+from logging_conf import get_logger
+
+logger = get_logger(__file__)
+
+
 TRACKING_CORRECTIONS_FILE = os.path.join(BASE_PATH, 'tracking_corrections.txt')
 TRACK_CORRECT_STEP_HA = parse_degrees('0:01')
 TRACK_CORRECT_STEP_DE = parse_hours('0h01m')
 
-TRACKING_OK_TARGET_ZONE_HA = parse_degrees('00:00:01') / 15 / 2
-TRACKING_OK_TARGET_ZONE_DE = parse_degrees('00:00:01') / 2
+TRACKING_OK_TARGET_ZONE_HA = parse_degrees('00:00:01') / 15 / 1.5
+TRACKING_OK_TARGET_ZONE_DE = parse_degrees('00:00:01') / 1.5
 TRACKING_ROUGH_TARGET_ZONE_HA = parse_degrees('00:01:00') / 15
 TRACKING_ROUGH_TARGET_ZONE_DE = parse_degrees('00:01:00')
 STATIC_OK_TARGET_ZONE_HA = parse_degrees('00:00:10') / 15
 STATIC_OK_TARGET_ZONE_DE = parse_degrees('00:00:10')
-
-
-def read_coordinates_file():
-    celest = {
-        'ra': 0,
-        'de': 0,
-    }
-    try:
-        with open(TRACKING_COORDINATES_FILE) as g:
-            celest['ra'], celest['de'] = g.readline().split(" ")
-            celest['ra'] = parse_hours(celest['ra'])
-            celest['de'] = parse_degrees(celest['de'])
-            return celest
-    except (IOError, ValueError):
-        return None
-
-
-def write_coordinates_file(celest):
-    with open(TRACKING_COORDINATES_FILE, 'w') as f:
-        line = "{ra} {de}".format(**celest)
-        f.write(line)
-
-
-def reset_coordinates_file():
-    with open(TRACKING_COORDINATES_FILE, 'w') as f:
-        f.write('')
 
 
 def reset_correction_file():
@@ -212,18 +195,6 @@ def sync_console():
                 manual_corrections['de_offset'] = 0
                 reset_correction_file()
 
-            elif known_sequences[data] == 'TARGET':
-                os.system("stty echo")
-                target = raw_input('Enter catalog name: ')
-                try:
-                    celest = dagor_catalog.get_celest(target)
-                except ValueError:
-                    celest = None
-                    raw_input("Not found in catalog")
-                if celest:
-                    print celest
-                    write_coordinates_file(celest)
-
 
 class Target(object):
     TYPES = ('celest', 'altaz', )
@@ -254,6 +225,17 @@ class Target(object):
         else:
             return self._celest
 
+    def altaz(self):
+        if self._celest:
+            return dagor_position.celest_to_altaz(self._celest)
+        else:
+            return self._altaz
+
+    def target_coords(self):
+        key = 'celest' if self._celest else 'altaz'
+        value = self._celest if self._celest else self._altaz
+        return {key: value}
+
 
 class Tracking(object):
 
@@ -265,16 +247,61 @@ class Tracking(object):
 
     DEFAULT_CONF = {
         'target_celest': None,
+        'target_altaz': None,
         'chirality': None,
         'target_is_static': False,
         'stop_on_target': False,
         'rough': False,
         'force': False,
+        'tracking': False,
     }
+    schema = dagor_schemas.Schema('track')
 
-    def load_config(self, config):
-        self.config = self.DEFAULT_CONF.copy()
-        self.config.update(config)
+    _last_conf = {}
+    _slewing = False
+    _last_target_coords = {}
+    _last_de_speed = None
+    _de_speed_same_since = None
+    _de_warp_speed = False
+
+    def _dump_current_json(self):
+        tmp_file = conf.TRACKING['tracking_current_file'] + '.tmp'
+        real_file = conf.TRACKING['tracking_current_file']
+        current = self.current.copy()
+        current['path'] = [
+            (p.ha, p.de) for p in current['path']
+        ]
+        current['now'] = str(current['now'])
+        with open(tmp_file, 'w') as f:
+            f.write(json.dumps(current, indent=4, sort_keys=True))
+        os.rename(tmp_file, real_file)
+
+    def _dump_config_json(self):
+        if self.config == self._last_conf:
+            return  # already dumped this
+        tmp_file = conf.TRACKING['tracking_target_file'] + '.tmp'
+        real_file = conf.TRACKING['tracking_target_file']
+        self.schema.validate(self.config)
+        with open(tmp_file, 'w') as f:
+            f.write(json.dumps(self.config, indent=4, sort_keys=True))
+        os.rename(tmp_file, real_file)
+
+    def _load_config_json(self):
+        with open(conf.TRACKING['tracking_target_file'], 'r') as f:
+            content = f.read()
+            try:
+                self.config = json.loads(content)
+                self.schema.validate(self.config)
+            except ValueError:
+                logger.exception('Error ')
+                self.config = {}
+                return
+
+    def get_config(self):
+        self._load_config_json()
+        return self.config
+
+    def _process_config(self):
         if self.config['target_celest'] is None:
             self.config['target_celest'] = dagor_position.get_celest()
         self.target = Target(
@@ -283,7 +310,21 @@ class Tracking(object):
             self.config['target_is_static'])
         if self.config['chirality'] is None:
             self.config['chirality'] = dagor_position.get_chirality()
+        if self.config['chirality'] == dagor_position.CHIRAL_CLOSEST:
+            target_local = dagor_position.celest_to_local(
+                self.config['target_celest'])
+            chirality = dagor_position.get_closest_chirality(target_local)
+            self.config['chirality'] = chirality
+        if self.target.target_coords() != self._last_target_coords:
+            self._last_target_coords = self.target.target_coords()
+            self._slewing = True
+
+    def set_config(self, config):
+        self.config = self.DEFAULT_CONF.copy()
+        self.config.update(config)
         self._reset_current()
+        self._process_config()
+        self._dump_config_json()
 
     def _reset_current(self):
         self.current = {}
@@ -333,8 +374,15 @@ class Tracking(object):
         end = self.tracking_check_interval + rnd_interval
         return random.uniform(start, end)
 
+    def stop_tracking(self):
+        """Stop tracking but keep the loop running"""
+        self.config['tracking'] = False
+        self.config['target_celest'] = dagor_position.get_celest()
+        self._dump_config_json()
+
     @staticmethod
-    def stop_tracking():
+    def halt_tracking():
+        """Stop tracking and halt the loop."""
         print_("Stopping")
         dagor_motors.stop()
         wait_for_stop(dagor_motors.get_motor('ha'), dots=True)
@@ -360,17 +408,27 @@ class Tracking(object):
             interval=self.tracking_check_interval / 100,
         )
 
+    def _loop_reload_config(self):
+        self._load_config_json()
+        self._process_config()
+
     def _loop_read_inputs(self):
         self.config['target_internal'] = dagor_position.celest_to_internal(
             self.target.celest(),
             self.config['chirality'],
         )
-        self.current['internal'] = dagor_position.get_internal()
+        internal = dagor_position.get_internal()
+        self.current['internal'] = internal
         self.current['t_now'] = time()
         self.current['now'] = datetime.utcnow()
         self.current['offset'] = read_corrections_file()
+        self.current['celest'] = dagor_position.internal_to_celest(internal)
+        self.current['chirality'] = dagor_position.get_chirality(
+            internal['de'])
+        self.current['altaz'] = dagor_position.celest_to_altaz(
+            self.current['celest'])
 
-    def _loop_calculate_target(self):
+    def _loop_calculate_path_target(self):
         self.current['path'] = dagor_path.get_path(
             self.current['internal'],
             self.config['target_internal'],
@@ -378,7 +436,7 @@ class Tracking(object):
         )
         self.current['path'] = self.update_path(
             self.current['path'], self.current['internal'])
-        self.current['target'] = self.current['path'][1]
+        self.path_target = self.current['path'][1]
 
     def _loop_check_space(self):
         hence_sec = 10 if self.current['on_target'] else 0
@@ -398,8 +456,8 @@ class Tracking(object):
             'ha_offset']
         de_now = self.current['internal']['de'] + self.current['offset'][
             'de_offset']
-        self.current['ha_err'] = ha_now - self.current['target'].ha
-        self.current['de_err'] = de_now - self.current['target'].de
+        self.current['ha_err'] = ha_now - self.path_target.ha
+        self.current['de_err'] = de_now - self.path_target.de
 
     def _loop_calculate_speeds(self):
         speeds = self.adjust_speeds(
@@ -429,6 +487,21 @@ class Tracking(object):
             conf.MOTORS['speed_limit'] * speeds[
                 'speed_de'] / dagor_motors.MAX_SPEED_DE)
         de_speed = int(de_speed * sign(self.current['de_err']))
+
+        # TODO This is ugly hardcoded gear direction switch accelerator! OMG!
+        now = datetime.utcnow()
+        if abs(de_speed) > 0 and abs(de_speed) < 15 and de_speed == self._last_de_speed:
+            if self._de_speed_same_since is None:
+                self._de_speed_same_since = now
+            if now - self._de_speed_same_since > timedelta(seconds=2):
+                self._de_warp_speed = True
+        else:
+            self._de_warp_speed = False
+            self._de_speed_same_since = None
+        self._last_de_speed = de_speed
+        if self._de_warp_speed:
+            print "DE WARP SPEED!!!!!!......"
+            de_speed *= 8
 
         # limit total speed:
         sum_speed = abs(ha_speed) + abs(de_speed)
@@ -471,14 +544,22 @@ class Tracking(object):
         if self.current['on_target_since']:
             time_on_target = time() - self.current['on_target_since']
             self.current['on_target'] = time_on_target > 3
+            self._slewing = False
+        self.current['slewing'] = self._slewing
 
     def _loop_stop_on_target(self):
         if self.config['stop_on_target'] and self.current['on_target']:
             raise EnterAbort()
 
     def _loop_apply_speeds(self):
+        if not self.config['tracking']:
+            self.current['ha_speed'] = 0
+            self.current['de_speed'] = 0
         dagor_motors.set_speed('ha', self.current['ha_speed'])
         dagor_motors.set_speed('de', self.current['de_speed'])
+
+    def _loop_write_current(self):
+        self._dump_current_json()
 
     def track(self):
         if not self.config:
@@ -491,34 +572,41 @@ class Tracking(object):
         self.current['on_target_since'] = None
         try:
             while True:
-                self._loop_wait()
-                self._loop_read_inputs()
-                self._loop_calculate_target()
-                self._loop_check_space()
-                self._loop_calculate_errors()
-                self._loop_calculate_speeds()
-                self._loop_check_target()
-                self._loop_print_console_header()
-                self._loop_print_stats()
-                self._loop_apply_speeds()
-                self._loop_stop_on_target()
+                try:
+                    self._loop_wait()
+                    self._loop_reload_config()
+                    self._loop_read_inputs()
+                    self._loop_calculate_path_target()
+                    self._loop_check_space()
+                    self._loop_calculate_errors()
+                    self._loop_calculate_speeds()
+                    self._loop_check_target()
+                    self._loop_apply_speeds()
+                    self._loop_print_console_header()
+                    self._loop_print_stats()
+                    self._loop_stop_on_target()
+                    self._loop_write_current()
 
-        except dagor_path.NoPath as e:
-            print_("No path: {}".format(e))
-            print_(self.target.celest())
+                except dagor_path.NoPath as e:
+                    print_("No path: {}".format(e))
+                    print_(self.target.celest())
+                    self.config['tracking'] = False
+
+                except ValidationError as e:
+                    print_("Schema error: {}".format(e))
+                    self.stop_tracking()
 
         except (EnterAbort, KeyboardInterrupt):
             # Note: KeyboardInterrupt will sometimes not get caught here
             # ... it's a thing
             print("")
+            self.halt_tracking()
 
-        except Exception as e:
-            print_(e.message)
-            print_("Exception info:\n")
+        except Exception:
+            print_('Halting track loop!!!')
+            self.halt_tracking()
+            print_('Original error:')
             raise
-
-        finally:
-            self.stop_tracking()
 
     def _loop_print_console_header(self):
         print_("\x1b[2J\x1b[0;0H")
@@ -537,18 +625,28 @@ class Tracking(object):
             format_degrees(self.current['ha_err'] * 15),
             format_degrees(self.current['de_err']),
         )
-        celest = dagor_position.get_celest()
         od['celest'] = '{:>14}  {:>14}'.format(
-            format_hours(celest['ra']), format_degrees(celest['de']))
+            format_hours(self.current['celest']['ra']),
+            format_degrees(self.current['celest']['de']),
+        )
+        od['offset'] = '{:>14}  {:>14}'.format(
+            format_hours(self.current['offset']['ha_offset']),
+            format_degrees(self.current['offset']['de_offset']),
+        )
         altaz = dagor_position.get_altaz()
         od['altaz '] = '{:>14}  {:>14}'.format(
             format_degrees(altaz['alt']), format_degrees(altaz['az']))
-        chiral = dagor_position.get_chirality(self.current['internal']['de'])
-        od['chiral'] = chiral
-        if self.config['chirality'] != chiral:
+        od['chiral'] = self.current['chirality']
+        if self.config['chirality'] != self.current['chirality']:
             od['chiral'] += '  ->  {}'.format(self.config['chirality'])
-        od['mode  '] = 'precise' if not self.config['rough'] else 'quick'
-        od['target'] = 'static' if self.config['target_is_static'] else 'sky'
+        od['mode  '] = '{}, {}'.format(
+            'static' if self.config['target_is_static'] else 'sky',
+            'precise' if not self.config['rough'] else 'quick',
+        )
+        od['target'] = '{:>14}  {:>14}'.format(
+            format_hours(self.config['target_celest']['ra']),
+            format_degrees(self.config['target_celest']['de']),
+        )
         od['inter.'] = '{:0<14}  {:0<14}'.format(
             self.current['internal']['ha'],
             self.current['internal']['de'])
@@ -566,15 +664,59 @@ def speed_tracking(target_celest=None,
                    rough=False,
                    force=False):
     tracking = Tracking()
-    tracking.load_config({
+    tracking.set_config({
         'target_celest': target_celest,
         'chirality': chirality,
         'target_is_static': target_is_static,
         'stop_on_target': stop_on_target,
         'rough': rough,
         'force': force,
+        'tracking': True,
     })
     tracking.track()
+
+
+def run():
+    tracking = Tracking()
+    tracking.set_config({
+        'target_celest': None,
+        'chirality': None,
+        'target_is_static': True,
+        'stop_on_target': False,
+        'rough': False,
+        'force': False,
+        'tracking': False,
+    })
+    tracking.track()
+
+
+def set_config(config):
+    tracking = Tracking()
+    tracking.set_config(config)
+
+
+def get_config():
+    tracking = Tracking()
+    return tracking.get_config()
+
+
+def get_current():
+    with open(conf.TRACKING['tracking_current_file'], 'r') as f:
+        content = f.read()
+        try:
+            current = json.loads(content)
+        except ValueError:
+            logger.exception('Error ')
+            return None
+    return current
+
+
+def get_status():
+    status = {
+        'config': get_config(),
+        'current': get_current(),
+    }
+    return status
 
 
 # Run as CLI client
@@ -585,6 +727,9 @@ def _main(args):
     if args['start']:
         tracking = Tracking()
         tracking.track()
+
+    if args['run']:
+        run()
 
     if args['sync']:
         raise NotImplementedError()

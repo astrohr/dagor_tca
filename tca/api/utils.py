@@ -3,6 +3,7 @@ import os
 from functools import wraps
 
 from retrying import retry
+from werkzeug.exceptions import HTTPException
 
 from flask.ext.api import renderers, parsers, exceptions, status as http_status
 from flask.ext.api.decorators import set_renderers
@@ -192,11 +193,17 @@ def check_connectivity(func):
     def func_wrapper(*args_, **kwargs_):
         try:
             return func(*args_, **kwargs_)
+        except HTTPException as e:
+            logger.exception('API - HTTP exception')
+            return {
+                'ready': False,
+                'message': '{}'.format(e.description),
+            }, e.code
         except Exception as e:
             logger.exception('API - connection failure')
             return {
                 'ready': False,
-                'message': '{}'.format(e),
+                'message': '{}'.format(repr(e)),
             }, http_status.HTTP_503_SERVICE_UNAVAILABLE
     return func_wrapper
 

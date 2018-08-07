@@ -450,7 +450,7 @@ def altaz_to_local(altaz):
 
 
 def internal_to_altaz(internal):
-    return local_to_altaz(altaz_to_local(internal))
+    return local_to_altaz(internal_to_local(internal))
 
 
 def altaz_to_internal(altaz, chirality=None):

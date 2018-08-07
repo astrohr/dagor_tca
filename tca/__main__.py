@@ -4,6 +4,7 @@
 
 Usage:
   tca configure
+  tca init
   tca api run
   tca get [float] [human] (celest | local | altaz)
   tca get chirality
@@ -16,6 +17,7 @@ Usage:
   tca goto stellarium [-] [ce | cw | cc] [quick] [notrack] [force]
   tca goto internal <int_HA> <int_DE> [quick | track] [force]
   tca goto this
+  tca goto run
   tca stop
   tca manual
   tca motors [ha | de] status
@@ -23,16 +25,19 @@ Usage:
   tca sync console
   tca set celest <RA_DE> [blind]
   tca set celest <RA> <DE> [blind]
+  tca set altaz <ALT> <AZ> [ce | cw] [blind]
   tca dome (up | down | open | close | stop)
   tca lights [0 | 1 | 2 | 3]
   tca fans [0 | 1 | 2]
   tca focus get
   tca focus set <N>
   tca focus goto <N>
+  tca focus rehome
   tca [-h | --help | help]
   tca --version
 
 Commands:
+  init              Re-home focuser and run tracking engine.
   api run           Stat HTTP api, used by ASCOM drivers.
   configure         Configure motor drivers before first use and write
                     configuration to EEPROM and Flash memory.
@@ -94,14 +99,21 @@ import sys
 # Run as CLI client
 
 def _main(args):
+    only_run = False
 
     if args['api']:
         if args['run']:
             api.run()
+            return
+
+    if args['init']:
+        dagor_focus.rehome()
+        dagor_track.run()
 
     if args['configure']:
         dagor_motors.init()
         dagor_motors.configure()
+        return
 
     got_get_arg = any(
         (args['celest'], args['local'], args['altaz'], args['chirality']))
@@ -145,6 +157,7 @@ def _main(args):
             template = "{chirality}"
             values = {'chirality': dagor_position.get_chirality()}
         print(template.format(**values))
+        return
 
     if args['goto'] and not args['focus']:
         track = False
@@ -152,6 +165,7 @@ def _main(args):
         quick = True if args['quick'] else False
         target_celest = None
         chirality = None  # default: None (keep chirality)
+
         if args['ce']:
             chirality = dagor_position.CHIRAL_E
         if args['cw']:
@@ -257,30 +271,39 @@ def _main(args):
             quick = False
             target_celest = None
 
+        elif args['run']:
+            # stat tracking current coordinates
+            only_run = True
+
         # start track console:
-        dagor_track.speed_tracking(
-            target_celest,
-            chirality=chirality,
-            target_is_static=not track,
-            stop_on_target=stop_on_target,
-            rough=quick,
-            force=args['force'],
-        )
+        if only_run:
+            dagor_track.run()
+        else:
+            dagor_track.speed_tracking(
+                target_celest,
+                chirality=chirality,
+                target_is_static=not track,
+                stop_on_target=stop_on_target,
+                rough=quick,
+                force=args['force'],
+            )
+        return
 
     if args['sync'] and args['console']:
         dagor_track.sync_console()
+        return
 
     if args['stop']:
         dagor_motors.init()
         dagor_motors.stop()
+        return
 
     if args['manual']:
         dagor_motors.set_manual()
+        return
 
     if args['set']:
         if args['celest']:
-            print('RADE: {}'.format(args))
-            print('---')
             if args['<RA_DE>']:
                 rade = args['<RA_DE>']
                 try:
@@ -298,6 +321,25 @@ def _main(args):
                     {'ra': ra, 'de': de}),
                 args['blind'])
 
+        if args['altaz']:
+            arg_alt = args['<ALT>']
+            arg_az = args['<AZ>']
+            alt = parse_degrees(arg_alt)
+            az = parse_degrees(arg_az)
+            chirality = None
+            if args['ce']:
+                chirality = dagor_position.CHIRAL_E
+            if args['cw']:
+                chirality = dagor_position.CHIRAL_W
+
+            dagor_position.set_internal(
+                dagor_position.altaz_to_internal(
+                    {'alt': alt, 'az': az},
+                    chirality
+                ),
+                args['blind'])
+        return
+
     if args['focus']:
         if args['get']:
             print(dagor_focus.get_position())
@@ -305,12 +347,16 @@ def _main(args):
             dagor_focus.set_position(args['<N>'])
         elif args['goto']:
             dagor_focus.goto(args['<N>'])
+        elif args['rehome']:
+            dagor_focus.rehome()
+        return
 
     if args['motors']:
         if args['reset']:
             dagor_motors.reset(args['ha'], args['de'])
         if args['status']:
             dagor_motors.status_str(args['ha'] or None, args['de'] or None)
+        return
 
     if args['dome']:
         if args['up']:
@@ -323,6 +369,7 @@ def _main(args):
             dagor_dome.dome_open()
         if args['close']:
             dagor_dome.dome_close()
+        return
 
     if args['lights']:
         n = None
@@ -338,6 +385,7 @@ def _main(args):
             print(dagor_lights.get_lights())
         else:
             dagor_lights.set_lights(n)
+        return
 
     if args['fans']:
         n = None
@@ -351,7 +399,7 @@ def _main(args):
             print(dagor_fans.get_fan(1))
         else:
             dagor_fans.set_fan(1, n)
-
+        return
 
 if __name__ == '__main__':
 
