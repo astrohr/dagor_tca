@@ -61,6 +61,7 @@ TRACKING_ROUGH_TARGET_ZONE_HA = parse_degrees('00:01:00') / 15
 TRACKING_ROUGH_TARGET_ZONE_DE = parse_degrees('00:01:00')
 STATIC_OK_TARGET_ZONE_HA = parse_degrees('00:00:10') / 15
 STATIC_OK_TARGET_ZONE_DE = parse_degrees('00:00:10')
+TARGET_SETTLE_WAIT = 2  # seconds
 
 
 def reset_correction_file():
@@ -355,7 +356,7 @@ class Tracking(object):
         }
 
     @staticmethod
-    def slope(speed, err, a=9, b=400):
+    def slope(speed, err, a=15, b=400):
         """Calculate real speed given position error."""
         return (a * speed * abs(err) ** 2 / b) ** (1 / 3)
 
@@ -490,7 +491,7 @@ class Tracking(object):
 
         # TODO This is ugly hardcoded gear direction switch accelerator! OMG!
         now = datetime.utcnow()
-        if abs(de_speed) > 0 and abs(de_speed) < 15 and de_speed == self._last_de_speed:
+        if 0 < abs(de_speed) < 15 and de_speed == self._last_de_speed:
             if self._de_speed_same_since is None:
                 self._de_speed_same_since = now
             if now - self._de_speed_same_since > timedelta(seconds=2):
@@ -543,7 +544,7 @@ class Tracking(object):
         self.current['on_target'] = False
         if self.current['on_target_since']:
             time_on_target = time() - self.current['on_target_since']
-            self.current['on_target'] = time_on_target > 3
+            self.current['on_target'] = time_on_target > TARGET_SETTLE_WAIT
             self._slewing = False
         self.current['slewing'] = self._slewing
 
