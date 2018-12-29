@@ -146,6 +146,8 @@ def state_resource():
             "force": false,
             "chirality": "cw",
             "stop_on_target": false,
+            "target_home": false,
+            "target_altaz": null,
             "target_celest": {
                 "de": -5.43210987,
                 "ra": 12.13141516

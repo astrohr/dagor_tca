@@ -62,6 +62,7 @@ TRACKING_ROUGH_TARGET_ZONE_DE = parse_degrees('00:01:00')
 STATIC_OK_TARGET_ZONE_HA = parse_degrees('00:00:10') / 15
 STATIC_OK_TARGET_ZONE_DE = parse_degrees('00:00:10')
 TARGET_SETTLE_WAIT = 2  # seconds
+AT_HOME_ZONE = parse_degrees('00:10:00')
 
 
 def reset_correction_file():
@@ -249,6 +250,7 @@ class Tracking(object):
     DEFAULT_CONF = {
         'target_celest': None,
         'target_altaz': None,
+        'target_home': False,
         'chirality': None,
         'target_is_static': False,
         'stop_on_target': False,
@@ -261,8 +263,11 @@ class Tracking(object):
     _last_conf = {}
     _slewing = False
     _last_target_coords = {}
+    _last_ha_speed = None
     _last_de_speed = None
+    _ha_speed_same_since = None
     _de_speed_same_since = None
+    _ha_warp_speed = False
     _de_warp_speed = False
 
     def _dump_current_json(self):
@@ -303,8 +308,19 @@ class Tracking(object):
         return self.config
 
     def _process_config(self):
+        if self.config['target_home']:
+            self.config['target_celest'] = None
+            self.config['target_is_static'] = True
+            self.config['target_altaz'] = dagor_position.HOME_ALTAZ
+            self.config['chirality'] = dagor_position.HOME_CHIRALITY
+            self.config['rough'] = True
+        if self.config['target_altaz']:
+            self.config['target_celest'] = dagor_position.altaz_to_celest(
+                self.config['target_altaz'])
+            self.config['target_is_static'] = True
         if self.config['target_celest'] is None:
             self.config['target_celest'] = dagor_position.get_celest()
+            self.config['target_is_static'] = True
         self.target = Target(
             self.config['target_celest'],
             'celest',
@@ -503,6 +519,19 @@ class Tracking(object):
         if self._de_warp_speed:
             print "DE WARP SPEED!!!!!!......"
             de_speed *= 8
+        if self.config['target_is_static']:
+            if 0 < abs(ha_speed) < 15 and ha_speed == self._last_ha_speed:
+                if self._ha_speed_same_since is None:
+                    self._ha_speed_same_since = now
+                if now - self._ha_speed_same_since > timedelta(seconds=2):
+                    self._ha_warp_speed = True
+            else:
+                self._ha_warp_speed = False
+                self._ha_speed_same_since = None
+            self._last_ha_speed = ha_speed
+            if self._ha_warp_speed:
+                print "HA WARP SPEED!!!!!!......"
+                ha_speed *= 8
 
         # limit total speed:
         sum_speed = abs(ha_speed) + abs(de_speed)
@@ -548,6 +577,13 @@ class Tracking(object):
             self._slewing = False
         self.current['slewing'] = self._slewing
 
+    def _loop_check_at_home(self):
+        altaz = self.current['altaz']
+        alt_diff = altaz['alt'] - dagor_position.HOME_ALTAZ['alt']
+        az_diff = altaz['az'] - dagor_position.HOME_ALTAZ['az']
+        diff = (alt_diff**2 + az_diff**2)**0.5
+        self.current['at_home'] = diff < AT_HOME_ZONE
+
     def _loop_stop_on_target(self):
         if self.config['stop_on_target'] and self.current['on_target']:
             raise EnterAbort()
@@ -580,6 +616,7 @@ class Tracking(object):
                     self._loop_calculate_path_target()
                     self._loop_check_space()
                     self._loop_calculate_errors()
+                    self._loop_check_at_home()
                     self._loop_calculate_speeds()
                     self._loop_check_target()
                     self._loop_apply_speeds()
