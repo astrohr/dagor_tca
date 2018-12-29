@@ -31,7 +31,7 @@ namespace ASCOM.DagorApiClient
     }
 
 
-    class CommError : Exception
+    public class CommError : Exception
     {
         public CommError(string message) : base(message)
         { }
@@ -152,10 +152,10 @@ namespace ASCOM.DagorApiClient
                     // Parse the response body. Blocking!
                     var response_content = response.Content.ReadAsStringAsync().Result;
                     Debug.WriteLine(response_content);
-                    var response_repr = JsonConvert.DeserializeObject<ResponseRepr>(content);
+                    var response_repr = JsonConvert.DeserializeObject<ResponseRepr>(response_content);
                     return response_repr;
                 }
-                System.Threading.Thread.Sleep(1000);
+                System.Threading.Thread.Sleep(300);
             }
             throw new CommError("Retries exhausted");
         }

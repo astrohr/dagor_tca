@@ -29,8 +29,10 @@ namespace ASCOM.DagorFocus
         public FocusApiClient(string Proto, string Server, int Port) : base(Proto, Server, Port)
         { }
 
-        protected override string _DevPath() {
-            return "focus"; }
+        protected override string _DevPath()
+        {
+            return "focus";
+        }
 
         public bool IsIdle
         {
@@ -41,7 +43,7 @@ namespace ASCOM.DagorFocus
                     Boolean repr_idle = ExecuteGET<Boolean>("idle");
                     return (bool)repr_idle;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // TODO log excaption
                     throw new NotConnectedException();
@@ -58,7 +60,7 @@ namespace ASCOM.DagorFocus
                     Int16 repr_position = ExecuteGET<Int16>("position");
                     return (int)repr_position;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // TODO log excaption
                     throw new NotConnectedException();
@@ -70,9 +72,9 @@ namespace ASCOM.DagorFocus
                 {
                     Int16 repr_position_response = ExecutePUT<Int16, Int16>("position", (Int16)value);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    // TODO log excaption
+                    // TODO log exception
                     throw new NotConnectedException();
                 }
             }
