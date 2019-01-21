@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Dagor Simple Controller</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+
+    <script>
+
+        document.addEventListener('touchmove', function (event) {
+          if (event.scale !== 1) { event.preventDefault(); }
+        }, false);
+
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function (event) {
+          const now = (new Date()).getTime();
+          if (now - lastTouchEnd <= 300) {
+            event.preventDefault();
+          }
+          lastTouchEnd = now;
+        }, false);
+
+        function deviceOrientation() {
+          var body = document.body;
+          switch(window.orientation) {
+            case 90:
+              body.classList.remove('portrait');
+              body.classList.remove('rotation-90');
+              body.classList.add('rotation90');
+              break;
+            case -90:
+              body.classList.remove('portrait');
+              body.classList.remove('rotation90');
+              body.classList.add('rotation-90');
+              break;
+            default:
+              body.classList.remove('rotation90');
+              body.classList.remove('rotation-90');
+              body.classList.add('portrait');
+              break;
+          }
+        }
+        window.addEventListener('orientationchange', deviceOrientation);
+        document.addEventListener('DOMContentLoaded', deviceOrientation);
+
+
+        function isObject(item) {
+          return (item && typeof item === 'object' && !Array.isArray(item));
+        }
+
+        function mergeDeep(target, source) {
+          let output = Object.assign({}, target);
+          if (isObject(target) && isObject(source)) {
+            Object.keys(source).forEach(key => {
+              if (isObject(source[key])) {
+                if (!(key in target))
+                  Object.assign(output, { [key]: source[key] });
+                else
+                  output[key] = mergeDeep(target[key], source[key]);
+              } else {
+                Object.assign(output, { [key]: source[key] });
+              }
+            });
+          }
+          return output;
+        }
+
+        function putData(url = '', data = {}) {
+          // Default options are marked with *
+            return fetch(url, {
+                method: "PUT", // *GET, POST, PUT, DELETE, etc.
+                mode: "cors", // no-cors, cors, *same-origin
+                cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+                credentials: "same-origin", // include, *same-origin, omit
+                headers: {
+                    "Content-Type": "application/json",
+                    // "Content-Type": "application/x-www-form-urlencoded",
+                },
+                redirect: "error", // manual, *follow, error
+                body: JSON.stringify(data), // body data type must match "Content-Type" header
+            })
+        }
+
+
+        class Controller {
+
+            static init() {
+                return new Controller();
+            }
+
+            get URL() {
+                return 'http://10.1.4.120:8001/telescope/state/';
+            }
+
+            get INTERVAL() {
+                return 200;
+            }
+
+            get NUDGE() {
+                const ARCSECOND = 1/60/60;
+                const SMALL = 5 * 60 * ARCSECOND;
+                const hour2arc = (val) => val / 15;
+                return  {
+                    small: {
+                        ra: hour2arc(SMALL),
+                        de: SMALL,
+                    },
+                }
+            }
+
+            constructor() {
+                console.info("init");
+
+                this.elems = {
+                    ready: {
+                        yes: document.querySelector('.js-ready-yes'),
+                        no: document.querySelector('.js-ready-no'),
+                        maybe: document.querySelector('.js-ready-maybe'),
+                    },
+                    tracking: {
+                        yes: document.querySelector('.js-tracking-yes'),
+                        no: document.querySelector('.js-tracking-no'),
+                        maybe: document.querySelector('.js-tracking-maybe'),
+                    },
+                    celest: {
+                        ra: document.querySelector('.js-current-ra'),
+                        de: document.querySelector('.js-current-de'),
+                    },
+                    btns: {
+                        start: document.querySelector('.js-btn-start'),
+                        stop: document.querySelector('.js-btn-stop'),
+                        raPlus: document.querySelector('.js-btn-ra-plus'),
+                        raMinus: document.querySelector('.js-btn-ra-minus'),
+                        dePlus: document.querySelector('.js-btn-de-plus'),
+                        deMinus: document.querySelector('.js-btn-de-minus'),
+                    }
+                };
+                this.stack = [];
+
+                this.elems.btns.start.addEventListener(
+                    'click', this.startTracking.bind(this));
+                this.elems.btns.stop.addEventListener(
+                    'click', this.stopTracking.bind(this));
+                this.elems.btns.raPlus.addEventListener(
+                    'click', this.raPlus.bind(this));
+                this.elems.btns.raMinus.addEventListener(
+                    'click', this.raMinus.bind(this));
+                this.elems.btns.dePlus.addEventListener(
+                    'click', this.dePlus.bind(this));
+                this.elems.btns.deMinus.addEventListener(
+                    'click', this.deMinus.bind(this));
+
+                this.scheduleRefresh = this.scheduleRefresh.bind(this);
+                this.refreshState = this.refreshState.bind(this);
+                this.refreshState();
+
+
+            }
+
+            refreshState() {
+                const that = this;
+                fetch(this.URL)
+                    .then((resp) => resp.json())
+                    .then((data) => {
+                        console.info(data);
+                        this.state = data;
+                    })
+                    .catch((error) => {
+                        console.warn("Error getting state!", error);
+                        that.scheduleRefresh();
+                    })
+                    .then(() => {
+                        that.setState();
+                    })
+                    .then(() => {
+                        const operation = that.stack.shift();
+                        if (operation) {
+                            that.performOperation(operation);
+                        }
+                    })
+                    .then(that.scheduleRefresh)
+                    .catch(that.scheduleRefresh)
+                ;
+            };
+
+            scheduleRefresh() {
+                setTimeout(this.refreshState, this.INTERVAL)
+            }
+
+            setState() {
+                const { ra, de } = this.state.current.celest;
+                const { ready } = this.state;
+                const { tracking } = this.state.config;
+                const raH = Math.floor(ra);
+                const raM = Math.floor((ra - raH) * 60);
+                const raS = Math.floor(((ra - raH) * 60 - raM) * 60);
+                const deD = Math.floor(de);
+                const deM = Math.floor((de - deD) * 60);
+                const deS = Math.floor(((de - deD) * 60 - deM) * 60);
+                
+                this.elems.celest.ra.innerHTML = `${raH}h ${raM}m ${raS}s`;
+                this.elems.celest.de.innerHTML = `${deD}:${deM}:${deS}`;
+
+                this.visibility( this.elems.ready.maybe, false);
+                this.visibility( this.elems.ready.yes, ready);
+                this.visibility( this.elems.ready.no, !ready);
+
+                this.visibility( this.elems.tracking.maybe, false);
+                this.visibility( this.elems.tracking.yes, tracking);
+                this.visibility( this.elems.tracking.no, !tracking);
+            }
+
+            visibility( element, visible ) {
+                if (visible) {
+                    element.classList.remove('hide');
+                } else {
+                    element.classList.add('hide');
+                }
+            }
+
+            performOperation( operation ) {
+                console.info('performOperation', 'operation', operation);
+                const newState = mergeDeep(this.state, operation);
+                console.info('performOperation', 'newState', newState);
+                putData(this.URL, newState)
+                    .then((response) => {
+                        console.info(
+                            'performOperation', 'putData', response);
+                    })
+                    .catch((error) => {
+                        console.error(
+                            'performOperation', 'putData', 'ERROR', error);
+                    })
+
+            }
+
+            raWrapAround(ra) {
+                while (ra >= 24) ra -= 25;
+                while (ra < 0) ra += 24;
+                return ra
+            }
+
+            /** Event handlers **/
+
+            startTracking(event) {
+                console.info('startTracking');
+                event.preventDefault();
+                const newOperation = {
+                    config: {
+                        tracking: true,
+                        target_celest : this.state.current.celest,
+                    }
+                };
+                this.stack.push(newOperation);
+            }
+
+            stopTracking(event) {
+                console.info('stopTracking');
+                event.preventDefault();
+                const newOperation = {
+                    config: {
+                        tracking: false,
+                    }
+                };
+                this.stack.push(newOperation);
+            }
+
+            raPlus(event) {
+                console.info('raPlus');
+                event.preventDefault();
+                const { ra } = this.state.config.target_celest;
+                const newOperation = {
+                    config: {
+                        target_celest: {
+                            ra: this.raWrapAround(ra + this.NUDGE.small.ra),
+                        }
+                    }
+                };
+                this.stack.push(newOperation);
+            }
+
+            raMinus(event) {
+                console.info('raPlus');
+                event.preventDefault();
+                const { ra } = this.state.config.target_celest;
+                const newOperation = {
+                    config: {
+                        target_celest: {
+                            ra: this.raWrapAround(ra - this.NUDGE.small.ra),
+                        }
+                    }
+                };
+                this.stack.push(newOperation);
+            }
+
+            dePlus(event) {
+                console.info('dePlus');
+                event.preventDefault();
+                const { de } = this.state.config.target_celest;
+                const newOperation = {
+                    config: {
+                        target_celest: {
+                            de: de + this.NUDGE.small.de,
+                        }
+                    }
+                };
+                this.stack.push(newOperation);
+            }
+
+            deMinus(event) {
+                console.info('dePlus');
+                event.preventDefault();
+                const { de } = this.state.config.target_celest;
+                const newOperation = {
+                    config: {
+                        target_celest: {
+                            de: de - this.NUDGE.small.de,
+                        }
+                    }
+                };
+                this.stack.push(newOperation);
+            }
+
+        }
+
+        document.addEventListener('DOMContentLoaded', Controller.init);
+    </script>
+    <style>
+        body {
+            font-family: sans-serif;
+            font-size: 1em;
+            touch-action: none;
+            overflow: hidden;
+        }
+        .hide { display: none; }
+        .pad {
+            position: relative;
+            height: 150px;
+            width: 100%;
+            max-width: 400px;
+        }
+        .pad .btn {
+            height: 70px;
+            width: 30%;
+            position: absolute;
+        }
+        .pad .btn-de-plus {
+            left: 50%;
+            transform: translateX(-50%);
+            top: 0;
+        }
+        .pad .btn-de-minus {
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 0;
+        }
+        .pad .btn-ra-plus {
+            left: 0;
+            top: 40px;
+        }
+        .pad .btn-ra-minus {
+            right: 0;
+            top: 40px;
+        }
+        .buttons .btn {
+            height: 40px;
+            width: 60px;
+        }
+        .buttons .btn-start {
+            background: lightgreen;
+        }
+        .buttons .btn-stop {
+            background: red;
+        }
+        .coordinates .coords {
+        }
+        .ready .is_ready-yes {
+            background: lightgreen;
+        }
+        .ready .is_ready-no {
+            background: red;
+        }
+        .ready .is_ready-maybe {
+            background: orange;
+        }
+        .tracking .is_tracking-yes {
+            background: lightgreen;
+        }
+        .tracking .is_tracking-no {
+            background: red;
+        }
+        .tracking .is_tracking-maybe {
+            background: orange;
+        }
+
+        @media screen and (orientation: landscape) {
+          body {
+            width: 100vh;
+            height: 100vw;
+            transform-origin: 0 0;
+          }
+        }
+        body.rotation-90 {
+          transform: rotate(90deg) translateY(-100%);
+        }
+        body.rotation90 {
+          transform: rotate(-90deg) translateX(-100%);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box">
+        <div class="display">
+            <h4>Status</h4>
+            <div class="ready js-ready">
+                Ready:
+                <span class="is_ready is_ready-yes js-ready-yes hide">ready</span>
+                <span class="is_ready is_ready-no js-ready-no hide">not ready</span>
+                <span class="is_ready is_ready-maybe js-ready-maybe">unknown...</span>
+            </div>
+            <div class="tracking js-tracking">
+                Tracking:
+                <span class="is_tracking is_tracking-yes js-tracking-yes hide">tracking</span>
+                <span class="is_tracking is_tracking-no js-tracking-no hide">not tracking</span>
+                <span class="is_tracking is_tracking-maybe js-tracking-maybe">unknown...</span>
+            </div>
+            <div class="coordinates">
+                <div class="coords coords-ra">
+                    RA: <span class="js-current-ra"></span>
+                </div>
+                <div class="coords coords-de">
+                    DE: <span class="js-current-de"></span>
+                </div>
+            </div>
+        </div>
+        <h4>Tracking</h4>
+        <div class="buttons">
+            <button class="btn btn-start js-btn-start">Start</button>
+            <button class="btn btn-stop js-btn-stop">Stop</button>
+        </div>
+        <h4>Nudge</h4>
+        <div class="pad">
+            <button class="btn btn-ra-plus js-btn-ra-plus">++Ra</button>
+            <button class="btn btn-ra-minus js-btn-ra-minus">--RA</button>
+            <button class="btn btn-de-plus js-btn-de-plus">++DE</button>
+            <button class="btn btn-de-minus js-btn-de-minus">--DE</button>
+        </div>
+    </div>
+</body>
+</html>

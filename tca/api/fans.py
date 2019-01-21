@@ -29,8 +29,7 @@ from tca import fans as dagor_fans
 
 from tca.api import version
 from tca.api.utils import (
-    RegexConverter, BoolRenderer, BoolBrowsableAPIRenderer,
-    BoolParser, render_error,
+    RegexConverter, render_error,
     set_mock_var, read_mock_var, IntBrowsableAPIRenderer, IntParser,
     IntRenderer)
 from tca.logging_conf import get_logger
@@ -55,11 +54,13 @@ def mock():
     })
     return dagor_fans_mocked
 
+
 if __name__ == '__main__':
     args = docopt(__doc__, version=__doc__.strip().split('\n')[0])
     if args['run']:
         if args['--mock']:
             set_mock_var()
+
 
 if read_mock_var():
     dagor_lights = mock()

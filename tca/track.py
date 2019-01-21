@@ -55,8 +55,8 @@ TRACKING_CORRECTIONS_FILE = os.path.join(BASE_PATH, 'tracking_corrections.txt')
 TRACK_CORRECT_STEP_HA = parse_degrees('0:01')
 TRACK_CORRECT_STEP_DE = parse_hours('0h01m')
 
-TRACKING_OK_TARGET_ZONE_HA = parse_degrees('00:00:01') / 15 / 1.5
-TRACKING_OK_TARGET_ZONE_DE = parse_degrees('00:00:01') / 1.5
+TRACKING_OK_TARGET_ZONE_HA = parse_degrees('00:00:03') / 15 / 1.5
+TRACKING_OK_TARGET_ZONE_DE = parse_degrees('00:00:03') / 1.5
 TRACKING_ROUGH_TARGET_ZONE_HA = parse_degrees('00:01:00') / 15
 TRACKING_ROUGH_TARGET_ZONE_DE = parse_degrees('00:01:00')
 STATIC_OK_TARGET_ZONE_HA = parse_degrees('00:00:10') / 15
@@ -485,7 +485,8 @@ class Tracking(object):
         )
         b = 200 if self.config['rough'] else 400
         # HA:
-        ha_speed = self.slope(speeds['speed_ha'], self.current['ha_err'], b=b)
+        ha_speed = self.slope(
+            speeds['speed_ha'], self.current['ha_err'], a=20, b=b)
         ha_speed = self.speed_real_to_motor(
             ha_speed, dagor_motors.MAX_SPEED_HA)
         ha_speed = min(

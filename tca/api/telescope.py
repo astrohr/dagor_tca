@@ -16,11 +16,13 @@ Options:
     -h --help    Show this screen or description of specific command.
     --version    Show version.
 """
+from flask_api.renderers import HTMLRenderer
 
+from flask_api.decorators import set_renderers
 from mock.mock import MagicMock
 from docopt import docopt
 from datetime import datetime, timedelta
-from flask import Blueprint, request
+from flask import Blueprint, request, render_template
 
 from flask_api import FlaskAPI, status as http_status
 
@@ -107,6 +109,7 @@ def resource():
 
     * [Up](..)
     * [Device state](./state/)
+    * [Controller (HTML)](./controller/)
     """
     is_active = get_ready()
     status = {
@@ -197,6 +200,14 @@ def state_resource():
             http_status.HTTP_202_ACCEPTED
         )
     return device_repr()
+
+
+@api.route('/controller/', methods=['GET'])
+@set_renderers(HTMLRenderer )
+@check_connectivity
+@retry_serial
+def controller_page():
+    return render_template('controller.html')
 
 
 def _run():

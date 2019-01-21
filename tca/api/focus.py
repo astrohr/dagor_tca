@@ -28,7 +28,7 @@ from flask_api.exceptions import ParseError
 from tca import focus as dagor_focus
 from tca.api import version
 from tca.api.utils import (
-    RegexConverter, render_error, IntBrowsableAPIRenderer,
+    RegexConverter, IntBrowsableAPIRenderer,
     BoolRenderer, BoolParser,
     IntRenderer, IntParser,
     set_mock_var, read_mock_var,
@@ -68,6 +68,7 @@ def mock():
     })
     return dagor_focus_mocked
 
+
 if __name__ == '__main__':
     args = docopt(__doc__, version=__doc__.strip().split('\n')[0])
     if args['run']:
@@ -85,7 +86,6 @@ def device_repr():
 
 def position_repr():
     return dagor_focus.get_position()
-
 
 
 @api.route('/', methods=['GET', ])
