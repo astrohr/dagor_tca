@@ -52,6 +52,9 @@ namespace ASCOM.DagorTelescope
             [JsonProperty("on_target")]
             public bool on_target { get; set; }
 
+            [JsonProperty("at_home")]
+            public bool at_home { get; set; }
+
             [JsonProperty("celest")]
             public Celest celest { get; set; }
            
@@ -74,6 +77,12 @@ namespace ASCOM.DagorTelescope
 
             [JsonProperty("target_celest")]
             public Celest target_celest { get; set; }
+
+            [JsonProperty("target_altaz")]
+            public Altaz target_altaz { get; set; }
+
+            [JsonProperty("target_home")]
+            public bool target_home { get; set; }
         }
     }
 
@@ -111,9 +120,9 @@ namespace ASCOM.DagorTelescope
             if (stateLastRefreshed == null || stateLastRefreshed < aSecAgo)
             {
                 stateLastRefreshed = DateTime.Now;
-                _state = ExecuteGET<StateRepr>("state");
+                //_state = ExecuteGET<StateRepr>("state");
             }
-            //_state = ExecuteGET<StateRepr>("state");
+            _state = ExecuteGET<StateRepr>("state");
         }
 
         public bool GetSlewing()
@@ -148,7 +157,9 @@ namespace ASCOM.DagorTelescope
             _state.config.tracking = value;
             _state.config.target_celest.ra = _state.current.celest.ra;
             _state.config.target_celest.de = _state.current.celest.de;
+            _state.config.target_altaz = null;
             _state = ExecutePUT<StateRepr, StateRepr>("state", _state);
+            refreshStaleState();
         }
 
         public void SetTargetCelest(double ra, double de)
@@ -156,7 +167,19 @@ namespace ASCOM.DagorTelescope
             refreshStaleState();
             _state.config.target_celest.ra = ra;
             _state.config.target_celest.de = de;
+            _state.config.target_altaz = null;
             _state = ExecutePUT<StateRepr, StateRepr>("state", _state);
+            refreshStaleState();
+        }
+
+        public void SetTargetAltaz(double alt, double az)
+        {
+            refreshStaleState();
+            _state.config.target_altaz.alt = alt;
+            _state.config.target_altaz.az = az;
+            _state.config.target_home = false;
+            _state = ExecutePUT<StateRepr, StateRepr>("state", _state);
+            refreshStaleState();
         }
 
         public void SetCelest(double ra, double de)
@@ -165,6 +188,23 @@ namespace ASCOM.DagorTelescope
             _state.current.celest.ra = ra;
             _state.current.celest.de = de;
             _state = ExecutePOST<StateRepr, StateRepr>("state", _state);
+            refreshStaleState();
+        }
+
+        public bool GetAtPark()
+        {
+            refreshStaleState();
+            bool atHome = _state.current.at_home;
+            LogMessage(
+                "GetAtPark", atHome.ToString());
+            return atHome;
+        }
+
+        public void SetTargetPark()
+        {
+            _state.config.target_home = true;
+            _state = ExecutePUT<StateRepr, StateRepr>("state", _state);
+            refreshStaleState();
         }
 
         internal static TraceLogger tl;
@@ -173,9 +213,7 @@ namespace ASCOM.DagorTelescope
             var msg = string.Format(message, args);
             tl.LogMessage(identifier, msg);
         }
-
-
-
+        
         protected ResponseRepr ExecutePOST<ResponseRepr, RequestRepr>(string url, RequestRepr request_repr)
         {
             string content = JsonConvert.SerializeObject(request_repr);
