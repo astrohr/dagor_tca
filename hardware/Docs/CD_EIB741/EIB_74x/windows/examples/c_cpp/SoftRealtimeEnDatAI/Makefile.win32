@@ -1,0 +1,36 @@
+
+EIBLIB=..\..\..\lib\eib7.lib
+
+INC=/I..\..\..\include /I.
+
+DEBUG=/Zi
+
+CFLAGS=/nologo /c $(INC) $(DEBUG) /DWin32
+
+LIBS=user32.lib ws2_32.lib kernel32.lib
+
+
+ALL: softrealtime_endat_ai.exe
+
+#
+#
+# cleanup targets
+#
+#
+
+clean:
+	del /q *.obj
+
+distclean: clean
+	del /q *.obj *.exe
+
+
+#
+#
+# executables
+#
+#
+
+softrealtime_endat_ai.obj: ..\..\..\include\eib7.h softrealtime_endat_ai.c
+softrealtime_endat_ai.exe: $(EIBLIB) softrealtime_endat_ai.obj
+	cl  $(DEBUG) /o softrealtime_endat_ai.exe softrealtime_endat_ai.obj $(EIBLIB) $(LIBS)
