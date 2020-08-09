@@ -28,6 +28,7 @@ from collections import OrderedDict
 
 from datetime import datetime, timedelta
 import json
+import math
 import random
 
 from docopt import docopt
@@ -63,6 +64,7 @@ STATIC_OK_TARGET_ZONE_HA = parse_degrees('00:00:10') / 15
 STATIC_OK_TARGET_ZONE_DE = parse_degrees('00:00:10')
 TARGET_SETTLE_WAIT = 2  # seconds
 AT_HOME_ZONE = parse_degrees('00:10:00')
+AT_PARK_ZONE = parse_degrees('00:10:00')
 
 
 def reset_correction_file():
@@ -251,6 +253,7 @@ class Tracking(object):
         'target_celest': None,
         'target_altaz': None,
         'target_home': False,
+        'target_park': False,
         'chirality': None,
         'target_is_static': False,
         'stop_on_target': False,
@@ -314,6 +317,12 @@ class Tracking(object):
             self.config['target_altaz'] = dagor_position.HOME_ALTAZ
             self.config['chirality'] = dagor_position.HOME_CHIRALITY
             self.config['rough'] = True
+        if self.config['target_park']:
+            self.config['target_celest'] = None
+            self.config['target_is_static'] = True
+            self.config['target_altaz'] = dagor_position.PARK_ALTAZ
+            self.config['chirality'] = dagor_position.PARK_CHIRALITY
+            self.config['rough'] = True
         if self.config['target_altaz']:
             self.config['target_celest'] = dagor_position.altaz_to_celest(
                 self.config['target_altaz'])
@@ -335,6 +344,12 @@ class Tracking(object):
         if self.target.target_coords() != self._last_target_coords:
             self._last_target_coords = self.target.target_coords()
             self._slewing = True
+        # if (not self.config['target_celest'] and
+        #         not self.config['target_altaz'] and
+        #         not self.config['target_home'] and
+        #         not self.config['target_park']):
+        if not self.config["tracking"]:
+            self._slewing = False
 
     def set_config(self, config):
         self.config = self.DEFAULT_CONF.copy()
@@ -581,9 +596,18 @@ class Tracking(object):
     def _loop_check_at_home(self):
         altaz = self.current['altaz']
         alt_diff = altaz['alt'] - dagor_position.HOME_ALTAZ['alt']
-        az_diff = altaz['az'] - dagor_position.HOME_ALTAZ['az']
+        az_diff = (altaz['az'] - dagor_position.HOME_ALTAZ['az']) \
+                  * math.cos(math.radians(altaz['alt']))
         diff = (alt_diff**2 + az_diff**2)**0.5
         self.current['at_home'] = diff < AT_HOME_ZONE
+
+    def _loop_check_at_park(self):
+        altaz = self.current['altaz']
+        alt_diff = altaz['alt'] - dagor_position.PARK_ALTAZ['alt']
+        az_diff = (altaz['az'] - dagor_position.PARK_ALTAZ['az']) \
+                  * math.cos(math.radians(altaz['alt']))
+        diff = (alt_diff**2 + az_diff**2)**0.5
+        self.current['at_park'] = diff < AT_PARK_ZONE
 
     def _loop_stop_on_target(self):
         if self.config['stop_on_target'] and self.current['on_target']:
@@ -618,6 +642,7 @@ class Tracking(object):
                     self._loop_check_space()
                     self._loop_calculate_errors()
                     self._loop_check_at_home()
+                    self._loop_check_at_park()
                     self._loop_calculate_speeds()
                     self._loop_check_target()
                     self._loop_apply_speeds()

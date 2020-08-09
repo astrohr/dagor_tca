@@ -361,8 +361,9 @@ namespace ASCOM.DagorTelescope
         {
             get
             {
-                tl.LogMessage("AtPark", "Get - " + false.ToString());
-                return false;
+                bool atPart = client.GetAtPark();
+                tl.LogMessage("AtPark", "Get - " + atPart.ToString());
+                return atPart;
             }
         }
 
@@ -407,8 +408,8 @@ namespace ASCOM.DagorTelescope
         {
             get
             {
-                tl.LogMessage("CanPark", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanPark", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -443,8 +444,8 @@ namespace ASCOM.DagorTelescope
         {
             get
             {
-                tl.LogMessage("CanSetPark", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanSetPark", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -479,7 +480,7 @@ namespace ASCOM.DagorTelescope
         {
             get
             {
-                tl.LogMessage("CanSlew", "Get - " + false.ToString());
+                tl.LogMessage("CanSlew", "Get - " + true.ToString());
                 return true;
             }
         }
@@ -654,8 +655,9 @@ namespace ASCOM.DagorTelescope
 
         public void Park()
         {
-            tl.LogMessage("Park", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("Park");
+            tl.LogMessage("Park", "Going to park");
+            client.SetTargetPark();
+
         }
 
         public void PulseGuide(GuideDirections Direction, int Duration)
@@ -782,8 +784,8 @@ namespace ASCOM.DagorTelescope
         {
             get
             {
-                tl.LogMessage("SlewSettleTime Get", "0");
-                return 0;
+                tl.LogMessage("SlewSettleTime Get", "1");
+                return 1;
             }
             set
             {
@@ -955,8 +957,8 @@ namespace ASCOM.DagorTelescope
 
         public void Unpark()
         {
-            tl.LogMessage("Unpark", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("Unpark");
+            tl.LogMessage("Unpark", "Unparking");
+            client.SetTargetAltaz(30.0, 180.0);
         }
 
         #endregion

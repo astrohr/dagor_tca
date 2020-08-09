@@ -150,6 +150,7 @@ def state_resource():
             "chirality": "cw",
             "stop_on_target": false,
             "target_home": false,
+            "target_park": false,
             "target_altaz": null,
             "target_celest": {
                 "de": -5.43210987,
