@@ -129,10 +129,15 @@ namespace ASCOM.DagorTelescope
         {
             refreshStaleState();
             //bool slewing = _state.current.slewing;
+            return _state.current.slewing;
             LogMessage(
-                "GetTracking",
+                "GetSlewing",
                 "ready: " + _state.ready.ToString() +
                 ", config.tracking: " + _state.config.tracking.ToString() +
+                ", config.target_celest: " + _state.config.target_celest.ToString() +
+                ", config.target_altaz: " + _state.config.target_altaz.ToString() +
+                ", config.target_home: " + _state.config.target_home.ToString() +
+                ", config.target_is_static: " + _state.config.target_is_static.ToString() +
                 ", current.on_target: " + _state.current.on_target.ToString());
             bool slewing = _state.ready && _state.config.tracking && !_state.current.on_target;
             return slewing;
@@ -141,11 +146,15 @@ namespace ASCOM.DagorTelescope
         public bool GetTracking()
         {
             refreshStaleState();
+            return _state.config.tracking;
             LogMessage(
                 "GetTracking",
                 "ready: " + _state.ready.ToString() + 
                 ", config.tracking: " + _state.config.tracking.ToString() +
-                ", config.target_is_static: " + _state.config.target_is_static.ToString() + 
+                ", config.target_celest: " + _state.config.target_celest.ToString() +
+                ", config.target_altaz: " + _state.config.target_altaz.ToString() +
+                ", config.target_home: " + _state.config.target_home.ToString() +
+                ", config.target_is_static: " + _state.config.target_is_static.ToString() +
                 ", current.on_target: " + _state.current.on_target.ToString());
             return _state.ready && _state.config.tracking && !_state.config.target_is_static && _state.current.on_target;
         }
@@ -155,9 +164,12 @@ namespace ASCOM.DagorTelescope
             refreshStaleState();
             _state.config.target_is_static = !value;
             _state.config.tracking = value;
-            _state.config.target_celest.ra = _state.current.celest.ra;
-            _state.config.target_celest.de = _state.current.celest.de;
-            _state.config.target_altaz = null;
+            if (!value)
+            {
+                _state.config.target_altaz = null;
+                _state.config.target_celest = null;
+                _state.config.target_home = false;
+            }
             _state = ExecutePUT<StateRepr, StateRepr>("state", _state);
             refreshStaleState();
         }
@@ -165,19 +177,28 @@ namespace ASCOM.DagorTelescope
         public void SetTargetCelest(double ra, double de)
         {
             refreshStaleState();
+            _state.config.target_celest = _state.current.celest;
             _state.config.target_celest.ra = ra;
             _state.config.target_celest.de = de;
             _state.config.target_altaz = null;
+            _state.config.target_home = false;
+            _state.config.target_is_static = false;
+            _state.config.tracking = true;
             _state = ExecutePUT<StateRepr, StateRepr>("state", _state);
             refreshStaleState();
         }
 
         public void SetTargetAltaz(double alt, double az)
         {
+            LogMessage("SetTargetAltaz", alt.ToString() + ", " + az.ToString());
             refreshStaleState();
+            _state.config.target_altaz = _state.current.altaz;
             _state.config.target_altaz.alt = alt;
             _state.config.target_altaz.az = az;
+            _state.config.target_celest = null;
             _state.config.target_home = false;
+            _state.config.target_is_static = true;
+            _state.config.tracking = true;
             _state = ExecutePUT<StateRepr, StateRepr>("state", _state);
             refreshStaleState();
         }

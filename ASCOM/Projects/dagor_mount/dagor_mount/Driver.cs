@@ -307,7 +307,7 @@ namespace ASCOM.DagorTelescope
         #region ITelescope Implementation
         public void AbortSlew()
         {
-            tl.LogMessage("AbortSlew", "SetTrackiing(false)");
+            tl.LogMessage("AbortSlew", "SetTracking(false)");
             client.SetTracking(false);
         }
 
@@ -489,8 +489,8 @@ namespace ASCOM.DagorTelescope
         {
             get
             {
-                tl.LogMessage("CanSlewAltAz", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanSlewAltAz", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -498,8 +498,8 @@ namespace ASCOM.DagorTelescope
         {
             get
             {
-                tl.LogMessage("CanSlewAltAzAsync", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanSlewAltAzAsync", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -534,8 +534,8 @@ namespace ASCOM.DagorTelescope
         {
             get
             {
-                tl.LogMessage("CanUnpark", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanUnpark", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -796,14 +796,17 @@ namespace ASCOM.DagorTelescope
 
         public void SlewToAltAz(double Azimuth, double Altitude)
         {
-            tl.LogMessage("SlewToAltAz", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SlewToAltAz");
+            tl.LogMessage("SlewToAltAz", Azimuth.ToString() + "," + Altitude.ToString());
+            SlewToAltAzAsync(Azimuth, Altitude);
+            BlockUntilTarget();
         }
 
         public void SlewToAltAzAsync(double Azimuth, double Altitude)
         {
-            tl.LogMessage("SlewToAltAzAsync", "Not implemented");
-            throw new ASCOM.MethodNotImplementedException("SlewToAltAzAsync");
+            double alt = Altitude;
+            double az = Azimuth;
+            tl.LogMessage("SlewToAltAzAsync", az.ToString() + "," + alt.ToString());
+            client.SetTargetAltaz(alt, az);
         }
 
         public void SlewToCoordinates(double RightAscension, double Declination)
@@ -893,6 +896,37 @@ namespace ASCOM.DagorTelescope
             {
                 tl.LogMessage("TargetRightAscension Set", value.ToString());
                 client.SetTargetCelest(value, client.state.config.target_celest.de);
+            }
+        }
+
+        public double TargetAltitude
+        {
+            get
+            {
+                double altitude = client.state.config.target_altaz.alt;
+                tl.LogMessage("TargetAltitude Get", altitude.ToString());
+                return altitude;
+
+            }
+            set
+            {
+                tl.LogMessage("TargetAltitude Set", value.ToString());
+                client.SetTargetAltaz(client.state.config.target_altaz.alt, value);
+            }
+        }
+        public double TargetAzimuth
+        {
+            get
+            {
+                double azimuth = client.state.config.target_altaz.az;
+                tl.LogMessage("TargetAzimuth Get", azimuth.ToString());
+                return azimuth;
+
+            }
+            set
+            {
+                tl.LogMessage("TargetAzimuth Set", value.ToString());
+                client.SetTargetAltaz(client.state.config.target_altaz.az, value);
             }
         }
 
