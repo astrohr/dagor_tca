@@ -34,7 +34,6 @@ if __name__ == '__main__':
             os.environ['DAGOR_API_MOCK'] = '1'
 
 
-
 if __name__ == '__main__':
     API_DIR = os.path.dirname(__file__)
     BASE_DIR = os.path.dirname(API_DIR)

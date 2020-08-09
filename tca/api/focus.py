@@ -17,10 +17,10 @@ Options:
     --version    Show version.
 """
 
-from functools import wraps
 from mock.mock import MagicMock
 from docopt import docopt
 from flask import Blueprint, request, make_response
+
 from flask.ext.api.decorators import set_renderers, set_parsers
 from flask_api import FlaskAPI, status as http_status
 from flask_api.exceptions import ParseError
@@ -28,14 +28,15 @@ from flask_api.exceptions import ParseError
 from tca import focus as dagor_focus
 from tca.api import version
 from tca.api.utils import (
-    RegexConverter, render_error, IntBrowsableAPIRenderer,
+    RegexConverter, IntBrowsableAPIRenderer,
     BoolRenderer, BoolParser,
     IntRenderer, IntParser,
     set_mock_var, read_mock_var,
-)
-from tca.logging_conf import get_logger
+    check_connectivity, retry_serial, handle_request_errors)
 
 # noinspection PyUnboundLocalVariable
+from tca.logging_conf import get_logger
+
 __doc__ = __doc__.format(VERSION=version)
 
 
@@ -67,6 +68,7 @@ def mock():
     })
     return dagor_focus_mocked
 
+
 if __name__ == '__main__':
     args = docopt(__doc__, version=__doc__.strip().split('\n')[0])
     if args['run']:
@@ -86,34 +88,9 @@ def position_repr():
     return dagor_focus.get_position()
 
 
-# decorators:
-
-
-def check_connectivity(func):
-    @wraps(func)
-    def func_wrapper(*args_, **kwargs_):
-        try:
-            return func(*args_, **kwargs_)
-        except Exception as e:
-            return {
-                'ready': False,
-                'message': '{}'.format(e),
-            }, http_status.HTTP_503_SERVICE_UNAVAILABLE
-    return func_wrapper
-
-
-def handle_request_errors(func):
-    @wraps(func)
-    def func_wrapper(*args_, **kwargs_):
-        try:
-            return func(*args_, **kwargs_)
-        except ParseError as e:
-            return render_error(e)
-    return func_wrapper
-
-
 @api.route('/', methods=['GET', ])
 @check_connectivity
+@retry_serial
 def resource():
     """
 
@@ -137,6 +114,7 @@ def resource():
 
 @api.route('/state/', methods=['GET', 'PUT', 'POST', ])
 @check_connectivity
+@retry_serial
 def state_resource():
     """
     Focuser device status.
@@ -175,6 +153,7 @@ def state_resource():
 @set_renderers(IntBrowsableAPIRenderer, IntRenderer)
 @set_parsers(IntParser)
 @handle_request_errors
+@retry_serial
 def position_resource():
     """
     Simple resource that only handles position.
@@ -212,6 +191,7 @@ def position_resource():
 @set_renderers(IntBrowsableAPIRenderer, BoolRenderer)
 @set_parsers(BoolParser)
 @handle_request_errors
+@retry_serial
 def idle_resource():
     """
     Simple resource that only handles "idle" status.
