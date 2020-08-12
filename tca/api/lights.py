@@ -30,7 +30,8 @@ from tca.api import version
 from tca.api.utils import (
     RegexConverter, BoolRenderer, BoolBrowsableAPIRenderer,
     BoolParser, render_error,
-    set_mock_var, read_mock_var)
+    set_mock_var, read_mock_var, check_connectivity, handle_request_errors,
+    retry_serial)
 from tca.logging_conf import get_logger
 
 # noinspection PyUnboundLocalVariable
@@ -45,7 +46,6 @@ logger = get_logger('api.lights')
 
 
 # Mock dagor_lights early:
-
 
 def mock():
     logger.warning("*** MOCK MODE ***")
@@ -75,34 +75,9 @@ def light_repr(n):
     return "true" if dagor_lights.get_light(n) else "false"
 
 
-# decorators:
-
-
-def check_connectivity(func):
-    @wraps(func)
-    def func_wrapper(*args_, **kwargs_):
-        try:
-            return func(*args_, **kwargs_)
-        except dagor_lights.CommunicationException as e:
-            return {
-                'ready': False,
-                'message': '{}'.format(e),
-            }, http_status.HTTP_503_SERVICE_UNAVAILABLE
-    return func_wrapper
-
-
-def handle_request_errors(func):
-    @wraps(func)
-    def func_wrapper(*args_, **kwargs_):
-        try:
-            return func(*args_, **kwargs_)
-        except ParseError as e:
-            return render_error(e)
-    return func_wrapper
-
-
 @api.route('/', methods=['GET', ])
 @check_connectivity
+@retry_serial
 def resource():
     """
     Control for the two reflector lights in the dome.
@@ -126,6 +101,7 @@ def resource():
 
 @api.route('/state/', methods=['GET', 'PUT', ])
 @check_connectivity
+@retry_serial
 def state_resource():
     """
     State for all light (two of them).
@@ -155,6 +131,7 @@ def state_resource():
 @set_parsers(BoolParser)
 @check_connectivity
 @handle_request_errors
+@retry_serial
 def light_resource(light_i):
     """
     State for a single light. It is either ON or OFF (case insensitive).

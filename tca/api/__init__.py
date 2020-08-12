@@ -10,13 +10,14 @@ from flask_api import FlaskAPI
 VERSION = (0, 2, 0)
 version = ".".join(map(str, VERSION))
 
-from . import focus, lights
+from . import focus, lights, telescope
 from .utils import RegexConverter, BrowsableAPITitleRenderer
 
 
 MODULES = (
     lights,
-    focus
+    focus,
+    telescope,
 )
 
 

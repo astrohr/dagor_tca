@@ -11,12 +11,18 @@
         <title>{% block title %}Flask API{% endblock %}</title>
 
         {% block style %}
-        {% block bootstrap_theme %}
-            <link rel="stylesheet" type="text/css" href="{{url_for('flask-api.static', filename='css/bootstrap.min.css')}}"/>
-            <link rel="stylesheet" type="text/css" href="{{url_for('flask-api.static', filename='css/bootstrap-tweaks.css')}}"/>
-        {% endblock %}
-        <link rel="stylesheet" type="text/css" href="{{url_for('flask-api.static', filename='css/prettify.css')}}"/>
-        <link rel="stylesheet" type="text/css" href="{{url_for('flask-api.static', filename='css/default.css')}}"/>
+            {% block bootstrap_theme %}
+                <link rel="stylesheet" type="text/css" href="{{url_for('flask-api.static', filename='css/bootstrap.min.css')}}"/>
+                <link rel="stylesheet" type="text/css" href="{{url_for('flask-api.static', filename='css/bootstrap-tweaks.css')}}"/>
+            {% endblock %}
+            <link rel="stylesheet" type="text/css" href="{{url_for('flask-api.static', filename='css/prettify.css')}}"/>
+            <link rel="stylesheet" type="text/css" href="{{url_for('flask-api.static', filename='css/default.css')}}"/>
+            <style>
+                code {
+                    display: inline-block;
+                    white-space: pre-wrap;
+                }
+            </style>
         {% endblock %}
 
     {% endblock %}

@@ -35,6 +35,7 @@ Options:
 """
 
 from __future__ import division
+from datetime import datetime
 import os
 import sys
 from docopt import docopt
@@ -47,6 +48,7 @@ import cat as dagor_catalog
 #   astar     https://github.com/elemel/python-astar2
 from common import BASE_PATH
 from formats import format_hours, format_degrees
+from path import get_path, NoPath
 
 
 LATITUDE = 45.290871
@@ -59,6 +61,8 @@ def tican():
     observer.lat = math.radians(LATITUDE)
     observer.lon = math.radians(LONGITUDE)
     observer.elevation = ALTITUDE
+    # need to update date manually to get precision greater then 1s:
+    observer.date = ephem.Date(datetime.utcnow())
     return observer
 
 
@@ -72,11 +76,11 @@ _DE_BLIND_POINT = 6500000
 _HA_INTERNAL_BLIND_POINT = 5  # Approximately corresponds to above blind points. Very very approximately!
 _DE_INTERNAL_BLIND_POINT = 0  # Approximately corresponds to above blind points. Very very approximately!
 
-_HA_SLOPE = -349593.3017543860
-_HA_INTERSECTION = 7445177.90526316
+HA_SLOPE = -349593.3017543860
+HA_INTERSECTION = 7445177.90526316
 
-_DE_SLOPE = -23300.2286699885
-_DE_INTERSECTION = 6543059.76197777
+DE_SLOPE = -23300.2286699885
+DE_INTERSECTION = 6543059.76197777
 
 _HA_REAL_OFFSET = -0.0314481764 - -0.0045467897 - 0.0045420766 + 0.046 - 0.0854678 - 0.035 - 0.024444944100000754
 _DE_REAL_OFFSET = 279.44431524230004 + 0.040461855 + -0.0156058897 + 0.0023 + 0.0194028 + 0.5 + 0.013929050277777577
@@ -204,8 +208,8 @@ def get_internal():
     data = get_normalised()
     corrections = read_internal_correction_file()
     return {
-        'ha': (data['ha'] - _HA_INTERSECTION) / _HA_SLOPE + corrections['ha'],
-        'de': (data['de'] - _DE_INTERSECTION) / _DE_SLOPE + corrections['de']
+        'ha': (data['ha'] - HA_INTERSECTION) / HA_SLOPE + corrections['ha'],
+        'de': (data['de'] - DE_INTERSECTION) / DE_SLOPE + corrections['de']
     }
 
 
@@ -446,7 +450,7 @@ def altaz_to_local(altaz):
 
 
 def internal_to_altaz(internal):
-    return local_to_altaz(altaz_to_local(internal))
+    return local_to_altaz(internal_to_local(internal))
 
 
 def altaz_to_internal(altaz, chirality=None):
@@ -455,6 +459,22 @@ def altaz_to_internal(altaz, chirality=None):
 
 def internal_to_celest(internal):
     return local_to_celest(internal_to_local(internal))
+
+
+def check_space(internal, ha_offset_sec=0):
+    internal = {
+        'ha': internal['ha'] + ha_offset_sec / 3600,
+        'de': internal['de'],
+    }
+    park_internal = altaz_to_internal(
+        PARK_ALTAZ,
+        get_chirality(),
+    )
+    try:
+        get_path(internal, park_internal)
+    except NoPath:
+        return False
+    return True
 
 
 # Run as CLI client
@@ -502,6 +522,7 @@ def _main(args):
         elif args['cat']:
             celest = dagor_catalog.get_celest(args['<NAME>'], args['<CATALOG>'])
             set_internal(celest_to_internal(celest), args['blind'])
+
 
 if __name__ == '__main__':
 

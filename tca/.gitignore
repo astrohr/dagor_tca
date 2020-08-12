@@ -1,0 +1,6 @@
+*.pyc
+.hg*
+coords.txt
+space_bak.txt
+space_test2.txt
+position_corrections.txt

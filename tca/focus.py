@@ -9,6 +9,7 @@ Usage:
     focus.py stop
     focus.py set <N>
     focus.py get
+    focus.py rehome
     focus.py -h | --help
     focus.py --version
 
@@ -19,6 +20,8 @@ Commands:
     stop            Stop the motor
     set             Set current position
     get             Get current position, to stdout
+    rehome          Move to home position, set it to 0, then return
+                    to current position.
 
 Options:
     -h --help       Show this screen or description of specific command.
@@ -209,6 +212,29 @@ def goto(n):
     get_controller().step_to(n)
 
 
+def _get_start_w_retry():
+    controller = get_controller()
+    for _ in range(10):
+        try:
+            starting_position = controller.get()
+        except:
+            pass
+        else:
+            return starting_position
+    raise CommunicationException('Cannot get starting position')
+
+
+def rehome():
+    starting_position = _get_start_w_retry()
+    print("start: {}".format(starting_position))
+    controller = get_controller()
+    controller.step_to(-6000)
+    negative_distance = controller.get()
+    controller.set(0)
+    new_position = 0 + starting_position - negative_distance
+    controller.step_to(new_position)
+
+
 def _main(args):
     controller = get_controller()
     assert isinstance(controller, FocuserController)
@@ -228,6 +254,9 @@ def _main(args):
         controller.set(n)
     elif args['get']:
         print(controller.get())
+    elif args['rehome']:
+        rehome()
+
 
     exit(0)
 
