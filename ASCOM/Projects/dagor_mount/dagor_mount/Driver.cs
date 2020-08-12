@@ -453,8 +453,8 @@ namespace ASCOM.DagorTelescope
         {
             get
             {
-                tl.LogMessage("CanSetPierSide", "Get - " + false.ToString());
-                return false;
+                tl.LogMessage("CanSetPierSide", "Get - " + true.ToString());
+                return true;
             }
         }
 
@@ -702,13 +702,13 @@ namespace ASCOM.DagorTelescope
             get
             {
                 string chirality = client.state.current.chirality;
-                tl.LogMessage("SideOfPier Get", chirality);
+                tl.LogMessage("SideOfPier Get", chirality + " : " + chiralityToPierSide(chirality).ToString());
                 return chiralityToPierSide(chirality);
             }
             set
             {
-                tl.LogMessage("SideOfPier Set", "Not implemented");
-                throw new ASCOM.PropertyNotImplementedException("SideOfPier", true);
+                tl.LogMessage("SideOfPier Set", value.ToString());
+                client.SetPierSide(value);
             }
         }
 
@@ -1147,7 +1147,7 @@ namespace ASCOM.DagorTelescope
         {
             if (chirality == "ce")
                 return PierSide.pierEast;
-            if (chirality == "ce")
+            if (chirality == "cw")
                 return PierSide.pierWest;
             return PierSide.pierUnknown;
         }

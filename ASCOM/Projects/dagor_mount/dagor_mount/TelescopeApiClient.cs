@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using ASCOM.Utilities;
 using System.Text;
 using System.Net.Http;
-
+using ASCOM.DeviceInterface;
 
 namespace ASCOM.DagorTelescope
 {
@@ -128,35 +128,13 @@ namespace ASCOM.DagorTelescope
         public bool GetSlewing()
         {
             refreshStaleState();
-            //bool slewing = _state.current.slewing;
             return _state.current.slewing;
-            LogMessage(
-                "GetSlewing",
-                "ready: " + _state.ready.ToString() +
-                ", config.tracking: " + _state.config.tracking.ToString() +
-                ", config.target_celest: " + _state.config.target_celest.ToString() +
-                ", config.target_altaz: " + _state.config.target_altaz.ToString() +
-                ", config.target_home: " + _state.config.target_home.ToString() +
-                ", config.target_is_static: " + _state.config.target_is_static.ToString() +
-                ", current.on_target: " + _state.current.on_target.ToString());
-            bool slewing = _state.ready && _state.config.tracking && !_state.current.on_target;
-            return slewing;
         }
 
         public bool GetTracking()
         {
             refreshStaleState();
             return _state.config.tracking;
-            LogMessage(
-                "GetTracking",
-                "ready: " + _state.ready.ToString() + 
-                ", config.tracking: " + _state.config.tracking.ToString() +
-                ", config.target_celest: " + _state.config.target_celest.ToString() +
-                ", config.target_altaz: " + _state.config.target_altaz.ToString() +
-                ", config.target_home: " + _state.config.target_home.ToString() +
-                ", config.target_is_static: " + _state.config.target_is_static.ToString() +
-                ", current.on_target: " + _state.current.on_target.ToString());
-            return _state.ready && _state.config.tracking && !_state.config.target_is_static && _state.current.on_target;
         }
 
         public void SetTracking(bool value)
@@ -226,6 +204,15 @@ namespace ASCOM.DagorTelescope
             _state.config.target_home = true;
             _state = ExecutePUT<StateRepr, StateRepr>("state", _state);
             refreshStaleState();
+        }
+
+        public void SetPierSide(PierSide side)
+        {
+            if (side == PierSide.pierEast)
+                _state.config.chirality = "ce";
+            if (side == PierSide.pierWest)
+                _state.config.chirality = "cw";
+            _state = ExecutePUT<StateRepr, StateRepr>("state", _state);
         }
 
         internal static TraceLogger tl;
