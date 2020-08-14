@@ -4,10 +4,19 @@
 STELLARIUM_MODE_DATE = 'on date'
 STELLARIUM_MODE_J2000 = 'J2000.0'
 
+MOTORS = {
+    'speed_limit': 3000,
+    'port': '/dev/ttyS0'
+}
 
 TRACKING = {
-    'enable_rnd': True,
+    #'total_speed_limit': 4250,
+    'total_speed_limit': 6000,
+    'enable_rnd': False,
     'stellarium_mode': STELLARIUM_MODE_J2000,
+    'tracking_check_interval': 0.1,  # seconds
+    'tracking_target_file': '/home/dagor/tca/local/var/tracking_config.json',
+    'tracking_current_file': '/home/dagor/tca/local/var/tracking_current.json',
 }
 
 

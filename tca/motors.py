@@ -76,8 +76,7 @@ OP_MODE_POSITION = 4
 
 
 class ModbusProtocol(object):
-    # Serial port configuration
-    _PORT = "/dev/ttyS1"
+    _PORT = config.MOTORS["port"]
     _BAUD_RATE = 19200
     _BYTE_SIZE = serial.EIGHTBITS
     _PARITY = serial.PARITY_EVEN
