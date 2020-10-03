@@ -314,6 +314,7 @@ def _main(args):
                 dagor_position.celest_to_internal(
                     {'ra': ra, 'de': de}),
                 args['blind'])
+            return
 
         if args['altaz']:
             arg_alt = args['<ALT>']
@@ -332,7 +333,9 @@ def _main(args):
                     chirality
                 ),
                 args['blind'])
-        return
+            return
+
+        # fall through
 
     if args['focus']:
         if args['get']:
