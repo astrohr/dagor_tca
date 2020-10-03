@@ -56,8 +56,8 @@ TRACKING_CORRECTIONS_FILE = os.path.join(BASE_PATH, 'tracking_corrections.txt')
 TRACK_CORRECT_STEP_HA = parse_degrees('0:01')
 TRACK_CORRECT_STEP_DE = parse_hours('0h01m')
 
-TRACKING_OK_TARGET_ZONE_HA = parse_degrees('00:00:03') / 15 / 1.5
-TRACKING_OK_TARGET_ZONE_DE = parse_degrees('00:00:03') / 1.5
+TRACKING_OK_TARGET_ZONE_HA = parse_degrees('00:00:06') / 15 / 1.5
+TRACKING_OK_TARGET_ZONE_DE = parse_degrees('00:00:06') / 1.5
 TRACKING_ROUGH_TARGET_ZONE_HA = parse_degrees('00:01:00') / 15
 TRACKING_ROUGH_TARGET_ZONE_DE = parse_degrees('00:01:00')
 STATIC_OK_TARGET_ZONE_HA = parse_degrees('00:00:10') / 15
