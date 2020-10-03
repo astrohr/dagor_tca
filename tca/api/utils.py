@@ -201,6 +201,9 @@ def check_connectivity(func):
             }, e.code
         except Exception as e:
             logger.exception('API - connection failure')
+            shutdown_hook = request.environ.get('werkzeug.server.shutdown')
+            if shutdown_hook is not None:
+                shutdown_hook()
             return {
                 'ready': False,
                 'message': '{}'.format(repr(e)),
