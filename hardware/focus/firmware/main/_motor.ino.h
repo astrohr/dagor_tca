@@ -11,6 +11,7 @@
 
 
 #include "_status.h"
+#include "_eeprom.h"
 
 
 #define MOTOR_MAX_SPEED 800
@@ -97,6 +98,10 @@ void Motor::loop()
       stepper.disableOutputs();  // TODO Maybe this is not needed at all? Will driver board keep colis energised anyway? Should it? Do we care? 42?
       get.idle = true;
       stopping_hard = false;
+      if (eeprom->get.position != get.position) {
+        eeprom->set.position = get.position;
+        eeprom->set.write_position = true;
+      }
   }
 
   // reset setters:

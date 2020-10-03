@@ -14,6 +14,7 @@
 #include "_reset.ino.h"
 #include "_buttons.ino.h"
 #include "_motor.ino.h"
+#include "_eeprom.ino.h"
 #include "_status.ino.h"
 #include "_protocol.ino.h"
 #include "_serial_comm.ino.h"
@@ -26,6 +27,7 @@ void setup()
   for (i = 0; i < ModulesRegistry::count; i++) {
     ModulesRegistry::modules[i]->setup();
   }
+  delay(3000);
   Serial.print("\nready\n");
 }
 
