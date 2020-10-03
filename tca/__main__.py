@@ -4,7 +4,6 @@
 
 Usage:
   tca configure
-  tca init
   tca api run
   tca get [float] [human] (celest | local | altaz)
   tca get chirality
@@ -37,7 +36,6 @@ Usage:
   tca --version
 
 Commands:
-  init              Re-home focuser and run tracking engine.
   api run           Stat HTTP api, used by ASCOM drivers.
   configure         Configure motor drivers before first use and write
                     configuration to EEPROM and Flash memory.
@@ -105,10 +103,6 @@ def _main(args):
         if args['run']:
             api.run()
             return
-
-    if args['init']:
-        dagor_focus.rehome()
-        dagor_track.run()
 
     if args['configure']:
         dagor_motors.init()
