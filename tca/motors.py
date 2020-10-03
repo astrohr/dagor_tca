@@ -66,7 +66,7 @@ _MOTOR_STOPPED_THRESHOLD = 5
 MAX_SPEED_DE = 1.456  # deg/sec
 MAX_SPEED_HA = 3.075e-2  # h/sec
 ACC_RAMP = 7000
-EMERGENCY_RAMP = 3000  # milliseconds at full speed
+EMERGENCY_RAMP = 5000  # milliseconds at full speed
 # ^^^ !!! also adjust power-off relay timer !!! ^^^
 TRACKING_SPEED = -27
 
