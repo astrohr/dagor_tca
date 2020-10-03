@@ -36,9 +36,11 @@ def print_(msg, **kwargs):
     sys.stdout.flush()
 
 
-def p_(vars, end="\n"):
-    sys.stdout.write("\n".join(["{k} = {v}".format(k=k, v=v) for k, v in vars.items()]))
-    sys.stdout.write(end)
+def p_(vars_, end="\n"):
+    sys.stdout.write("\n".join([
+        "{k} = {v}".format(k=k, v=v)
+        for k, v in vars_.items()
+    ]) + end)
     sys.stdout.flush()
 
 

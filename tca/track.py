@@ -533,7 +533,7 @@ class Tracking(object):
             self._de_speed_same_since = None
         self._last_de_speed = de_speed
         if self._de_warp_speed:
-            print "DE WARP SPEED!!!!!!......"
+            print_("!!DE!!", end="")
             de_speed *= 8
         if self.config['target_is_static']:
             if 0 < abs(ha_speed) < 15 and ha_speed == self._last_ha_speed:
@@ -546,7 +546,8 @@ class Tracking(object):
                 self._ha_speed_same_since = None
             self._last_ha_speed = ha_speed
             if self._ha_warp_speed:
-                print "HA WARP SPEED!!!!!!......"
+                print_("!!HA!!", end="")
+                sys.stdout.flush()
                 ha_speed *= 8
 
         # limit total speed:
@@ -681,7 +682,6 @@ class Tracking(object):
         print_("")
 
     def _loop_print_stats(self):
-
         od = OrderedDict()
         od['speeds'] = '{:>14}  {:>14}'.format(
             self.current['ha_speed'], self.current['de_speed'])
@@ -718,7 +718,7 @@ class Tracking(object):
             od['path_{}'.format(i)] = '{:0<14}  {:0<14}'.format(
                 point.ha, point.de)
         od['on_target'] = self.current['on_target']
-        p_(od)
+        p_(od, end="\n.")
 
 
 def speed_tracking(target_celest=None,
