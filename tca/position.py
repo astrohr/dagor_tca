@@ -117,7 +117,9 @@ HOME_N_CHIRALITY = CHIRAL_E
 
 calendar_day = 86400.0
 sidereal_day = 86164.0905
-sidereal_coef = sidereal_day / calendar_day
+#sidereal_coef = sidereal_day / calendar_day
+#sidereal_coef = calendar_day / sidereal_day
+sidereal_coef = 1
 
 
 class PositionReadError(RuntimeError):
