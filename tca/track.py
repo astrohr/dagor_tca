@@ -563,7 +563,7 @@ class Tracking(object):
             dagor_motors.MAX_SPEED_HA,
             dagor_motors.MAX_SPEED_DE,
         )
-        b = 185 if self.config['rough'] else 400
+        b = 195 if self.config['rough'] else 400
         # HA:
         ha_speed = self.slope(
             speeds['speed_ha'], self.current['ha_err'], a=20, b=b)
