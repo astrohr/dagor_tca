@@ -159,6 +159,7 @@ def _main(args):
         quick = True if args['quick'] else False
         target_celest = None
         chirality = None  # default: None (keep chirality)
+        extra_kwargs = {}
 
         if args['ce']:
             chirality = dagor_position.CHIRAL_E
@@ -174,7 +175,9 @@ def _main(args):
             target_celest = dagor_position.altaz_to_celest(
                 dagor_position.HOME_ALTAZ)
             quick = True
+            track = False
             stop_on_target = True
+            extra_kwargs = {"target_home": True}
 
         if args['home2']:
             chirality = dagor_position.HOME_N_CHIRALITY
@@ -183,7 +186,9 @@ def _main(args):
             target_celest = dagor_position.altaz_to_celest(
                 dagor_position.HOME_N_ALTAZ)
             quick = True
+            track = False
             stop_on_target = True
+            extra_kwargs = {"target_home2": True}
 
         if args['park']:
             chirality = dagor_position.PARK_CHIRALITY
@@ -192,7 +197,9 @@ def _main(args):
             target_celest = dagor_position.altaz_to_celest(
                 dagor_position.PARK_ALTAZ)
             quick = True
+            track = False
             stop_on_target = True
+            extra_kwargs = {"target_park": True}
 
         elif args['altaz']:
             track = True if args['track'] else False
@@ -280,6 +287,7 @@ def _main(args):
                 stop_on_target=stop_on_target,
                 rough=quick,
                 force=args['force'],
+                **extra_kwargs
             )
         return
 

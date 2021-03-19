@@ -49,6 +49,7 @@ import local.configuration as conf
 
 from logging_conf import get_logger
 
+
 logger = get_logger(__file__)
 
 
@@ -63,8 +64,18 @@ TRACKING_ROUGH_TARGET_ZONE_DE = parse_degrees('00:01:00')
 STATIC_OK_TARGET_ZONE_HA = parse_degrees('00:00:10') / 15
 STATIC_OK_TARGET_ZONE_DE = parse_degrees('00:00:10')
 TARGET_SETTLE_WAIT = 2  # seconds
-AT_HOME_ZONE = parse_degrees('00:10:00')
-AT_PARK_ZONE = parse_degrees('00:10:00')
+AT_HOME_ZONE = parse_degrees('00:20:00')
+AT_PARK_ZONE = parse_degrees('00:20:00')
+
+MAX_SANE_DIFF = {  # deg / sec
+    "ha": 0.05,
+    "de": 1.4,
+}
+MAX_SANE_STOP_SPEED = 20
+MAX_SANE_STOPPED_WITH_SPEED = 7  # sec
+
+class SanityFailure(RuntimeError):
+    """Something makes no physical sense. HALT!!!"""
 
 
 def reset_correction_file():
@@ -253,6 +264,7 @@ class Tracking(object):
         'target_celest': None,
         'target_altaz': None,
         'target_home': False,
+        'target_home2': False,
         'target_park': False,
         'chirality': None,
         'target_is_static': False,
@@ -266,12 +278,14 @@ class Tracking(object):
     _last_conf = {}
     _slewing = False
     _last_target_coords = {}
-    _last_ha_speed = None
-    _last_de_speed = None
+    _last_ha_speed = 0
+    _last_de_speed = 0
     _ha_speed_same_since = None
     _de_speed_same_since = None
     _ha_warp_speed = False
     _de_warp_speed = False
+    _last_internal = {}
+    _stopped_with_speed_since = {"ha": 0, "de": 0}
 
     def _dump_current_json(self):
         tmp_file = conf.TRACKING['tracking_current_file'] + '.tmp'
@@ -311,11 +325,26 @@ class Tracking(object):
         return self.config
 
     def _process_config(self):
+        self.config['target_is_static'] = False
+        if not self.config["tracking"]:
+            self._slewing = False
+            self.config['target_is_static'] = True
+            self.config['target_home'] = False
+            self.config['target_home2'] = False
+            self.config['target_park'] = False
+            self.config['target_altaz'] = dagor_position.get_altaz()
+
         if self.config['target_home']:
             self.config['target_celest'] = None
             self.config['target_is_static'] = True
             self.config['target_altaz'] = dagor_position.HOME_ALTAZ
             self.config['chirality'] = dagor_position.HOME_CHIRALITY
+            self.config['rough'] = True
+        if self.config['target_home2']:
+            self.config['target_celest'] = None
+            self.config['target_is_static'] = True
+            self.config['target_altaz'] = dagor_position.HOME_N_ALTAZ
+            self.config['chirality'] = dagor_position.HOME_N_CHIRALITY
             self.config['rough'] = True
         if self.config['target_park']:
             self.config['target_celest'] = None
@@ -348,8 +377,6 @@ class Tracking(object):
         #         not self.config['target_altaz'] and
         #         not self.config['target_home'] and
         #         not self.config['target_park']):
-        if not self.config["tracking"]:
-            self._slewing = False
 
     def set_config(self, config):
         self.config = self.DEFAULT_CONF.copy()
@@ -389,7 +416,10 @@ class Tracking(object):
     @staticmethod
     def slope(speed, err, a=15, b=400):
         """Calculate real speed given position error."""
-        return (a * speed * abs(err) ** 2 / b) ** (1 / 3)
+        value = (a * speed * abs(err) ** 2 / b) ** (1 / 3)
+        if err < 30.0 / 3600:
+            value /= 3
+        return value
 
     @staticmethod
     def speed_real_to_motor(speed, limit):
@@ -409,7 +439,7 @@ class Tracking(object):
     def stop_tracking(self):
         """Stop tracking but keep the loop running"""
         self.config['tracking'] = False
-        self.config['target_celest'] = dagor_position.get_celest()
+        self.config['target_celest'] = None  # dagor_position.get_celest()
         self._dump_config_json()
 
     @staticmethod
@@ -450,6 +480,41 @@ class Tracking(object):
             self.config['chirality'],
         )
         internal = dagor_position.get_internal()
+
+        # sanity_check:
+        if self._last_internal:
+            ha_diff = abs(self._last_internal["ha"] - internal["ha"])
+            de_diff = abs(self._last_internal["de"] - internal["de"])
+            if ha_diff > MAX_SANE_DIFF["ha"]:
+                raise SanityFailure(
+                    "HA encoder value jumped! {}".format(ha_diff))
+            if de_diff > MAX_SANE_DIFF["de"]:
+                raise SanityFailure(
+                    "DE encoder value jumped! {}".format(de_diff))
+            if ha_diff == 0 and abs(self._last_ha_speed) > MAX_SANE_STOP_SPEED:
+                if not self._stopped_with_speed_since["ha"]:
+                    self._stopped_with_speed_since["ha"] = time()
+                else:
+                    stopped_for = time() - self._stopped_with_speed_since["ha"]
+                    if stopped_for >= MAX_SANE_STOPPED_WITH_SPEED:
+                        raise SanityFailure("HA not moving!")
+            else:
+                self._stopped_with_speed_since["ha"] = 0
+            if de_diff == 0 and abs(self._last_de_speed) > MAX_SANE_STOP_SPEED:
+                if not self._stopped_with_speed_since["de"]:
+                    self._stopped_with_speed_since["de"] = time()
+                else:
+                    stopped_for = time() - self._stopped_with_speed_since["de"]
+                    if stopped_for >= MAX_SANE_STOPPED_WITH_SPEED:
+                        raise SanityFailure("DE not moving!")
+            else:
+                self._stopped_with_speed_since["de"] = 0
+
+            self.max_ha_diff = max(getattr(self, "max_ha_diff", 0), ha_diff)
+            self.max_de_diff = max(getattr(self, "max_de_diff", 0), de_diff)
+
+        self._last_internal = internal
+
         self.current['internal'] = internal
         self.current['t_now'] = time()
         self.current['now'] = datetime.utcnow()
@@ -498,7 +563,7 @@ class Tracking(object):
             dagor_motors.MAX_SPEED_HA,
             dagor_motors.MAX_SPEED_DE,
         )
-        b = 200 if self.config['rough'] else 400
+        b = 185 if self.config['rough'] else 400
         # HA:
         ha_speed = self.slope(
             speeds['speed_ha'], self.current['ha_err'], a=20, b=b)
@@ -508,7 +573,7 @@ class Tracking(object):
             ha_speed,
             conf.MOTORS['speed_limit'] * speeds[
                 'speed_ha'] / dagor_motors.MAX_SPEED_HA)
-        ha_speed = int(ha_speed * sign(self.current['ha_err']))
+        ha_speed = int(round(ha_speed * sign(self.current['ha_err'])))
         if not self.config['target_is_static']:
             ha_speed += dagor_motors.TRACKING_SPEED
         # DE:
@@ -519,7 +584,7 @@ class Tracking(object):
             de_speed,
             conf.MOTORS['speed_limit'] * speeds[
                 'speed_de'] / dagor_motors.MAX_SPEED_DE)
-        de_speed = int(de_speed * sign(self.current['de_err']))
+        de_speed = int(round(de_speed * sign(self.current['de_err'])))
 
         # TODO This is ugly hardcoded gear direction switch accelerator! OMG!
         now = datetime.utcnow()
@@ -531,9 +596,7 @@ class Tracking(object):
         else:
             self._de_warp_speed = False
             self._de_speed_same_since = None
-        self._last_de_speed = de_speed
         if self._de_warp_speed:
-            print_("!!DE!!", end="")
             de_speed *= 8
         if self.config['target_is_static']:
             if 0 < abs(ha_speed) < 15 and ha_speed == self._last_ha_speed:
@@ -544,9 +607,7 @@ class Tracking(object):
             else:
                 self._ha_warp_speed = False
                 self._ha_speed_same_since = None
-            self._last_ha_speed = ha_speed
             if self._ha_warp_speed:
-                print_("!!HA!!", end="")
                 sys.stdout.flush()
                 ha_speed *= 8
 
@@ -557,11 +618,18 @@ class Tracking(object):
             ha_speed *= correct_factor
             de_speed *= correct_factor
 
+        if not self.config['tracking']:
+            ha_speed = 0
+            de_speed = 0
+
         # all done:
         self.current.update(
             ha_speed=int(round(ha_speed)),
             de_speed=int(round(de_speed)),
         )
+        self._last_ha_speed = ha_speed
+        self._last_de_speed = de_speed
+
 
     def _loop_check_target(self):
         if self.config['rough']:
@@ -726,9 +794,11 @@ def speed_tracking(target_celest=None,
                    target_is_static=False,
                    stop_on_target=False,
                    rough=False,
-                   force=False):
+                   force=False,
+                   **kwargs):
+    kwargs = kwargs or {}
     tracking = Tracking()
-    tracking.set_config({
+    conf = {
         'target_celest': target_celest,
         'chirality': chirality,
         'target_is_static': target_is_static,
@@ -736,7 +806,9 @@ def speed_tracking(target_celest=None,
         'rough': rough,
         'force': force,
         'tracking': True,
-    })
+    }
+    conf.update(kwargs)
+    tracking.set_config(conf)
     tracking.track()
 
 

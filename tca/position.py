@@ -33,22 +33,28 @@ Options:
   -h --help         Show this screen.
 
 """
-
 from __future__ import division
-from datetime import datetime
+
+import math
 import os
 import sys
+import time
+
+from datetime import datetime
+from contextlib import contextmanager
+
 from docopt import docopt
 import ephem
-import math
+
 import cat as dagor_catalog
 #from common import exit_
 
-#   docopt    http://docopt.org/
-#   astar     https://github.com/elemel/python-astar2
 from common import BASE_PATH
 from formats import format_hours, format_degrees
 from path import get_path, NoPath
+
+#   docopt    http://docopt.org/
+#   astar     https://github.com/elemel/python-astar2
 
 
 LATITUDE = 45.290871
@@ -109,6 +115,13 @@ HOME_N_ALTAZ = {
 HOME_N_CHIRALITY = CHIRAL_E
 
 
+calendar_day = 86400.0
+sidereal_day = 86164.0905
+sidereal_coef = sidereal_day / calendar_day
+
+
+class PositionReadError(RuntimeError):
+    """Failed to read encoders"""
 
 
 def read_internal_correction_file():
@@ -157,6 +170,25 @@ def set_internal(internal_new, blind=False):
         })
 
 
+@contextmanager
+def _file(file_path, mode):
+    opened = False
+    err_count = 0
+    max_err_count = 10
+    while not opened:
+        try:
+            with open(file_path, mode) as fh:
+                opened = True
+                if err_count > 0:
+                    print("FILE ERR COUNT: {}".format(err_count))
+                yield fh
+        except IOError:
+            err_count += 1
+            if err_count > max_err_count:
+                raise
+            time.sleep(0.5)
+
+
 def _read():
     """
     Access to IK220 driver is done via C daemon. The daemon writes data to file, this function simply reads the file.
@@ -166,10 +198,16 @@ def _read():
     File:
         see _ENCODERS_DATA_FILE
     """
-    with open(_ENCODERS_DATA_FILE) as f:
+    READ_TRESHOLD = 4.0
+    with _file(_ENCODERS_DATA_FILE, "r") as f:
         content = f.readlines()
     ha_raw = float(content[1])
     de_raw = float(content[2])
+    read_time = float(content[3])
+    current_time = time.time()
+    time_diff = current_time - read_time
+    if abs(time_diff) > READ_TRESHOLD:
+        raise PositionReadError("Timestamp on encoder positions too old: {}".format(time_diff))
     return {
         'ha_raw': ha_raw,
         'de_raw': de_raw,
@@ -399,7 +437,8 @@ def local_to_internal(local, chirality=None):
 
 def local_to_celest(local):
     de = local['de']
-    ra = tican().sidereal_time() * 12 / math.pi - local['ha']
+
+    ra = tican().sidereal_time() * 12 / math.pi - local['ha'] / sidereal_coef
     ra = ra + 24 if ra < 0 else ra - 24 if ra >= 24 else ra
     return {
         'ra': ra,
@@ -409,7 +448,7 @@ def local_to_celest(local):
 
 def celest_to_local(celest):
     de = celest['de']
-    ha = tican().sidereal_time() * 12 / math.pi - celest['ra']
+    ha = tican().sidereal_time() * 12 * sidereal_coef / math.pi - celest['ra']
     ha = ha + 24 if ha < 0 else ha - 24 if ha >= 24 else ha
     return {
         'ha': ha,
