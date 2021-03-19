@@ -65,7 +65,7 @@ _MOTOR_STOPPED_THRESHOLD = 5
 
 MAX_SPEED_DE = 1.456  # deg/sec
 MAX_SPEED_HA = 3.075e-2  # h/sec
-ACC_RAMP = 7000
+ACC_RAMP = {1: 7000, 2: 160000}
 EMERGENCY_RAMP = 5000  # milliseconds at full speed
 # ^^^ !!! also adjust power-off relay timer !!! ^^^
 TRACKING_SPEED = -27
@@ -334,8 +334,8 @@ class MotorCommunication(object):
 
     def configure_speed(self):
         self.SpeedLimit = SPEED_LIMIT  # Speed limit 3000 rpm
-        self.SpeedAccRamp = ACC_RAMP  # Speed mode acceleration ramp 5 s
-        self.SpeedDecRamp = ACC_RAMP  # Speed mode deceleration ramp 5 s
+        self.SpeedAccRamp = ACC_RAMP[self.address]  # Speed mode acceleration ramp 5 s
+        self.SpeedDecRamp = ACC_RAMP[self.address]  # Speed mode deceleration ramp 5 s
         self.SpeedEmerRamp = EMERGENCY_RAMP  # Speed emergency ramp 500 ms
         self.AnalogFilter = 2000
         self.AnalogDeadBand = 3500
@@ -343,8 +343,8 @@ class MotorCommunication(object):
     def configure_tasks(self):
         for i in range(1, MAX_TASKS+1):
             self._write(self._param('Task{}_Speed'.format(i)), SPEED_LIMIT/10)
-            self._write(self._param('Task{}_Acc_Time'.format(i)), ACC_RAMP)
-            self._write(self._param('Task{}_Dcc_Time'.format(i)), ACC_RAMP)
+            self._write(self._param('Task{}_Acc_Time'.format(i)), ACC_RAMP[self.address])
+            self._write(self._param('Task{}_Dcc_Time'.format(i)), ACC_RAMP[self.address])
             self._write(self._param('Task{}_Target'.format(i)), 0)
             self._write(self._param('Task{}_Window_Pos'.format(i)), 50)
             self._write(self._param('Task{}_Window_Time'.format(i)), 500)
