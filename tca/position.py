@@ -200,7 +200,7 @@ def _read():
     File:
         see _ENCODERS_DATA_FILE
     """
-    READ_TRESHOLD = 4.0
+    READ_TRESHOLD = 8.0
     with _file(_ENCODERS_DATA_FILE, "r") as f:
         content = f.readlines()
     ha_raw = float(content[1])
