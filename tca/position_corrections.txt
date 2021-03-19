@@ -2,5 +2,5 @@
 # first line: HA, format: decimal hour
 # second line: DE, format: decimal angle
 #-23.8607596995
-0.12550250103
-0.32842985085
+0.139963863028
+0.134976841451
