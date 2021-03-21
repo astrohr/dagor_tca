@@ -72,7 +72,8 @@ MAX_SANE_DIFF = {  # deg / sec
     "de": 1.4,
 }
 MAX_SANE_STOP_SPEED = 20
-MAX_SANE_STOPPED_WITH_SPEED = 7  # sec
+MAX_SANE_STOPPED_WITH_SPEED = 10  # sec
+
 
 class SanityFailure(RuntimeError):
     """Something makes no physical sense. HALT!!!"""
@@ -282,8 +283,8 @@ class Tracking(object):
     _last_de_speed = 0
     _ha_speed_same_since = None
     _de_speed_same_since = None
-    _ha_warp_speed = False
-    _de_warp_speed = False
+    _ha_warp_factor = 1
+    _de_warp_factor = 1
     _last_internal = {}
     _stopped_with_speed_since = {"ha": 0, "de": 0}
 
@@ -566,7 +567,7 @@ class Tracking(object):
         b = 195 if self.config['rough'] else 400
         # HA:
         ha_speed = self.slope(
-            speeds['speed_ha'], self.current['ha_err'], a=20, b=b)
+            speeds['speed_ha'], self.current['ha_err'], a=18, b=b)
         ha_speed = self.speed_real_to_motor(
             ha_speed, dagor_motors.MAX_SPEED_HA)
         ha_speed = min(
@@ -592,24 +593,21 @@ class Tracking(object):
             if self._de_speed_same_since is None:
                 self._de_speed_same_since = now
             if now - self._de_speed_same_since > timedelta(seconds=2):
-                self._de_warp_speed = True
+                self._de_warp_factor = 8
         else:
-            self._de_warp_speed = False
+            self._de_warp_factor = 1
             self._de_speed_same_since = None
-        if self._de_warp_speed:
-            de_speed *= 8
         if self.config['target_is_static']:
             if 0 < abs(ha_speed) < 15 and ha_speed == self._last_ha_speed:
                 if self._ha_speed_same_since is None:
                     self._ha_speed_same_since = now
                 if now - self._ha_speed_same_since > timedelta(seconds=2):
-                    self._ha_warp_speed = True
+                    self._ha_warp_factor = 8
             else:
-                self._ha_warp_speed = False
+                self._ha_warp_factor = 1
                 self._ha_speed_same_since = None
-            if self._ha_warp_speed:
+            if self._ha_warp_factor > 1:
                 sys.stdout.flush()
-                ha_speed *= 8
 
         # limit total speed:
         sum_speed = abs(ha_speed) + abs(de_speed)
@@ -624,12 +622,11 @@ class Tracking(object):
 
         # all done:
         self.current.update(
-            ha_speed=int(round(ha_speed)),
-            de_speed=int(round(de_speed)),
+            ha_speed=int(round(ha_speed * self._ha_warp_factor)),
+            de_speed=int(round(de_speed * self._de_warp_factor)),
         )
         self._last_ha_speed = ha_speed
         self._last_de_speed = de_speed
-
 
     def _loop_check_target(self):
         if self.config['rough']:
