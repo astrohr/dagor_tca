@@ -11,9 +11,9 @@ void encoder_loop()
     
     // FIXED_POSITIONS:
     // update encoders.last_combination and correct encoders.current_azimuth
-    bool one = analogRead(switch_one) < 50;  // TODO treshold
-    bool two = analogRead(switch_two) < 50;
-    bool three = analogRead(switch_three) < 50;
+    bool one = digitalRead(switch_one);  // TODO treshold
+    bool two = digitalRead(switch_two);
+    bool three = digitalRead(switch_three);
 
     if (one || two || three) {
         //TODO warn is any screw is "too weak"

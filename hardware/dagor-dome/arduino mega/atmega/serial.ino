@@ -36,8 +36,9 @@ void serial_loop()
             char buf[data.length() + 1];
             data.toCharArray(buf, data.length() + 1);
             double value = atof(buf);
-            
             input_buffer.target_azimuth = value;
+            input_buffer.start_goto = true;
+            
         } else if (_serial.data_received == "park" && _serial_calibration_check()) {  // park dome
             Serial.println("ok 0");
             input_buffer.target_azimuth = settings_buffer.home_azimuth;
@@ -66,9 +67,19 @@ void serial_loop()
         } else if (_serial.data_received == "up") {   // move up manually
             Serial.println("ok 0");
             input_buffer.direction = UP;
+            input_buffer.stop = false;
         } else if (_serial.data_received == "down") {   // move down manually
             Serial.println("ok 0");
             input_buffer.direction = DOWN;
+            input_buffer.stop = false;
+        } else if (_serial.data_received == "speed") {   // set speed from 0 to 100 (in percentage)
+            Serial.println("ok 0");
+            input_buffer.direction = DOWN;
+            String data = _serial.data_received.substring(5);
+            char buf[data.length() + 1];
+            data.toCharArray(buf, data.length() + 1);
+            double value = atof(buf);
+            input_buffer.dome_speed = value;
         } else if (_serial.data_received.substring(0, 5) == "force")  {  // force current azimuth to be replaced with new one (useful for correcting home)
             Serial.println("ok 0");
             String data = _serial.data_received.substring(5);

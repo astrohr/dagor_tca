@@ -80,6 +80,10 @@ void setup()
     debugln(String(settings_buffer.home_azimuth));
     debugln("setup END");
 
+    PID dome_pid(&pid_input, &pid_output, &pid_setpoint, kp, ki, kd, DIRECT);
+    dome_pid.SetOutputLimits(-100, 100);
+    dome_pid.SetSampleTime(pid_sampletime);
+
 } // end setup()
 
 
@@ -133,5 +137,3 @@ void hardware_loop()
     motors_loop();    
     door_loop();
 }
-
-

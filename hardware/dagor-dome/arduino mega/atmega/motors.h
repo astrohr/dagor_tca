@@ -3,11 +3,11 @@
 
 typedef struct {
     int rotation; // 0 stop    1 down    -1 up        (right hand)
-    // timers:
-    unsigned long spinup_time;
-    unsigned long spindown_time;
+    int speed_ref;
+    int spindown_time;
+    int spinup_time;
 } Motor;
-Motor _motors = {0, 0, 0};
+Motor _motors = {0, 40, 500, 500};
 
 
 /***** INTERFACE *****/
