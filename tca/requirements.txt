@@ -8,7 +8,7 @@ Werkzeug==0.11.9
 angles==1.1
 docopt==0.6.2
 funcsigs==1.0.2
-ipython==2.0.0
+ipython==7.16.3
 itsdangerous==0.24
 mock==2.0.0
 modbus-tk==0.4.2
